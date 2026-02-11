@@ -3,81 +3,62 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>신의 손 AI - 무채색 교집합 엔진</title>
+    <title>신의 손 AI - 필살 분석 통합형</title>
     <style>
-        body { background-color: #0c0c0c; color: #f2c94c; font-family: 'Malgun Gothic', sans-serif; text-align: center; padding: 20px; margin: 0; overflow-x: hidden; }
-        h1 { color: #f2c94c; font-size: 2.3rem; margin-top: 20px; font-weight: bold; letter-spacing: -1px; cursor: pointer; }
-        .target-box { color: #FFF; font-size: 1.1rem; margin-bottom: 15px; background: #1a1a1a; padding: 10px 20px; border-radius: 10px; display: inline-block; border: 2px solid #f2c94c; font-weight: bold; }
-        .status-badge { display: block; margin: 5px auto 15px; font-size: 0.85rem; color: #888; font-weight: bold; letter-spacing: 1px; }
+        body { background-color: #0c0c0c; color: #f2c94c; font-family: 'Malgun Gothic', sans-serif; text-align: center; padding: 15px; margin: 0; overflow-x: hidden; }
+        h1 { color: #f2c94c; font-size: 1.8rem; margin-top: 15px; font-weight: bold; letter-spacing: -1px; cursor: pointer; }
+        .target-box { color: #FFF; font-size: 1rem; margin-bottom: 15px; background: #1a1a1a; padding: 8px 15px; border-radius: 8px; display: inline-block; border: 1px solid #f2c94c; font-weight: bold; box-shadow: 0 4px 10px rgba(242, 201, 76, 0.2); }
         
-        .btn-container { display: flex; flex-wrap: wrap; justify-content: center; gap: 8px; max-width: 420px; margin: 0 auto 15px auto; }
-        button { border: none; border-radius: 8px; cursor: pointer; font-size: 15px; font-weight: bold; transition: 0.2s; position: relative; display: flex; align-items: center; justify-content: center; overflow: hidden; }
-        
-        .btn-main { width: 48.5%; height: 60px; background: linear-gradient(145deg, #d4a017, #b8860b); color: black; border: 1px solid #f2c94c; }
-        .btn-sub { width: 48.5%; height: 45px; background-color: #262626; color: white; border: 1px solid #333; }
-        .btn-save { padding: 4px 10px; font-size: 11px; background: transparent; color: #f2c94c; border: 1px solid #f2c94c; border-radius: 4px; cursor: pointer; margin-left: 8px; }
+        /* 슬림 버튼 컨테이너 */
+        .btn-container { display: flex; flex-wrap: wrap; justify-content: center; gap: 6px; max-width: 360px; margin: 0 auto 15px auto; }
+        button { border: none; border-radius: 6px; cursor: pointer; font-size: 14px; font-weight: bold; transition: 0.2s; position: relative; display: flex; align-items: center; justify-content: center; overflow: hidden; }
+        .btn-main { width: 100%; height: 55px; background: linear-gradient(145deg, #d4a017, #b8860b); color: black; border: 1px solid #f2c94c; margin-bottom: 5px; }
+        .btn-sub { width: 48%; height: 45px; background-color: #262626; color: white; border: 1px solid #333; }
+        .btn-save { padding: 3px 8px; font-size: 10px; background: transparent; color: #f2c94c; border: 1px solid #f2c94c; border-radius: 4px; cursor: pointer; margin-left: auto; }
 
-        /* 사장님 맞춤형: 무채색 숫자 디자인 */
-        .num-circle { display: inline-block; width: 30px; height: 30px; line-height: 28px; text-align: center; border-radius: 50%; font-weight: bold; font-size: 14px; margin-right: 5px; color: #f2c94c; border: 1.5px solid #f2c94c; background: #1a1a1a; box-sizing: border-box; }
+        /* 동그라미 없는 슬림 숫자 */
+        .num-text { display: inline-block; width: 24px; font-weight: bold; font-size: 17px; margin-right: 5px; color: #f2c94c; text-align: center; letter-spacing: -1px; }
         
-        #console-container, #storage-container { width: 100%; max-width: 420px; margin: 0 auto 20px; background-color: #1a1a1a; border-radius: 12px; border: 2px solid #333; overflow: hidden; }
-        .box-title { background: #262626; padding: 10px; font-size: 14px; font-weight: bold; color: #f2c94c; border-bottom: 1px solid #333; text-align: left; }
-        #console, #storage { width: 100%; height: 400px; padding: 15px; text-align: left; overflow-y: auto; color: #f2c94c; box-sizing: border-box; font-size: 13px; line-height: 1.6; white-space: pre-wrap; font-family: monospace; }
-        #storage { height: 250px; }
+        /* 폭 조절 컨테이너 */
+        #console-container, #storage-container { width: 100%; max-width: 360px; margin: 0 auto 15px; background-color: #1a1a1a; border-radius: 10px; border: 1.5px solid #333; overflow: hidden; }
+        .box-title { background: #262626; padding: 10px 12px; font-size: 13px; font-weight: bold; color: #f2c94c; border-bottom: 1px solid #333; text-align: left; }
+        #console, #storage { width: 100%; height: 420px; padding: 15px; text-align: left; overflow-y: auto; color: #f2c94c; box-sizing: border-box; font-size: 13px; line-height: 1.6; white-space: pre-wrap; font-family: 'Courier New', monospace; }
+        #storage { height: 220px; }
 
         .row-item { margin-bottom: 12px; padding-bottom: 8px; border-bottom: 1px solid #262626; display: flex; flex-direction: column; }
-        .tag-info { font-size: 11px; color: #888; margin-bottom: 5px; display: flex; align-items: center; }
-        .tag-final { color: #00ffcc; font-weight: bold; }
-        .timer-overlay { position: absolute; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.85); display: none; align-items: center; justify-content: center; color: #ff4d4d; }
+        .row-header { display: flex; align-items: center; margin-bottom: 5px; }
+        .tag-info { font-size: 10px; color: #888; font-weight: normal; }
+        .tag-final { color: #ff4d4d; font-weight: bold; text-decoration: underline; }
+        .timer-overlay { position: absolute; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.85); display: none; align-items: center; justify-content: center; color: #ff4d4d; font-size: 14px; }
     </style>
 </head>
 <body>
-    <h1 onclick="location.reload()">신의 손 AI [교집합 통합]</h1>
-    <div id="display-target" class="target-box">데이터 연결 중...</div>
-    <div id="ai-status" class="status-badge">색상제거 | 고정난수 | 보관함 가동</div>
+    <h1 onclick="location.reload()">신의 손 AI 🚀</h1>
+    <div id="display-target" class="target-box">데이터 로딩 중...</div>
 
     <div class="btn-container">
-        <button class="btn-main" id="btn10" onclick="generateIntersection(10)">10조합 고정 생성<div id="timer10" class="timer-overlay"></div></button>
-        <button class="btn-main" id="btn5" onclick="generateIntersection(5)">5조합 고정 생성<div id="timer5" class="timer-overlay"></div></button>
-        <button class="btn-sub" onclick="location.reload()">새로고침</button>
-        <button class="btn-sub" onclick="clearStorage()" style="color: #ff4d4d;">보관함 삭제</button>
+        <button class="btn-main" id="btn10" onclick="processIntersectionStrategy()">전략 10조합 생성 (교집합 포함)<div id="timer10" class="timer-overlay"></div></button>
+        <button class="btn-sub" onclick="loadStorage()">보관함 새로고침</button>
+        <button class="btn-sub" onclick="clearAll()" style="color: #ff4d4d;">초기화</button>
     </div>
 
     <div id="console-container">
-        <div class="box-title">▶ 추출 결과 (교집합 필살기 포함)</div>
-        <div id="console">lotto.txt 파일을 준비해주세요.</div>
+        <div class="box-title">▶ 필살 분석 결과 (1-2-2 전략)</div>
+        <div id="console">lotto.txt 연동을 확인하세요.</div>
     </div>
 
     <div id="storage-container">
-        <div class="box-title">📂 번호 보관함</div>
+        <div class="box-title">📂 마이 보관함</div>
         <div id="storage">보관된 번호가 없습니다.</div>
     </div>
 
     <script>
         const MY_DATA_FILE = 'lotto.txt';
-        let lottoHistory = [];
+        let rawData = [];
         let missingPool = [];
         let elitePool = [];
         let lastWeekNums = [];
         let nextRound = 0;
-
-        // 고정 시드 난수 함수
-        function seededRandom(a) {
-            return function() {
-                var t = a += 0x6D2B79F5;
-                t = Math.imul(t ^ t >>> 15, t | 1);
-                t ^= t + Math.imul(t ^ t >>> 7, t | 61);
-                return ((t ^ t >>> 14) >>> 0) / 4294967296;
-            }
-        }
-
-        function seededShuffle(array, rng) {
-            for (let i = array.length - 1; i > 0; i--) {
-                const j = Math.floor(rng() * (i + 1));
-                [array[i], array[j]] = [array[j], array[i]];
-            }
-            return array;
-        }
 
         function getAC(arr) {
             let d = new Set();
@@ -85,7 +66,7 @@
             return d.size - 5;
         }
 
-        function isSequentialOk(nums, allowDoublePair = false) {
+        function isSequentialOk(nums) {
             let sorted = [...nums].sort((a,b)=>a-b);
             let pairs = 0;
             for (let i = 0; i < sorted.length - 1; i++) {
@@ -94,133 +75,138 @@
                     pairs++; i++;
                 }
             }
-            return pairs <= (allowDoublePair ? 2 : 1);
+            return pairs <= 2;
         }
 
-        function numCircle(n) {
-            return `<span class="num-circle">${n}</span>`;
+        function renderNum(n) {
+            return `<span class="num-text">${String(n).padStart(2, '0')}</span>`;
         }
 
-        async function loadData() {
+        async function init() {
             loadStorage();
             try {
                 const response = await fetch(MY_DATA_FILE + '?v=' + Math.random());
                 const text = await response.text();
                 const lines = text.trim().split('\n');
-                lottoHistory = lines.map(line => line.split(',').map(Number));
-                nextRound = lottoHistory[0][0] + 1;
-                
+                rawData = lines.map(line => line.split(',').map(Number));
+                nextRound = rawData[0][0] + 1;
+
                 let counts = {};
-                const recent30 = lottoHistory.slice(0, 30);
-                recent30.forEach(row => row.slice(1,7).forEach(n => counts[n] = (counts[n]||0)+1));
+                rawData.slice(0, 30).forEach(row => row.slice(1,7).forEach(n => counts[n] = (counts[n]||0)+1));
                 missingPool = Array.from({length:45},(_,i)=>i+1).filter(n => !counts[n]);
                 elitePool = Object.keys(counts).filter(n => counts[n]>=2 && counts[n]<=4).map(Number);
-                lastWeekNums = lottoHistory[0].slice(1,7);
-                
+                lastWeekNums = rawData[0].slice(1,7);
+
                 document.getElementById('display-target').innerText = `🎯 제 ${nextRound}회차 필살기`;
-            } catch (e) { document.getElementById('console').innerText = "❌ lotto.txt 파일을 찾을 수 없습니다."; }
+            } catch (e) { document.getElementById('console').innerText = "❌ 데이터 파일 읽기 실패"; }
         }
 
-        function generateIntersection(count) {
-            if (lottoHistory.length === 0) return;
-            const rng = seededRandom(nextRound + (count === 5 ? 555 : 0));
+        function processIntersectionStrategy() {
+            if (rawData.length === 0) return;
             const box = document.getElementById('console');
-            box.innerHTML = `▶ ${nextRound}회차 [${count}조합] 생성 완료\n\n`;
+            box.innerHTML = "";
             
             let poolForIntersection = [];
             let finals = [];
+            const fullPool = Array.from({length:45},(_,i)=>i+1);
 
-            // 1 ~ (count-1)번 조합 생성 (사장님 로직 그대로)
-            for (let i = 1; i < count; i++) {
+            // 1~9번 조합 생성 (사장님 1-2-2 전략 적용)
+            for (let i = 1; i <= 9; i++) {
                 let safety = 0;
                 while (safety < 10000) {
                     safety++;
-                    let mCount = (count === 10) ? (i <= 7 ? (i%4===0?1:0) : (i === 8 ? 1 : 2)) : (i <= 3 ? 0 : 1);
-                    let mPick = seededShuffle([...missingPool], rng).slice(0, mCount);
-                    let basePool = [...new Set([...elitePool, ...lastWeekNums, ...Array.from({length:45},(_,idx)=>idx+1)])];
-                    let others = seededShuffle(basePool.filter(n=>!mPick.includes(n)), rng).slice(0, 6-mCount);
-                    let candidate = [...mPick, ...others].sort((a,b)=>a-b);
+                    // 미출수 포함 로직
+                    let mCount = (i <= 7) ? ((i%4===0)?1:0) : (i === 8 ? 1 : 2);
+                    let mPick = [...missingPool].sort(()=>Math.random()-0.5).slice(0, mCount);
+                    
+                    // 후보군 조합
+                    let basePool = [...new Set([...elitePool, ...lastWeekNums, ...fullPool])].filter(n => !mPick.includes(n));
+                    basePool.sort(()=>Math.random()-0.5);
+                    
+                    let candidate = [...mPick];
+                    for(let n of basePool) { if(candidate.length < 6) candidate.push(n); }
+                    candidate.sort((a,b)=>a-b);
 
                     let sum = candidate.reduce((a,b)=>a+b,0), ac = getAC(candidate), odd = candidate.filter(n=>n%2!==0).length;
 
-                    if (sum>=100 && sum<=170 && ac>=5 && ac<=8 && [2,3,4].includes(odd) && isSequentialOk(candidate, true)) {
-                        finals.push({tag: "전략", nums: candidate, m: mCount});
+                    // 필터: 사장님 코드의 엄격한 기준 적용
+                    if (sum>=100 && sum<=170 && ac>=5 && ac<=8 && [2,3,4].includes(odd) && isSequentialOk(candidate)) {
+                        finals.push({tag: i<=7?"안정":"타격", nums: candidate, m: mCount});
                         poolForIntersection.push(...candidate);
                         break;
                     }
                 }
             }
 
-            // 마지막 조합: 교집합 필살기 (무조건 6알)
+            // 10번 조합: 교집합 필살기
             let freq = {};
             poolForIntersection.forEach(n => freq[n] = (freq[n] || 0) + 1);
-            let sortedNums = Object.keys(freq).sort((a,b) => freq[b] - freq[a]);
-            let intersectionCombo = sortedNums.slice(0, 6).map(Number).sort((a,b)=>a-b);
+            let sortedNums = Object.keys(freq).sort((a,b) => freq[b] - freq[a]).map(Number);
+            let intersectionCombo = sortedNums.slice(0, 6).sort((a,b)=>a-b);
             
-            // 만약 교집합이 부족하면 엘리트풀에서 채움 (안전장치)
-            while(intersectionCombo.length < 6) {
-                let extra = elitePool[Math.floor(rng()*elitePool.length)];
-                if(!intersectionCombo.includes(extra)) intersectionCombo.push(extra);
+            // 교집합 부족 시 보충
+            if(intersectionCombo.length < 6) {
+                let fill = fullPool.sort(()=>Math.random()-0.5);
+                for(let n of fill) { if(intersectionCombo.length < 6 && !intersectionCombo.includes(n)) intersectionCombo.push(n); }
                 intersectionCombo.sort((a,b)=>a-b);
             }
-            finals.push({tag: "교집합★", nums: intersectionCombo, m: "AI압축"});
+            finals.push({tag: "교집합", nums: intersectionCombo, m: "AI"});
 
-            // 화면 출력 (무채색 + 보관 버튼)
+            // 화면 출력
             finals.forEach((res, idx) => {
-                let isFinal = (idx === count - 1);
+                let isLast = (idx === 9);
                 let row = document.createElement('div');
                 row.className = 'row-item';
                 row.innerHTML = `
-                    <span class="tag-info ${isFinal ? 'tag-final' : ''}">
-                        (${idx+1}) [${res.tag}] 미출:${res.m} 
+                    <div class="row-header">
+                        <span class="tag-info ${isLast ? 'tag-final' : ''}">(${idx+1}) [${res.tag}] 미출:${res.m}</span>
                         <button class="btn-save" onclick="saveNumber('${res.nums.join(',')}')">보관</button>
-                    </span>
-                    <div>${res.nums.map(n => numCircle(n)).join("")}</div>`;
+                    </div>
+                    <div>${res.nums.map(n => renderNum(n)).join("")}</div>`;
                 box.appendChild(row);
             });
 
-            startTimer(count);
+            startTimer('10');
         }
 
         function saveNumber(numStr) {
-            let saved = JSON.parse(localStorage.getItem('lotto_saved_final') || "[]");
+            let saved = JSON.parse(localStorage.getItem('king_final_v2') || "[]");
             if(saved.includes(numStr)) { alert("이미 보관된 번호입니다."); return; }
             saved.push(numStr);
-            localStorage.setItem('lotto_saved_final', JSON.stringify(saved));
+            localStorage.setItem('king_final_v2', JSON.stringify(saved));
             loadStorage();
         }
 
         function loadStorage() {
-            let saved = JSON.parse(localStorage.getItem('lotto_saved_final') || "[]");
+            let saved = JSON.parse(localStorage.getItem('king_final_v2') || "[]");
             const sBox = document.getElementById('storage');
             if(saved.length === 0) { sBox.innerHTML = "보관된 번호가 없습니다."; return; }
             sBox.innerHTML = "";
-            saved.forEach((nums, idx) => {
+            saved.reverse().forEach((nums, idx) => {
                 let arr = nums.split(',').map(Number);
-                sBox.innerHTML += `<div style="margin-bottom:12px;">${idx+1}. ${arr.map(n=>numCircle(n)).join("")}</div>`;
+                sBox.innerHTML += `<div style="margin-bottom:10px; border-bottom:1px solid #222; padding-bottom:5px;">${arr.map(n => renderNum(n)).join("")}</div>`;
             });
         }
 
-        function clearStorage() {
-            if(confirm("보관함을 삭제하시겠습니까?")) {
-                localStorage.removeItem('lotto_saved_final');
+        function clearAll() {
+            if(confirm("보관함을 전부 삭제할까요?")) {
+                localStorage.removeItem('king_final_v2');
                 loadStorage();
             }
         }
 
-        function startTimer(c) {
-            const btn = document.getElementById('btn' + c);
-            const timer = document.getElementById('timer' + c);
-            btn.disabled = true; timer.style.display = 'flex';
-            let sec = 5;
-            let itv = setInterval(() => {
-                timer.innerText = sec + "s";
-                if(sec <= 0) { clearInterval(itv); btn.disabled = false; timer.style.display = 'none'; }
+        function startTimer(m) {
+            let b = document.getElementById('btn'+m), o = document.getElementById('timer'+m);
+            b.disabled = true; o.style.display = 'flex';
+            let sec = 60;
+            let t = setInterval(() => {
+                o.innerText = sec + "초";
+                if(sec <= 0) { clearInterval(t); b.disabled = false; o.style.display = 'none'; }
                 sec--;
             }, 1000);
         }
 
-        loadData();
+        init();
     </script>
 </body>
 </html>
