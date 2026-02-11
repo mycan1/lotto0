@@ -1,0 +1,144 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>신의 손 - 1207회차 데이터 연동본</title>
+    <style>
+        body { background-color: #0c0c0c; color: #f2c94c; font-family: 'Malgun Gothic', sans-serif; text-align: center; padding: 20px; margin: 0; }
+        h1 { color: #f2c94c; font-size: 2.5rem; margin-top: 30px; margin-bottom: 25px; font-weight: bold; letter-spacing: -1px; cursor: pointer; }
+        .target-box { color: #FFF; font-size: 1.2rem; margin-bottom: 25px; background: #1a1a1a; padding: 12px 20px; border-radius: 10px; display: inline-block; border: 2px solid #f2c94c; font-weight: bold; }
+        .btn-container { display: flex; flex-wrap: wrap; justify-content: center; gap: 8px; max-width: 400px; margin: 0 auto 15px auto; }
+        button { border: none; border-radius: 8px; cursor: pointer; font-size: 17px; font-weight: bold; transition: 0.2s; position: relative; display: flex; align-items: center; justify-content: center; }
+        .btn-main { width: 100%; height: 60px; background-color: #d4a017; color: black; margin-bottom: 5px; }
+        .btn-sub { width: 48.5%; height: 55px; background-color: #262626; color: white; border: 1px solid #333; }
+        #console-container { width: 100%; max-width: 400px; margin: 15px auto; background-color: #1a1a1a; border-radius: 12px; border: 2px solid #333; overflow: hidden; }
+        #console { width: 100%; height: 280px; padding: 20px; text-align: left; overflow-y: auto; color: #f2c94c; box-sizing: border-box; font-size: 17px; line-height: 1.6; white-space: pre-wrap; font-family: monospace; }
+        .timer-overlay { position: absolute; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.8); display: none; align-items: center; justify-content: center; border-radius: 8px; color: #ff4d4d; }
+        #storage-modal { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.95); z-index: 1000; overflow-y: auto; padding: 20px 0; }
+        .modal-content { background: #1a1a1a; width: 90%; max-width: 380px; margin: 0 auto; padding: 20px; border: 2px solid #f2c94c; border-radius: 15px; }
+        .close-btn { background: #ff4d4d; color: white; width: 100%; height: 50px; border-radius: 8px; margin-top: 20px; font-size: 18px; border: none; font-weight: bold; cursor: pointer; }
+    </style>
+</head>
+<body>
+    <h1 onclick="location.reload()">신의 손</h1>
+    <div class="target-box">🎯 제 1207회차 분석 엔진 (TXT 연동)</div>
+
+    <div class="btn-container">
+        <button class="btn-main" id="btn5" onclick="process('5')">5조합 생성 (실시간 데이터)<div id="timer5" class="timer-overlay"></div></button>
+        <button class="btn-main" id="btn10" onclick="process('10')">10조합 생성 (패턴 분석)<div id="timer10" class="timer-overlay"></div></button>
+        <button class="btn-sub" onclick="showStorage()">마킹 보관함</button>
+        <button class="btn-sub" onclick="clearAll()">전체 삭제</button>
+    </div>
+
+    <div id="console-container"><div id="console">▶ 사장님, 파일을 읽어오는 중입니다...</div></div>
+
+    <div id="storage-modal"><div class="modal-content"><div id="list-5"></div><div id="list-10"></div><button class="close-btn" onclick="closeModal()">창 닫기</button></div></div>
+
+    <script>
+        var WAIT_TIME = 60000;
+        var globalLottoData = [];
+        var storageData = JSON.parse(localStorage.getItem('kingStorageTime')) || { '5': [], '10': [] };
+
+        // [데이터 자동 가져오기 기능]
+        async function loadFileData() {
+            const consoleBox = document.getElementById('console');
+            try {
+                // 동일 폴더의 로또1206.txt 파일을 읽어옴
+                const response = await fetch('로또1206.txt');
+                const text = await response.text();
+                const lines = text.trim().split('\n');
+                
+                globalLottoData = lines.map(line => line.split(',').map(Number));
+                
+                consoleBox.innerHTML = "▶ 사장님, 1206.txt 데이터 연결 성공!<br>총 " + globalLottoData.length + "회차 분석 완료.<br>1207회 분석을 시작하세요.";
+            } catch (err) {
+                consoleBox.innerHTML = "❌ 파일 연결 실패! 로또1206.txt가 깃허브에 있는지 확인해 주세요.";
+            }
+        }
+
+        // 페이지 켜지자마자 데이터 읽기
+        loadFileData();
+
+        function getAC(arr) {
+            let d = new Set();
+            for (let i = 0; i < 6; i++) {
+                for (let j = i + 1; j < 6; j++) d.add(Math.abs(arr[i] - arr[j]));
+            }
+            return d.size - 5;
+        }
+
+        function isSequentialOk(nums) {
+            for(let i=0; i<nums.length-2; i++) {
+                if(nums[i]+1 === nums[i+1] && nums[i+1]+1 === nums[i+2]) return false;
+            }
+            return true;
+        }
+
+        function process(mode) {
+            if(globalLottoData.length === 0) { alert("데이터 로딩 중입니다. 잠시만 기다려주세요."); return; }
+            
+            var box = document.getElementById('console');
+            box.innerHTML = "▶ [" + mode + "조합 생성 중...]\n";
+            
+            var count = (mode === '5') ? 5 : 10;
+            var gen = 0, safety = 0;
+            var timeStr = new Date().getHours() + ":" + (new Date().getMinutes()<10?'0':'') + new Date().getMinutes();
+            
+            while(gen < count && safety < 10000) {
+                safety++;
+                var res = [];
+                while(res.length < 6) {
+                    var pick = Math.floor(Math.random() * 45) + 1;
+                    if(!res.includes(pick)) res.push(pick);
+                }
+                res.sort((a,b) => a-b);
+                
+                let sum = res.reduce((a,b)=>a+b, 0);
+                let ac = getAC(res);
+
+                // 사장님 커스텀 필터링
+                if (sum >= 100 && sum <= 170 && isSequentialOk(res) && ac >= 7) {
+                    gen++;
+                    var s = res.map(n => n<10 ? "0"+n : n).join("  ");
+                    box.innerHTML += "(" + gen + ") " + s + " [AC:" + ac + "]\n";
+                    storageData[mode].push({time: timeStr, num: s + " (AC:"+ac+")"});
+                }
+            }
+            localStorage.setItem('kingStorageTime', JSON.stringify(storageData));
+            box.scrollTop = box.scrollHeight;
+            startTimer(mode);
+        }
+
+        function showStorage() { 
+            renderList('5'); renderList('10'); 
+            document.getElementById('storage-modal').style.display = 'block'; 
+        }
+        function closeModal() { document.getElementById('storage-modal').style.display = 'none'; }
+        
+        function renderList(mode) {
+            var listDiv = document.getElementById('list-' + mode);
+            listDiv.innerHTML = '<div style="color:#f2c94c; font-weight:bold; padding:10px;">📜 ' + mode + '조합 기록</div>';
+            storageData[mode].slice(-10).forEach(item => {
+                var div = document.createElement('div');
+                div.style.cssText = "color:#FFF; padding:5px; border-bottom:1px solid #333; font-size:14px;";
+                div.innerHTML = "[" + item.time + "] " + item.num;
+                listDiv.appendChild(div);
+            });
+        }
+
+        function clearAll() { if(confirm("전체 삭제할까요?")) { localStorage.removeItem('kingStorageTime'); location.reload(); } }
+        
+        function startTimer(m) {
+            var b = document.getElementById('btn'+m), o = document.getElementById('timer'+m);
+            b.disabled = true; o.style.display = 'flex';
+            var e = new Date().getTime() + WAIT_TIME;
+            var t = setInterval(function() {
+                var r = e - new Date().getTime();
+                if(r <= 0) { clearInterval(t); b.disabled = false; o.style.display = 'none'; }
+                else { o.innerText = Math.ceil(r/1000) + "초"; }
+            }, 100);
+        }
+    </script>
+</body>
+</html>
