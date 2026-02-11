@@ -8,7 +8,7 @@
         body { background-color: #0c0c0c; color: #f2c94c; font-family: 'Malgun Gothic', sans-serif; text-align: center; padding: 20px; margin: 0; }
         h1 { color: #f2c94c; font-size: 2.2rem; margin-top: 20px; font-weight: bold; cursor: pointer; text-shadow: 2px 2px 4px rgba(0,0,0,0.5); }
         .target-box { color: #FFF; font-size: 1.1rem; margin-bottom: 20px; background: #1a1a1a; padding: 12px 15px; border-radius: 10px; display: inline-block; border: 2px solid #f2c94c; font-weight: bold; box-shadow: 0 0 10px rgba(242, 201, 76, 0.2); }
-        .status-label { background: #262626; color: #fff; padding: 10px 20px; border-radius: 8px; border: 1px dashed #f2c94c; font-size: 0.85rem; display: inline-block; margin-bottom: 20px; }
+        .status-label { background: #262626; color: #fff; padding: 10px 20px; border-radius: 8px; border: 1px dashed #f2c94c; font-size: 0.85rem; display: inline-block; margin-bottom: 20px; transition: 0.3s; }
         .btn-container { display: flex; flex-wrap: wrap; justify-content: center; gap: 8px; max-width: 400px; margin: 0 auto 15px auto; }
         button { border: none; border-radius: 8px; cursor: pointer; font-size: 17px; font-weight: bold; transition: 0.2s; position: relative; }
         .btn-main { width: 100%; height: 60px; background-color: #d4a017; color: black; box-shadow: 0 4px 0 #967111; }
@@ -22,7 +22,7 @@
 <body>
     <h1 onclick="location.reload()">신 의 손</h1>
     
-    <div class="status-label" id="system-status">🔄 데이터 동기화 시도 중...</div>
+    <div class="status-label" id="system-status">🔄 데이터 연동 시도 중...</div>
 
     <div class="target-box" id="display-target">
         <span id="round-text">연결 대기 중...</span>
@@ -37,9 +37,9 @@
     <div id="console-container"><div id="console">▶ 시스템 부팅 중...</div></div>
 
     <script>
-        // 사장님 요청사항 반영: 저장소 이름 lotto
+        // 사진 분석 최종 결과: 아이디 mycan1 / 저장소 lotto0 (숫자 0)
         const GITHUB_USER = "mycan1"; 
-        const GITHUB_REPO = "lotto";
+        const GITHUB_REPO = "lotto0"; 
         const RAW_URL = `https://raw.githubusercontent.com/${GITHUB_USER}/${GITHUB_REPO}/main/lotto.txt`;
 
         let globalLottoData = [];
@@ -57,8 +57,9 @@
             const consoleBox = document.getElementById('console');
             
             try {
+                // 캐시 방지를 위해 랜덤 쿼리 추가
                 const response = await fetch(`${RAW_URL}?t=${Date.now()}`);
-                if (!response.ok) throw new Error("파일 로드 실패");
+                if (!response.ok) throw new Error("데이터 로드 실패");
                 const text = await response.text();
                 
                 const lines = text.trim().split('\n').filter(l => l.length > 0);
@@ -81,12 +82,12 @@
                 statusLabel.innerHTML = `✅ 데이터 연동 성공`;
                 statusLabel.style.borderColor = "#b0d840";
                 document.getElementById('round-text').innerHTML = `🎯 제 ${nextRound}회차 추천 조합`;
-                consoleBox.innerHTML = `✅ [${lastRound}회] 데이터 기준 분석 완료.\n▶ 분석 모드: ${isAttackTiming ? '🔥공격형' : '🍀안정형'}\n--------------------------`;
+                consoleBox.innerHTML = `✅ [${lastRound}회] 데이터 동기화 성공.\n▶ 분석 모드: ${isAttackTiming ? '🔥공격형' : '🍀안정형'}\n--------------------------`;
                 document.getElementById('btn10').disabled = false;
 
             } catch (error) {
                 statusLabel.innerHTML = `❌ 연결 실패`;
-                consoleBox.innerHTML = `⚠️ 오류: 파일을 찾을 수 없습니다.\n[현재 설정 확인]\n아이디: ${GITHUB_USER}\n저장소: ${GITHUB_REPO}\n파일명: lotto.txt`;
+                consoleBox.innerHTML = `⚠️ 오류: lotto.txt 연동 실패\n[현재 경로 확인]\n경로: mycan1 / lotto0\n파일: lotto.txt 가 맞는지 확인하세요.`;
             }
         }
 
