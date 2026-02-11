@@ -3,47 +3,65 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>신의 손 AI - 통합 정예 엔진</title>
+    <title>신의 손 AI - 무채색 교집합 엔진</title>
     <style>
         body { background-color: #0c0c0c; color: #f2c94c; font-family: 'Malgun Gothic', sans-serif; text-align: center; padding: 20px; margin: 0; overflow-x: hidden; }
         h1 { color: #f2c94c; font-size: 2.3rem; margin-top: 20px; font-weight: bold; letter-spacing: -1px; cursor: pointer; }
         .target-box { color: #FFF; font-size: 1.1rem; margin-bottom: 15px; background: #1a1a1a; padding: 10px 20px; border-radius: 10px; display: inline-block; border: 2px solid #f2c94c; font-weight: bold; }
-        .status-badge { display: block; margin: 5px auto 15px; font-size: 0.85rem; color: #00ffcc; font-weight: bold; letter-spacing: 1px; }
-        .btn-container { display: flex; flex-wrap: wrap; justify-content: center; gap: 8px; max-width: 400px; margin: 0 auto 15px auto; }
-        button { border: none; border-radius: 8px; cursor: pointer; font-size: 16px; font-weight: bold; transition: 0.2s; position: relative; display: flex; align-items: center; justify-content: center; overflow: hidden; }
+        .status-badge { display: block; margin: 5px auto 15px; font-size: 0.85rem; color: #888; font-weight: bold; letter-spacing: 1px; }
+        
+        .btn-container { display: flex; flex-wrap: wrap; justify-content: center; gap: 8px; max-width: 420px; margin: 0 auto 15px auto; }
+        button { border: none; border-radius: 8px; cursor: pointer; font-size: 15px; font-weight: bold; transition: 0.2s; position: relative; display: flex; align-items: center; justify-content: center; overflow: hidden; }
+        
         .btn-main { width: 48.5%; height: 60px; background: linear-gradient(145deg, #d4a017, #b8860b); color: black; border: 1px solid #f2c94c; }
-        .btn-sub { width: 48.5%; height: 50px; background-color: #262626; color: white; border: 1px solid #333; }
-        .ball { display: inline-block; width: 30px; height: 30px; line-height: 30px; text-align: center; border-radius: 50%; font-weight: bold; font-size: 13px; margin-right: 5px; color: #fff; text-shadow: 1px 1px 1px #000; box-shadow: 1px 1px 3px rgba(0,0,0,0.3); }
-        .b1 { background: #fbc400; } .b11 { background: #69c8f2; } .b21 { background: #ff7272; } .b31 { background: #aaa; } .b41 { background: #b0d840; }
-        #console-container { width: 100%; max-width: 400px; margin: 0 auto; background-color: #1a1a1a; border-radius: 12px; border: 2px solid #333; overflow: hidden; }
-        #console { width: 100%; height: 500px; padding: 15px; text-align: left; overflow-y: auto; color: #f2c94c; box-sizing: border-box; font-size: 13px; line-height: 1.6; white-space: pre-wrap; font-family: monospace; }
-        .row-item { margin-bottom: 12px; padding-bottom: 8px; border-bottom: 1px solid #262626; }
-        .tag-info { font-size: 11px; color: #888; display: block; margin-bottom: 4px; }
-        .tag-final { color: #00ffcc; font-weight: bold; text-decoration: underline; }
-        .timer-overlay { position: absolute; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.85); display: none; align-items: center; justify-content: center; border-radius: 8px; color: #ff4d4d; font-size: 14px; }
+        .btn-sub { width: 48.5%; height: 45px; background-color: #262626; color: white; border: 1px solid #333; }
+        .btn-save { padding: 4px 10px; font-size: 11px; background: transparent; color: #f2c94c; border: 1px solid #f2c94c; border-radius: 4px; cursor: pointer; margin-left: 8px; }
+
+        /* 사장님 맞춤형: 무채색 숫자 디자인 */
+        .num-circle { display: inline-block; width: 30px; height: 30px; line-height: 28px; text-align: center; border-radius: 50%; font-weight: bold; font-size: 14px; margin-right: 5px; color: #f2c94c; border: 1.5px solid #f2c94c; background: #1a1a1a; box-sizing: border-box; }
+        
+        #console-container, #storage-container { width: 100%; max-width: 420px; margin: 0 auto 20px; background-color: #1a1a1a; border-radius: 12px; border: 2px solid #333; overflow: hidden; }
+        .box-title { background: #262626; padding: 10px; font-size: 14px; font-weight: bold; color: #f2c94c; border-bottom: 1px solid #333; text-align: left; }
+        #console, #storage { width: 100%; height: 400px; padding: 15px; text-align: left; overflow-y: auto; color: #f2c94c; box-sizing: border-box; font-size: 13px; line-height: 1.6; white-space: pre-wrap; font-family: monospace; }
+        #storage { height: 250px; }
+
+        .row-item { margin-bottom: 12px; padding-bottom: 8px; border-bottom: 1px solid #262626; display: flex; flex-direction: column; }
+        .tag-info { font-size: 11px; color: #888; margin-bottom: 5px; display: flex; align-items: center; }
+        .tag-final { color: #00ffcc; font-weight: bold; }
+        .timer-overlay { position: absolute; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.85); display: none; align-items: center; justify-content: center; color: #ff4d4d; }
     </style>
 </head>
 <body>
-    <h1 onclick="location.reload()">신의 손 AI [통합 엔진]</h1>
-    <div id="display-target" class="target-box">데이터 로딩 중...</div>
-    <div id="ai-status" class="status-badge">난수고정: 회차별 고정 필살 패턴 가동</div>
+    <h1 onclick="location.reload()">신의 손 AI [교집합 통합]</h1>
+    <div id="display-target" class="target-box">데이터 연결 중...</div>
+    <div id="ai-status" class="status-badge">색상제거 | 고정난수 | 보관함 가동</div>
 
     <div class="btn-container">
-        <button class="btn-main" id="btn10" onclick="generateSmartStrategy(10)">10조합 고정 생성<div id="timer10" class="timer-overlay"></div></button>
-        <button class="btn-main" id="btn5" onclick="generateSmartStrategy(5)">5조합 고정 생성<div id="timer5" class="timer-overlay"></div></button>
+        <button class="btn-main" id="btn10" onclick="generateIntersection(10)">10조합 고정 생성<div id="timer10" class="timer-overlay"></div></button>
+        <button class="btn-main" id="btn5" onclick="generateIntersection(5)">5조합 고정 생성<div id="timer5" class="timer-overlay"></div></button>
         <button class="btn-sub" onclick="location.reload()">새로고침</button>
-        <button class="btn-sub" onclick="alert('10조합과 5조합 모두 해당 회차에 고정된 번호만 생성합니다.')">도움말</button>
+        <button class="btn-sub" onclick="clearStorage()" style="color: #ff4d4d;">보관함 삭제</button>
     </div>
 
-    <div id="console-container"><div id="console">▶ lotto.txt 파일을 준비해주세요.</div></div>
+    <div id="console-container">
+        <div class="box-title">▶ 추출 결과 (교집합 필살기 포함)</div>
+        <div id="console">lotto.txt 파일을 준비해주세요.</div>
+    </div>
+
+    <div id="storage-container">
+        <div class="box-title">📂 번호 보관함</div>
+        <div id="storage">보관된 번호가 없습니다.</div>
+    </div>
 
     <script>
-        const DATA_URL = 'lotto.txt';
+        const MY_DATA_FILE = 'lotto.txt';
         let lottoHistory = [];
+        let missingPool = [];
+        let elitePool = [];
+        let lastWeekNums = [];
         let nextRound = 0;
-        let seedValue = 0;
 
-        // 고정 난수 생성 엔진
+        // 고정 시드 난수 함수
         function seededRandom(a) {
             return function() {
                 var t = a += 0x6D2B79F5;
@@ -67,7 +85,7 @@
             return d.size - 5;
         }
 
-        function isSequentialOk(nums, allowDouble = false) {
+        function isSequentialOk(nums, allowDoublePair = false) {
             let sorted = [...nums].sort((a,b)=>a-b);
             let pairs = 0;
             for (let i = 0; i < sorted.length - 1; i++) {
@@ -76,84 +94,118 @@
                     pairs++; i++;
                 }
             }
-            return pairs <= (allowDouble ? 2 : 1);
+            return pairs <= (allowDoublePair ? 2 : 1);
         }
 
-        function ball(n) {
-            let c = 'b1'; if(n>10) c='b11'; if(n>20) c='b21'; if(n>30) c='b31'; if(n>40) c='b41';
-            return `<span class="ball ${c}">${n}</span>`;
+        function numCircle(n) {
+            return `<span class="num-circle">${n}</span>`;
         }
 
-        async function init() {
+        async function loadData() {
+            loadStorage();
             try {
-                const res = await fetch(DATA_URL + '?v=' + Math.random());
-                const text = await res.text();
+                const response = await fetch(MY_DATA_FILE + '?v=' + Math.random());
+                const text = await response.text();
                 const lines = text.trim().split('\n');
-                lottoHistory = lines.map(l => l.split(',').map(Number));
+                lottoHistory = lines.map(line => line.split(',').map(Number));
                 nextRound = lottoHistory[0][0] + 1;
-                seedValue = nextRound; 
-                document.getElementById('display-target').innerText = `🎯 제 ${nextRound}회차 고정 분석`;
-            } catch (e) { document.getElementById('console').innerText = "파일 읽기 실패!"; }
+                
+                let counts = {};
+                const recent30 = lottoHistory.slice(0, 30);
+                recent30.forEach(row => row.slice(1,7).forEach(n => counts[n] = (counts[n]||0)+1));
+                missingPool = Array.from({length:45},(_,i)=>i+1).filter(n => !counts[n]);
+                elitePool = Object.keys(counts).filter(n => counts[n]>=2 && counts[n]<=4).map(Number);
+                lastWeekNums = lottoHistory[0].slice(1,7);
+                
+                document.getElementById('display-target').innerText = `🎯 제 ${nextRound}회차 필살기`;
+            } catch (e) { document.getElementById('console').innerText = "❌ lotto.txt 파일을 찾을 수 없습니다."; }
         }
 
-        function generateSmartStrategy(count) {
+        function generateIntersection(count) {
             if (lottoHistory.length === 0) return;
-            // 5조합과 10조합 시드를 다르게 주어 번호 겹침 방지
-            const rng = seededRandom(seedValue + (count === 5 ? 888 : 0));
+            const rng = seededRandom(nextRound + (count === 5 ? 555 : 0));
             const box = document.getElementById('console');
-            box.innerHTML = `▶ ${nextRound}회차 [정예 ${count}조합] 타격\n\n`;
-
-            let counts = {};
-            lottoHistory.slice(0, 30).forEach(row => row.slice(1,7).forEach(n => counts[n] = (counts[n]||0)+1));
-            let missingPool = Array.from({length:45},(_,i)=>i+1).filter(n => !counts[n]);
-            let elitePool = Object.keys(counts).filter(n => counts[n]>=2 && counts[n]<=4).map(Number);
-            let lastNums = lottoHistory[0].slice(1,7);
-
-            let poolForLast = [];
+            box.innerHTML = `▶ ${nextRound}회차 [${count}조합] 생성 완료\n\n`;
+            
+            let poolForIntersection = [];
             let finals = [];
 
+            // 1 ~ (count-1)번 조합 생성 (사장님 로직 그대로)
             for (let i = 1; i < count; i++) {
                 let safety = 0;
                 while (safety < 10000) {
                     safety++;
-                    let mCount = (count === 10) ? (i > 7 ? 2 : (i%4===0?1:0)) : (i === 4 ? 2 : 1);
+                    let mCount = (count === 10) ? (i <= 7 ? (i%4===0?1:0) : (i === 8 ? 1 : 2)) : (i <= 3 ? 0 : 1);
                     let mPick = seededShuffle([...missingPool], rng).slice(0, mCount);
-                    let base = [...new Set([...elitePool, ...lastNums, ...Array.from({length:45},(_,idx)=>idx+1)])];
-                    let others = seededShuffle(base.filter(n=>!mPick.includes(n)), rng).slice(0, 6-mCount);
+                    let basePool = [...new Set([...elitePool, ...lastWeekNums, ...Array.from({length:45},(_,idx)=>idx+1)])];
+                    let others = seededShuffle(basePool.filter(n=>!mPick.includes(n)), rng).slice(0, 6-mCount);
                     let candidate = [...mPick, ...others].sort((a,b)=>a-b);
 
                     let sum = candidate.reduce((a,b)=>a+b,0), ac = getAC(candidate), odd = candidate.filter(n=>n%2!==0).length;
 
-                    if (sum>=100 && sum<=170 && ac>=5 && ac<=8 && [2,3,4].includes(odd) && isSequentialOk(candidate, i >= count-2)) {
-                        finals.push({tag: i < count-2 ? "안정" : "타격", nums: candidate, m: mCount});
-                        poolForLast.push(...candidate);
+                    if (sum>=100 && sum<=170 && ac>=5 && ac<=8 && [2,3,4].includes(odd) && isSequentialOk(candidate, true)) {
+                        finals.push({tag: "전략", nums: candidate, m: mCount});
+                        poolForIntersection.push(...candidate);
                         break;
                     }
                 }
             }
 
+            // 마지막 조합: 교집합 필살기 (무조건 6알)
             let freq = {};
-            poolForLast.forEach(n => freq[n] = (freq[n]||0)+1);
-            let topNumbers = Object.keys(freq).sort((a,b)=>freq[b]-freq[a]).slice(0, 15).map(Number);
-
-            let foundLast = false; let sLast = 0;
-            while (!foundLast && sLast < 50000) {
-                sLast++;
-                let cLast = seededShuffle([...topNumbers], rng).slice(0, 6).sort((a,b)=>a-b);
-                let sum = cLast.reduce((a,b)=>a+b,0), ac = getAC(cLast), odd = cLast.filter(n=>n%2!==0).length;
-                
-                if (sum>=110 && sum<=160 && ac>=7 && [2,3,4].includes(odd) && isSequentialOk(cLast, false)) {
-                    finals.push({tag: "1등예상★", nums: cLast, m: "AI압축"});
-                    foundLast = true;
-                }
+            poolForIntersection.forEach(n => freq[n] = (freq[n] || 0) + 1);
+            let sortedNums = Object.keys(freq).sort((a,b) => freq[b] - freq[a]);
+            let intersectionCombo = sortedNums.slice(0, 6).map(Number).sort((a,b)=>a-b);
+            
+            // 만약 교집합이 부족하면 엘리트풀에서 채움 (안전장치)
+            while(intersectionCombo.length < 6) {
+                let extra = elitePool[Math.floor(rng()*elitePool.length)];
+                if(!intersectionCombo.includes(extra)) intersectionCombo.push(extra);
+                intersectionCombo.sort((a,b)=>a-b);
             }
-            if(!foundLast) finals.push({tag: "교집합", nums: topNumbers.slice(0,6).sort((a,b)=>a-b), m: "빈도순"});
+            finals.push({tag: "교집합★", nums: intersectionCombo, m: "AI압축"});
 
+            // 화면 출력 (무채색 + 보관 버튼)
             finals.forEach((res, idx) => {
-                let tagCls = (idx === count-1) ? "tag-final" : "";
-                box.innerHTML += `<div class="row-item"><span class="tag-info ${tagCls}">(${idx+1}) [${res.tag}] 미출:${res.m}</span>${res.nums.map(n=>ball(n)).join("") }</div>`;
+                let isFinal = (idx === count - 1);
+                let row = document.createElement('div');
+                row.className = 'row-item';
+                row.innerHTML = `
+                    <span class="tag-info ${isFinal ? 'tag-final' : ''}">
+                        (${idx+1}) [${res.tag}] 미출:${res.m} 
+                        <button class="btn-save" onclick="saveNumber('${res.nums.join(',')}')">보관</button>
+                    </span>
+                    <div>${res.nums.map(n => numCircle(n)).join("")}</div>`;
+                box.appendChild(row);
             });
+
             startTimer(count);
+        }
+
+        function saveNumber(numStr) {
+            let saved = JSON.parse(localStorage.getItem('lotto_saved_final') || "[]");
+            if(saved.includes(numStr)) { alert("이미 보관된 번호입니다."); return; }
+            saved.push(numStr);
+            localStorage.setItem('lotto_saved_final', JSON.stringify(saved));
+            loadStorage();
+        }
+
+        function loadStorage() {
+            let saved = JSON.parse(localStorage.getItem('lotto_saved_final') || "[]");
+            const sBox = document.getElementById('storage');
+            if(saved.length === 0) { sBox.innerHTML = "보관된 번호가 없습니다."; return; }
+            sBox.innerHTML = "";
+            saved.forEach((nums, idx) => {
+                let arr = nums.split(',').map(Number);
+                sBox.innerHTML += `<div style="margin-bottom:12px;">${idx+1}. ${arr.map(n=>numCircle(n)).join("")}</div>`;
+            });
+        }
+
+        function clearStorage() {
+            if(confirm("보관함을 삭제하시겠습니까?")) {
+                localStorage.removeItem('lotto_saved_final');
+                loadStorage();
+            }
         }
 
         function startTimer(c) {
@@ -168,7 +220,7 @@
             }, 1000);
         }
 
-        init();
+        loadData();
     </script>
 </body>
 </html>
