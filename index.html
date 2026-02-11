@@ -37,9 +37,9 @@
     <div id="console-container"><div id="console">▶ 시스템 부팅 중...</div></div>
 
     <script>
-        // 사진 분석 결과: 아이디 mycan1, 저장소 lottoo (o가 2개!)
+        // 사장님 요청사항 반영: 저장소 이름 lotto
         const GITHUB_USER = "mycan1"; 
-        const GITHUB_REPO = "lottoo";
+        const GITHUB_REPO = "lotto";
         const RAW_URL = `https://raw.githubusercontent.com/${GITHUB_USER}/${GITHUB_REPO}/main/lotto.txt`;
 
         let globalLottoData = [];
@@ -86,7 +86,7 @@
 
             } catch (error) {
                 statusLabel.innerHTML = `❌ 연결 실패`;
-                consoleBox.innerHTML = `⚠️ 오류: lotto.txt 파일을 찾을 수 없습니다.\n[체크리스트]\n1. 저장소 이름이 lottoo 가 맞는지 확인\n2. 파일명이 lotto.txt 인지 확인\n3. 파일 내용에 오타가 없는지 확인`;
+                consoleBox.innerHTML = `⚠️ 오류: 파일을 찾을 수 없습니다.\n[현재 설정 확인]\n아이디: ${GITHUB_USER}\n저장소: ${GITHUB_REPO}\n파일명: lotto.txt`;
             }
         }
 
