@@ -3,130 +3,138 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>신의 손</title>
+    <title>신의 손 - 깃허브 시스템</title>
     <style>
-        body { 
-            background-color: #0c0c0c; 
-            color: #ffffff; 
-            font-family: 'Malgun Gothic', sans-serif; 
-            text-align: center; 
-            margin: 0; 
-            padding: 20px;
-        }
-
-        h1 { 
-            color: #f2c94c; 
-            font-size: 2.8rem; 
-            font-weight: bold; 
-            margin-top: 30px;
-            margin-bottom: 25px;
-        }
-
-        .target-box { 
-            background-color: #1a1a1a; 
-            border: 2px solid #ff4d4d; 
-            border-radius: 15px; 
-            padding: 15px 30px; 
-            display: inline-flex; 
-            align-items: center; 
-            gap: 10px;
-            font-size: 1.4rem; 
-            font-weight: bold;
-            margin-bottom: 35px;
-        }
-
-        .btn-container { 
-            display: flex; 
-            flex-direction: column; 
-            gap: 12px; 
-            max-width: 420px; 
-            margin: 0 auto; 
-        }
-
-        button { 
-            border: none; 
-            border-radius: 12px; 
-            font-weight: 900; 
-            cursor: pointer; 
-            font-size: 1.1rem;
-        }
-
-        .btn-gold { height: 85px; background-color: #d4a017; color: #000; }
-        .sub-row { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
-        .btn-dark { height: 85px; background-color: #262626; color: #fff; border: 1px solid #333; }
-
-        #console-container { 
-            max-width: 420px; 
-            margin: 20px auto; 
-            background-color: #1a1a1a; 
-            border-radius: 15px; 
-            min-height: 400px;
-            text-align: left;
-            padding: 25px;
-            border: 1px solid #333;
-        }
-
-        #console { color: #f2c94c; font-size: 1.2rem; line-height: 2.2; font-weight: bold; }
-
-        /* [수정] 공 모양 스타일 제거, 텍스트 색상만 유지 */
-        .num-text { display: inline-block; margin: 0 5px; font-size: 1.3rem; }
-        .t1 { color: #fbc400; }  /* 1-10 */
-        .t11 { color: #69c8f2; } /* 11-20 */
-        .t21 { color: #ff7272; } /* 21-30 */
-        .t31 { color: #aaaaaa; } /* 31-40 */
-        .t41 { color: #b0d840; } /* 41-45 */
-
-        .floating-btn {
-            position: fixed; bottom: 30px; right: 20px; width: 75px; height: 75px;
-            background-color: #f2c94c; border-radius: 50%; display: flex;
-            flex-direction: column; align-items: center; justify-content: center;
-            color: #000; font-weight: bold; font-size: 0.8rem;
-        }
+        body { background-color: #0c0c0c; color: #f2c94c; font-family: 'Malgun Gothic', sans-serif; text-align: center; padding: 20px; margin: 0; }
+        h1 { color: #f2c94c; font-size: 2.2rem; margin-top: 20px; font-weight: bold; cursor: pointer; }
+        .target-box { color: #FFF; font-size: 1.1rem; margin-bottom: 20px; background: #1a1a1a; padding: 12px 15px; border-radius: 10px; display: inline-block; border: 2px solid #f2c94c; font-weight: bold; }
+        .btn-container { display: flex; flex-wrap: wrap; justify-content: center; gap: 8px; max-width: 400px; margin: 0 auto 15px auto; }
+        button { border: none; border-radius: 8px; cursor: pointer; font-size: 17px; font-weight: bold; transition: 0.2s; position: relative; display: flex; align-items: center; justify-content: center; }
+        .btn-main { width: 100%; height: 60px; background-color: #d4a017; color: black; }
+        .btn-sub { width: 48.5%; height: 50px; background-color: #262626; color: white; border: 1px solid #333; }
+        #console-container { width: 100%; max-width: 400px; margin: 15px auto; background-color: #1a1a1a; border-radius: 12px; border: 2px solid #333; overflow: hidden; }
+        #console { width: 100%; height: 420px; padding: 15px; text-align: left; overflow-y: auto; color: #f2c94c; box-sizing: border-box; font-size: 15px; line-height: 2.0; white-space: pre-wrap; font-family: 'Courier New', monospace; }
+        .timer-overlay { position: absolute; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.8); display: none; align-items: center; justify-content: center; border-radius: 8px; color: #ff4d4d; }
+        .res-line { display: flex; align-items: center; border-bottom: 1px solid #222; padding: 2px 0; }
     </style>
 </head>
 <body>
-
-    <h1>신 의 손</h1>
-
+    <h1 onclick="location.reload()">신 의 손</h1>
+    
     <div class="target-box" id="display-target">
-        🎯 제 1206회차 (시간기록형)
+        <span id="round-text">데이터 동기화 중...</span>
     </div>
 
     <div class="btn-container">
-        <button class="btn-gold" onclick="generate(5)">5조합 생성 (AC 9-10)</button>
-        <button class="btn-gold" onclick="generate(10)">10조합 생성 (패턴 분석)</button>
-        
-        <div class="sub-row">
-            <button class="btn-dark">마킹 보관함</button>
-            <button class="btn-dark" onclick="location.reload()" style="color:#ff4d4d;">전체 삭제</button>
-        </div>
+        <button class="btn-main" id="btn10" onclick="process('10')" disabled>10조합 생성 (심화 분석)<div id="timer10" class="timer-overlay"></div></button>
+        <button class="btn-sub" onclick="location.reload()">새로고침</button>
+        <button class="btn-sub" onclick="clearHistory()">기록 삭제</button>
     </div>
 
-    <div id="console-container">
-        <div id="console">▶ 사장님, 엔진 가동 중...</div>
-    </div>
-
-    <div class="floating-btn">📩<br>쪽지함</div>
+    <div id="console-container"><div id="console">▶ 깃허브 데이터 로딩 중... (0000)</div></div>
 
     <script>
-        function generate(count) {
+        const DATA_URL = 'lotto.txt'; // 깃허브 같은 경로의 파일
+        let globalLottoData = [];
+        let missingPool = [];
+        let isAttackTiming = false;
+        let _seed = 1208;
+
+        function seededRandom() {
+            _seed = (_seed * 1664525 + 1013904223) % 4294967296;
+            return _seed / 4294967296;
+        }
+
+        // 깃허브 데이터 자동 로드 함수
+        async function initSystem() {
             const box = document.getElementById('console');
-            box.innerHTML = "▶ 분석 완료 조합:<br><br>";
-            
-            for(let i=1; i<=count; i++) {
-                // 임시 번호 생성 로직 (실제 1번 코드의 로직을 여기에 결합하세요)
-                let nums = Array.from({length: 6}, () => Math.floor(Math.random() * 45) + 1).sort((a,b)=>a-b);
+            try {
+                const res = await fetch(DATA_URL + '?v=' + Date.now());
+                if(!res.ok) throw new Error();
+                const text = await res.text();
+                const lines = text.trim().split('\n').filter(l => l.length > 0);
+                globalLottoData = lines.map(line => line.split(',').map(Number));
                 
-                let row = `<div>[${i}조] `;
-                nums.forEach((n, idx) => {
-                    let cls = n<=10?'t1':n<=20?'t11':n<=30?'t21':n<=40?'t31':'t41';
-                    // 텍스트로만 출력 (쉼표 추가)
-                    row += `<span class="num-text ${cls}">${n < 10 ? '0'+n : n}</span>${idx < 5 ? ',' : ''}`;
+                // 파일 첫 줄 첫 숫자 기준 회차 설정
+                const lastRound = globalLottoData[0][0];
+                const nextRound = lastRound + 1;
+
+                // 분석 엔진
+                let clusterScore = 0;
+                const recent5 = globalLottoData.slice(0, 5);
+                recent5.forEach(row => {
+                    let nums = row.slice(1, 7).sort((a,b) => a-b);
+                    if(nums.some((n, i) => n+1 === nums[i+1])) clusterScore++;
                 });
-                row += `</div>`;
-                box.innerHTML += row;
+                isAttackTiming = clusterScore >= 3;
+
+                const recent30 = globalLottoData.slice(0, 30).flatMap(row => row.slice(1, 7));
+                missingPool = Array.from({length: 45}, (_, i) => i + 1).filter(n => !new Set(recent30).has(n));
+
+                document.getElementById('round-text').innerHTML = `🎯 제 ${nextRound}회차 예상 엔진`;
+                box.innerHTML = `✅ [${lastRound}회] 데이터 동기화 완료.\n▶ 분석 모드: ${isAttackTiming ? '🔥공격형' : '🍀안정형'}\n▶ 미출수: ${missingPool.length}개 확보\n--------------------------`;
+                document.getElementById('btn10').disabled = false;
+            } catch (e) {
+                box.innerHTML = "❌ 데이터 로드 실패! lotto.txt 파일이 같은 경로에 있는지 확인하세요.";
             }
         }
+
+        function calculateAC(nums) {
+            let d = new Set();
+            for(let i=0; i<6; i++) { for(let j=i+1; j<6; j++) d.add(Math.abs(nums[i]-nums[j])); }
+            return d.size - 5;
+        }
+
+        function isSequentialOk(nums, allow) {
+            let p = 0;
+            for(let i=0; i<5; i++) { if(nums[i]+1 === nums[i+1]) { if(i<4 && nums[i+1]+1 === nums[i+2]) return false; p++; i++; } }
+            return p <= (allow ? 2 : 1);
+        }
+
+        function process(mode) {
+            if(globalLottoData.length === 0) return;
+            const box = document.getElementById('console');
+            box.innerHTML = `▶ [${mode}조합 추출 결과]\n`;
+            let count = parseInt(mode), gen = 0, safety = 0;
+
+            while(gen < count && safety < 20000) {
+                safety++;
+                let candidate = [];
+                let isPower = (mode === '10' && gen >= 7);
+
+                if (isPower) {
+                    let mCount = (gen - 6); 
+                    let mPicks = [...missingPool].sort(() => seededRandom() - 0.5).slice(0, mCount);
+                    let others = Array.from({length: 45}, (_, i) => i + 1).filter(n => !mPicks.includes(n));
+                    candidate = [...mPicks, ...others.sort(() => seededRandom() - 0.5).slice(0, 6 - mCount)].sort((a,b) => a-b);
+                } else {
+                    candidate = Array.from({length: 45}, (_, i) => i + 1).sort(() => seededRandom() - 0.5).slice(0, 6).sort((a,b) => a-b);
+                }
+
+                let sum = candidate.reduce((a,b) => a+b, 0);
+                let ac = calculateAC(candidate);
+                let odd = candidate.filter(n => n % 2 !== 0).length;
+
+                if (sum >= 100 && sum <= 170 && ac >= 5 && [2,3,4].includes(odd) && isSequentialOk(candidate, isAttackTiming)) {
+                    gen++;
+                    let s = candidate.map(n => n < 10 ? "0"+n : n).join("  ");
+                    let prefix = isPower ? "🔥 " : "⭐ ";
+                    let style = isPower ? "style='color:#FFD700; font-weight:bold;'" : "style='color:#FFF;'";
+                    box.innerHTML += `<div class="res-line" ${style}>${prefix}${gen < 10 ? "0"+gen : gen} : ${s} <span style="font-size:11px; color:#555; margin-left:10px;">AC:${ac}</span></div>`;
+                }
+            }
+            box.scrollTop = box.scrollHeight;
+            startTimer(mode);
+        }
+
+        function startTimer(m) {
+            let b = document.getElementById('btn'+m), o = document.getElementById('timer'+m);
+            b.disabled = true; o.style.display = 'flex';
+            setTimeout(() => { b.disabled = false; o.style.display = 'none'; }, 30000);
+        }
+
+        function clearHistory() { if(confirm("초기화?")) location.reload(); }
+        window.onload = initSystem;
     </script>
 </body>
 </html>
