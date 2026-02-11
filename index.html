@@ -3,143 +3,117 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>신의 손 - 원본 통합 분석 시스템</title>
+    <title>신의 손 - 원본 통합 시스템</title>
     <style>
         body { background-color: #0c0c0c; color: #f2c94c; font-family: 'Malgun Gothic', sans-serif; text-align: center; padding: 20px; margin: 0; }
-        h1 { color: #f2c94c; font-size: 2.5rem; margin-top: 30px; margin-bottom: 25px; font-weight: bold; letter-spacing: -1px; cursor: pointer; }
-        .target-box { color: #FFF; font-size: 1.1rem; margin-bottom: 25px; background: #1a1a1a; padding: 12px 15px; border-radius: 10px; display: inline-block; border: 2px solid #f2c94c; font-weight: bold; line-height: 1.5; }
-        .status-tag { display: block; font-size: 0.9rem; color: #888; margin-top: 5px; }
+        h1 { color: #f2c94c; font-size: 2.2rem; margin-top: 20px; font-weight: bold; cursor: pointer; }
+        .target-box { color: #FFF; font-size: 1.1rem; margin-bottom: 20px; background: #1a1a1a; padding: 12px 15px; border-radius: 10px; display: inline-block; border: 2px solid #f2c94c; font-weight: bold; }
+        
+        /* 파일 업로드 버튼 */
+        .file-label { background: #262626; color: #fff; padding: 10px 20px; border-radius: 8px; cursor: pointer; border: 1px dashed #f2c94c; font-size: 0.9rem; display: inline-block; margin-bottom: 20px; }
+        #file-input { display: none; }
+
         .btn-container { display: flex; flex-wrap: wrap; justify-content: center; gap: 8px; max-width: 400px; margin: 0 auto 15px auto; }
         button { border: none; border-radius: 8px; cursor: pointer; font-size: 17px; font-weight: bold; transition: 0.2s; position: relative; display: flex; align-items: center; justify-content: center; }
-        .btn-main { width: 100%; height: 60px; background-color: #d4a017; color: black; margin-bottom: 5px; }
-        .btn-sub { width: 48.5%; height: 55px; background-color: #262626; color: white; border: 1px solid #333; }
+        .btn-main { width: 100%; height: 60px; background-color: #d4a017; color: black; }
+        .btn-sub { width: 48.5%; height: 50px; background-color: #262626; color: white; border: 1px solid #333; }
+        
         #console-container { width: 100%; max-width: 400px; margin: 15px auto; background-color: #1a1a1a; border-radius: 12px; border: 2px solid #333; overflow: hidden; }
-        #console { width: 100%; height: 350px; padding: 20px; text-align: left; overflow-y: auto; color: #f2c94c; box-sizing: border-box; font-size: 15px; line-height: 1.8; white-space: pre-wrap; font-family: monospace; }
+        #console { width: 100%; height: 400px; padding: 15px; text-align: left; overflow-y: auto; color: #f2c94c; box-sizing: border-box; font-size: 14.5px; line-height: 1.9; white-space: pre-wrap; font-family: 'Courier New', monospace; }
         .timer-overlay { position: absolute; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.8); display: none; align-items: center; justify-content: center; border-radius: 8px; color: #ff4d4d; }
-        #storage-modal { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.95); z-index: 1000; overflow-y: auto; padding: 20px 0; }
-        .modal-content { background: #1a1a1a; width: 90%; max-width: 380px; margin: 0 auto; padding: 20px; border: 2px solid #f2c94c; border-radius: 15px; }
-        .close-btn { background: #ff4d4d; color: white; width: 100%; height: 50px; border-radius: 8px; margin-top: 20px; font-size: 18px; border: none; font-weight: bold; cursor: pointer; }
-        .mode-attack { color: #ff4d4d; } .mode-stable { color: #4CAF50; }
     </style>
 </head>
 <body>
     <h1 onclick="location.reload()">신 의 손</h1>
+    
+    <label for="file-input" class="file-label" id="file-status">📂 lotto.txt 파일을 선택하세요</label>
+    <input type="file" id="file-input" accept=".txt" onchange="handleFile(this)">
+
     <div class="target-box" id="display-target">
-        <span id="round-text">데이터 분석 중...</span>
-        <span id="system-status" class="status-tag">진단 엔진 가동 중...</span>
+        <span id="round-text">데이터 대기 중...</span>
     </div>
 
     <div class="btn-container">
-        <button class="btn-main" id="btn5" onclick="process('5')">5조합 생성 (원본 필터)<div id="timer5" class="timer-overlay"></div></button>
-        <button class="btn-main" id="btn10" onclick="process('10')">10조합 생성 (집중 타격)<div id="timer10" class="timer-overlay"></div></button>
-        <button class="btn-sub" onclick="showStorage()">마킹 보관함</button>
-        <button class="btn-sub" onclick="clearAll()">기록 초기화</button>
+        <button class="btn-main" id="btn10" onclick="process('10')" disabled>10조합 생성 (심화 분석)<div id="timer10" class="timer-overlay"></div></button>
+        <button class="btn-sub" onclick="location.reload()">새로고침</button>
+        <button class="btn-sub" onclick="clearHistory()">기록 삭제</button>
     </div>
 
-    <div id="console-container"><div id="console">▶ 사장님, lotto.txt 연결 대기 중...</div></div>
-
-    <div id="storage-modal">
-        <div class="modal-content">
-            <div id="list-5"></div>
-            <div id="list-10"></div>
-            <button class="close-btn" onclick="closeModal()">창 닫기</button>
-        </div>
-    </div>
+    <div id="console-container"><div id="console">▶ 사장님, 파일을 올리시면 즉시 분석을 시작합니다. (0000)</div></div>
 
     <script>
-        const MY_DATA_FILE = 'lotto.txt';
-        let WAIT_TIME = 30000; // 30초로 조정
         let globalLottoData = [];
-        let isAttackTiming = false;
         let missingPool = [];
-        let storageData = JSON.parse(localStorage.getItem('kingStorageTime')) || { '5': [], '10': [] };
-
-        // [시드 고정 난수]
+        let isAttackTiming = false;
         let _seed = 1208;
+
         function seededRandom() {
             _seed = (_seed * 1664525 + 1013904223) % 4294967296;
             return _seed / 4294967296;
         }
 
-        async function loadFileData() {
-            const consoleBox = document.getElementById('console');
-            const roundText = document.getElementById('round-text');
-            const statusTag = document.getElementById('system-status');
-            
-            try {
-                const response = await fetch(MY_DATA_FILE + '?v=' + Math.random());
-                if (!response.ok) throw new Error();
-                const text = await response.text();
-                const lines = text.trim().split('\n').filter(l => l.length > 0);
-                
-                // 데이터 파싱 (회차, n1, n2, n3, n4, n5, n6...)
+        function handleFile(input) {
+            const file = input.files[0];
+            const reader = new FileReader();
+            reader.onload = function(e) {
+                const lines = e.target.result.trim().split('\n').filter(l => l.length > 0);
                 globalLottoData = lines.map(line => line.split(',').map(Number));
-                const nextRound = globalLottoData.length + 1;
+                
+                const lastRound = globalLottoData[0][0];
+                const nextRound = lastRound + 1;
 
-                // 2번 로직: 공격 타이밍 진단 (최근 5회차 연번 빈도)
+                // 분석 엔진 가동
                 let clusterScore = 0;
-                const recent5 = globalLottoData.slice(-5);
+                const recent5 = globalLottoData.slice(0, 5);
                 recent5.forEach(row => {
                     let nums = row.slice(1, 7).sort((a,b) => a-b);
-                    for(let i=0; i<5; i++) { if(nums[i]+1 === nums[i+1]) { clusterScore++; break; } }
+                    if(nums.some((n, i) => n+1 === nums[i+1])) clusterScore++;
                 });
                 isAttackTiming = clusterScore >= 3;
 
-                // 2번 로직: 미출수 분석 (최근 30회차 기준)
-                const recent30Nums = globalLottoData.slice(-30).flatMap(row => row.slice(1, 7));
-                const appeared = new Set(recent30Nums);
-                missingPool = Array.from({length: 45}, (_, i) => i + 1).filter(n => !appeared.has(n));
+                const recent30 = globalLottoData.slice(0, 30).flatMap(row => row.slice(1, 7));
+                missingPool = Array.from({length: 45}, (_, i) => i + 1).filter(n => !new Set(recent30).has(n));
 
-                roundText.innerHTML = `🎯 제 ${nextRound}회차 원본 복원 엔진`;
-                statusTag.innerHTML = isAttackTiming ? 
-                    `<span class="mode-attack">● [공격모드] 연번 및 미출수 집중 배치</span>` : 
-                    `<span class="mode-stable">● [안정모드] 통계적 균형 조합 생성</span>`;
-                
-                consoleBox.innerHTML = `✅ 데이터 연동 성공 (총 ${globalLottoData.length}회차)\n▶ 분석 완료: ${isAttackTiming ? '공격적' : '안정적'} 흐름 감지`;
-            } catch (err) {
-                consoleBox.innerHTML = "❌ [lotto.txt] 파일을 찾을 수 없습니다.\n파일이 같은 경로에 있는지 확인해주세요.";
-            }
+                document.getElementById('file-status').innerHTML = `✅ ${file.name} 연동됨`;
+                document.getElementById('round-text').innerHTML = `🎯 제 ${nextRound}회차 예상 엔진`;
+                document.getElementById('console').innerHTML = `✅ [${lastRound}회] 데이터 기준 분석 완료.\n▶ 분석 모드: ${isAttackTiming ? '🔥공격형' : '🍀안정형'}\n▶ 미출수 확보: ${missingPool.length}개`;
+                document.getElementById('btn10').disabled = false;
+            };
+            reader.readAsText(file);
         }
 
         function calculateAC(nums) {
-            let diffs = new Set();
-            for(let i=0; i<6; i++) { for(let j=i+1; j<6; j++) diffs.add(Math.abs(nums[i]-nums[j])); }
-            return diffs.size - 5;
+            let d = new Set();
+            for(let i=0; i<6; i++) { for(let j=i+1; j<6; j++) d.add(Math.abs(nums[i]-nums[j])); }
+            return d.size - 5;
         }
 
-        function isSequentialOk(nums, allowDouble) {
-            let pairs = 0;
-            for(let i=0; i<5; i++) {
-                if(nums[i]+1 === nums[i+1]) {
-                    if(i < 4 && nums[i+1]+1 === nums[i+2]) return false; // 3연번 차단
-                    pairs++; i++;
-                }
-            }
-            return pairs <= (allowDouble ? 2 : 1);
+        function isSequentialOk(nums, allow) {
+            let p = 0;
+            for(let i=0; i<5; i++) { if(nums[i]+1 === nums[i+1]) { if(i<4 && nums[i+1]+1 === nums[i+2]) return false; p++; i++; } }
+            return p <= (allow ? 2 : 1);
         }
 
+        // 사장님이 보내주신 가독성 개선 process 함수 적용
         function process(mode) {
             if(globalLottoData.length === 0) return;
             const box = document.getElementById('console');
-            box.innerHTML = `▶ [${mode}조합 생성 시작] (Seed: 1208)\n--------------------------\n`;
+            box.innerHTML = `▶ [${mode}조합 추출 결과]\n--------------------------\n`;
             
             let count = parseInt(mode);
             let gen = 0, safety = 0;
-            let currentSets = [];
 
             while(gen < count && safety < 20000) {
                 safety++;
                 let candidate = [];
-                
-                if (mode === '10' && gen >= 7) { // 8~10번은 집중 타격 (미출수 강제 결합)
+                let isPower = false;
+
+                if (mode === '10' && gen >= 7) {
+                    isPower = true;
                     let mCount = (gen - 6); 
-                    let mPicks = [];
-                    let tempMissing = [...missingPool].sort(() => seededRandom() - 0.5);
-                    mPicks = tempMissing.slice(0, mCount);
-                    
+                    let mPicks = [...missingPool].sort(() => seededRandom() - 0.5).slice(0, mCount);
                     let others = Array.from({length: 45}, (_, i) => i + 1).filter(n => !mPicks.includes(n));
-                    others.sort(() => seededRandom() - 0.5);
-                    candidate = [...mPicks, ...others.slice(0, 6 - mCount)].sort((a,b) => a-b);
+                    candidate = [...mPicks, ...others.sort(() => seededRandom() - 0.5).slice(0, 6 - mCount)].sort((a,b) => a-b);
                 } else {
                     candidate = Array.from({length: 45}, (_, i) => i + 1).sort(() => seededRandom() - 0.5).slice(0, 6).sort((a,b) => a-b);
                 }
@@ -148,45 +122,19 @@
                 let ac = calculateAC(candidate);
                 let odd = candidate.filter(n => n % 2 !== 0).length;
 
-                // 원본 필터 적용
                 if (sum >= 100 && sum <= 170 && ac >= 5 && [2,3,4].includes(odd) && isSequentialOk(candidate, isAttackTiming)) {
                     gen++;
                     let s = candidate.map(n => n < 10 ? "0"+n : n).join("  ");
-                    let tag = (mode === '10' && gen > 7) ? "집중" : "원본";
-                    box.innerHTML += `(${gen}) [${tag}] ${s}\n`;
-                    storageData[mode].push({time: new Date().toLocaleTimeString(), num: s + ` (${tag}/AC:${ac})`});
+                    let prefix = isPower ? "🔥 " : "⭐ ";
+                    let style = isPower ? "style='color:#FFD700; font-weight:bold;'" : "";
+                    
+                    box.innerHTML += `<div ${style}>${prefix}${gen < 10 ? "0"+gen : gen} :  ${s} <span style="font-size:12px; color:#666;">(AC:${ac})</span></div>`;
                 }
             }
-            localStorage.setItem('kingStorageTime', JSON.stringify(storageData));
-            startTimer(mode);
+            box.scrollTop = box.scrollHeight;
         }
 
-        // 보관함 및 타이머 기능 (3번 코드와 동일)
-        function startTimer(m) {
-            let b = document.getElementById('btn'+m), o = document.getElementById('timer'+m);
-            b.disabled = true; o.style.display = 'flex';
-            let e = new Date().getTime() + WAIT_TIME;
-            let t = setInterval(() => {
-                let r = e - new Date().getTime();
-                if(r <= 0) { clearInterval(t); b.disabled = false; o.style.display = 'none'; }
-                else o.innerText = Math.ceil(r/1000) + "초";
-            }, 100);
-        }
-        function showStorage() { renderList('5'); renderList('10'); document.getElementById('storage-modal').style.display = 'block'; }
-        function closeModal() { document.getElementById('storage-modal').style.display = 'none'; }
-        function renderList(mode) {
-            let listDiv = document.getElementById('list-' + mode);
-            listDiv.innerHTML = `<div style="color:#f2c94c; font-weight:bold; padding:10px;">📜 ${mode}조합 기록</div>`;
-            storageData[mode].slice(-10).forEach(item => {
-                let div = document.createElement('div');
-                div.style.cssText = "color:#FFF; padding:5px; border-bottom:1px solid #333; font-size:13px;";
-                div.innerHTML = `[${item.time}] ${item.num}`;
-                listDiv.appendChild(div);
-            });
-        }
-        function clearAll() { if(confirm("기록을 전부 삭제할까요?")) { localStorage.removeItem('kingStorageTime'); location.reload(); } }
-
-        window.onload = loadFileData;
+        function clearHistory() { if(confirm("초기화?")) location.reload(); }
     </script>
 </body>
 </html>
