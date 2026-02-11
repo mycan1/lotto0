@@ -1,136 +1,54 @@
-<!DOCTYPE html>
-<html lang="ko">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>신의 손 - 원본 로직 100% 복원</title>
-    <style>
-        body { background-color: #0c0c0c; color: #f2c94c; font-family: 'Malgun Gothic', sans-serif; text-align: center; padding: 20px; margin: 0; }
-        h1 { color: #f2c94c; font-size: 2.2rem; margin-top: 20px; font-weight: bold; cursor: pointer; text-shadow: 2px 2px 4px rgba(0,0,0,0.5); }
-        .target-box { color: #FFF; font-size: 1.1rem; margin-bottom: 20px; background: #1a1a1a; padding: 12px 15px; border-radius: 10px; display: inline-block; border: 2px solid #f2c94c; font-weight: bold; }
-        .status-label { background: #262626; color: #fff; padding: 10px 20px; border-radius: 8px; border: 1px dashed #f2c94c; font-size: 0.85rem; display: inline-block; margin-bottom: 20px; }
-        .btn-main { width: 100%; max-width: 400px; height: 60px; background-color: #d4a017; color: black; border: none; border-radius: 8px; cursor: pointer; font-size: 18px; font-weight: bold; margin-bottom: 15px; box-shadow: 0 4px 0 #967111; }
-        #console { width: 100%; max-width: 400px; height: 450px; margin: 0 auto; background-color: #1a1a1a; border: 2px solid #333; border-radius: 12px; padding: 15px; text-align: left; overflow-y: auto; color: #f2c94c; font-family: 'Courier New', monospace; font-size: 14px; line-height: 1.8; box-sizing: border-box; }
-    </style>
-</head>
-<body>
-    <h1 onclick="location.reload()">신 의 손</h1>
-    <div class="status-label" id="system-status">🔄 데이터 연동 중...</div>
-    <div class="target-box" id="display-target">🎯 제 1207회차 분석</div>
+function process(mode) {
+    const box = document.getElementById('console');
+    box.innerHTML = `▶ [사장님 원본 분석법 전수조사 시작]\n--------------------------\n`;
+    let count = parseInt(mode);
+    let gen = 0, safety = 0;
 
-    <button class="btn-main" id="btn-run" onclick="generate()" disabled>사용자 원본 로직 10개 추출</button>
+    // 1. 최근 30회 미출수 리스트 추출 (정확하게 계산)
+    const recent30Nums = new Set(globalLottoData.slice(0, 30).flatMap(row => row.slice(1, 7)));
+    const pureMissing30 = Array.from({length: 45}, (_, i) => i + 1).filter(n => !recent30Nums.has(n));
 
-    <div id="console">▶ 시스템 준비 중...</div>
+    while(gen < count && safety < 500000) { 
+        safety++;
+        let candidateSet = new Set();
+        
+        // 🎯 [사장님 분석법 핵심] 회차별 미출수 강제 투입 로직
+        let requiredMissingCount = 0;
+        if (gen === 7) requiredMissingCount = 1;      // 8번 조합: 미출수 1개 강제
+        else if (gen === 8) requiredMissingCount = 2; // 9번 조합: 미출수 2개 강제
+        else if (gen === 9) requiredMissingCount = 2; // 10번 조합: 미출수 2개 강제 (또는 3개로 조정 가능)
 
-    <script>
-        const GITHUB_USER = "mycan1"; 
-        const GITHUB_REPO = "lotto0"; 
-        const RAW_URL = `https://raw.githubusercontent.com/${GITHUB_USER}/${GITHUB_REPO}/main/로또1206.txt`;
-
-        let globalLottoData = [];
-        let _seed = 1208; // 사장님 원본 시드값 고정
-
-        function seededRandom() {
-            _seed = (_seed * 1664525 + 1013904223) % 4294967296;
-            return _seed / 4294967296;
+        // 미출수 먼저 박기
+        if (requiredMissingCount > 0) {
+            let mPicks = [...pureMissing30].sort(() => seededRandom() - 0.5).slice(0, requiredMissingCount);
+            mPicks.forEach(n => candidateSet.add(n));
         }
 
-        // [원본] AC 지수 계산
-        function calculateAC(nums) {
-            let diffs = new Set();
-            for(let i=0; i<6; i++) {
-                for(let j=i+1; j<6; j++) diffs.add(Math.abs(nums[i]-nums[j]));
-            }
-            return diffs.size - 5;
+        // 2. 나머지는 전체 데이터 가중치 풀에서 채움 (중복 제외)
+        while(candidateSet.size < 6) {
+            let idx = Math.floor(seededRandom() * missingWeightPool.length);
+            candidateSet.add(missingWeightPool[idx]);
+        }
+        
+        let candidate = Array.from(candidateSet).sort((a,b) => a-b);
+        let sum = candidate.reduce((a,b) => a+b, 0);
+        let ac = calculateAC(candidate);
+        
+        // 3. 원본 필터 (합계 100~175, AC 5이상, 3연번 금지)
+        let isSerial = false;
+        for(let i=0; i<4; i++) { 
+            if(candidate[i]+1 === candidate[i+1] && candidate[i+1]+1 === candidate[i+2]) isSerial = true; 
         }
 
-        // [원본] 연번 필터 (3연번 차단, 쌍연번 옵션)
-        function isSequentialOk(nums, allowDoublePair) {
-            let consecutivePairs = 0;
-            for(let i=0; i<5; i++) {
-                if(nums[i]+1 === nums[i+1]) {
-                    if(i < 4 && nums[i+1]+1 === nums[i+2]) return false; // 3연번 금지
-                    consecutivePairs++;
-                    i++; 
-                }
-            }
-            return consecutivePairs <= (allowDoublePair ? 2 : 1);
-        }
-
-        async function init() {
-            try {
-                const res = await fetch(`${RAW_URL}?t=${Date.now()}`);
-                const text = await res.text();
-                const lines = text.trim().split('\n');
-                globalLottoData = lines.map(l => l.split(',').map(Number));
-                document.getElementById('system-status').innerHTML = "✅ 원본 데이터 분석 완료";
-                document.getElementById('btn-run').disabled = false;
-                document.getElementById('console').innerHTML = "▶ 사장님 원본 로직이 준비되었습니다.\n--------------------------";
-            } catch(e) {
-                document.getElementById('system-status').innerHTML = "❌ 연결 실패";
-            }
-        }
-
-        function generate() {
-            const box = document.getElementById('console');
-            box.innerHTML = "";
+        if (sum >= 100 && sum <= 175 && ac >= 5 && !isSerial) {
+            gen++;
+            let s = candidate.map(n => n < 10 ? "0"+n : n).join("  ");
             
-            // [원본] 공격/안정 모드 진단
-            let clusterCount = 0;
-            for(let i=0; i<5; i++) {
-                let row = globalLottoData[i].slice(1,7).sort((a,b)=>a-b);
-                if(row.some((n, idx) => n+1 === row[idx+1])) clusterCount++;
-            }
-            let isAttackTiming = clusterCount >= 3;
-            box.innerHTML += `시스템 진단: ${isAttackTiming ? '[공격모드]' : '[안정모드]'}\n※ 사용자 원본 로직 100% 가동\n\n`;
-
-            // [원본] 풀 생성
-            const lastWeekNums = globalLottoData[0].slice(1,7);
-            const recent30 = globalLottoData.slice(0,30).flatMap(r => r.slice(1,7));
-            const counts = {};
-            recent30.forEach(n => counts[n] = (counts[n] || 0) + 1);
-            
-            const elitePool = Object.keys(counts).filter(n => counts[n] >= 2 && counts[n] <= 4).map(Number);
-            const longTermMissingPool = Array.from({length:45}, (_,i)=>i+1).filter(n => !counts[n]);
-            longTermMissingPool.sort(() => seededRandom() - 0.5);
-
-            let results = [];
-
-            // 1~7번 조합: 원본 통계 (합계 100-170, AC 5-8, 홀짝 2:4~4:2)
-            while(results.length < 7) {
-                let candidate = Array.from({length:45}, (_,i)=>i+1).sort(() => seededRandom() - 0.5).slice(0,6).sort((a,b)=>a-b);
-                let sum = candidate.reduce((a,b)=>a+b, 0);
-                let ac = calculateAC(candidate);
-                let odd = candidate.filter(n => n % 2 !== 0).length;
-                if(sum >= 100 && sum <= 170 && ac >= 5 && ac <= 8 && [2,3,4].includes(odd) && isSequentialOk(candidate, false)) {
-                    results.push({tag: "원본통계", nums: candidate});
-                }
-            }
-
-            // 8~10번 조합: 집중타격 (미출수 강제 삽입 1, 2, 3개)
-            for(let i=1; i<=3; i++) {
-                let useDouble = isAttackTiming && (i < 3);
-                while(true) {
-                    let mPicks = longTermMissingPool.slice(0, i);
-                    let pool = [...new Set([...elitePool, ...lastWeekNums])];
-                    let base = pool.sort(() => seededRandom() - 0.5).slice(0, 6 - i);
-                    let candidate = [...new Set([...base, ...mPicks])].sort((a,b)=>a-b);
-                    
-                    if(candidate.length === 6 && candidate.reduce((a,b)=>a+b,0) >= 100 && candidate.reduce((a,b)=>a+b,0) <= 170 && isSequentialOk(candidate, useDouble)) {
-                        results.push({tag: `집중타격_${i}`, nums: candidate, isDouble: !isSequentialOk(candidate, false)});
-                        break;
-                    }
-                }
-            }
-
-            results.forEach((res, idx) => {
-                let line = `${res.tag.padEnd(10)} | ${res.nums.join(', ')}`;
-                if(res.isDouble) line += " (쌍)";
-                box.innerHTML += `<div>${idx + 1}. ${line}</div>`;
-            });
+            // 8, 9, 10번은 특별히 더 강조해서 출력
+            let style = gen >= 8 ? "style='color:#FFD700; font-weight:bold;'" : "";
+            let icon = gen >= 8 ? "🔥" : "⭐";
+            box.innerHTML += `<div ${style}>${icon} ${gen < 10 ? "0"+gen : gen} :  ${s}</div>`;
         }
-
-        init();
-    </script>
-</body>
-</html>
+    }
+    box.scrollTop = box.scrollHeight;
+}
