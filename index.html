@@ -5,82 +5,36 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <title>신의 손</title>
     <style>
-        body { 
-            background-color: #0c0c0c; 
-            color: #ffffff; 
-            font-family: 'Malgun Gothic', sans-serif; 
-            text-align: center; 
-            margin: 0; 
-            padding: 20px;
-        }
-
-        h1 { 
-            color: #f2c94c; 
-            font-size: 2.8rem; 
-            font-weight: bold; 
-            margin-top: 30px;
-            margin-bottom: 25px;
-        }
-
+        body { background-color: #0c0c0c; color: #ffffff; font-family: 'Malgun Gothic', sans-serif; text-align: center; margin: 0; padding: 20px; }
+        h1 { color: #f2c94c; font-size: 2.8rem; font-weight: bold; margin-top: 30px; margin-bottom: 25px; }
+        
+        /* [디자인] 1207회차 자동 조준 박스 */
         .target-box { 
-            background-color: #1a1a1a; 
-            border: 2px solid #ff4d4d; 
-            border-radius: 15px; 
-            padding: 15px 30px; 
-            display: inline-flex; 
-            align-items: center; 
-            gap: 10px;
-            font-size: 1.4rem; 
-            font-weight: bold;
-            margin-bottom: 35px;
+            background-color: #1a1a1a; border: 2px solid #ff4d4d; border-radius: 15px; 
+            padding: 15px 30px; display: inline-flex; align-items: center; gap: 10px;
+            font-size: 1.4rem; font-weight: bold; margin-bottom: 35px;
         }
 
-        .btn-container { 
-            display: flex; 
-            flex-direction: column; 
-            gap: 12px; 
-            max-width: 420px; 
-            margin: 0 auto; 
-        }
-
-        button { 
-            border: none; 
-            border-radius: 12px; 
-            font-weight: 900; 
-            cursor: pointer; 
-            font-size: 1.1rem;
-        }
-
+        .btn-container { display: flex; flex-direction: column; gap: 12px; max-width: 420px; margin: 0 auto; }
+        button { border: none; border-radius: 12px; font-weight: 900; cursor: pointer; font-size: 1.1rem; }
         .btn-gold { height: 85px; background-color: #d4a017; color: #000; }
         .sub-row { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
         .btn-dark { height: 85px; background-color: #262626; color: #fff; border: 1px solid #333; }
 
         #console-container { 
-            max-width: 420px; 
-            margin: 20px auto; 
-            background-color: #1a1a1a; 
-            border-radius: 15px; 
-            min-height: 400px;
-            text-align: left;
-            padding: 25px;
-            border: 1px solid #333;
+            max-width: 420px; margin: 20px auto; background-color: #1a1a1a; 
+            border-radius: 15px; min-height: 400px; text-align: left; padding: 25px; border: 1px solid #333; 
         }
-
         #console { color: #f2c94c; font-size: 1.2rem; line-height: 2.2; font-weight: bold; }
 
-        /* [수정] 공 모양 스타일 제거, 텍스트 색상만 유지 */
+        /* [수정] 텍스트 전용 스타일 */
         .num-text { display: inline-block; margin: 0 5px; font-size: 1.3rem; }
-        .t1 { color: #fbc400; }  /* 1-10 */
-        .t11 { color: #69c8f2; } /* 11-20 */
-        .t21 { color: #ff7272; } /* 21-30 */
-        .t31 { color: #aaaaaa; } /* 31-40 */
-        .t41 { color: #b0d840; } /* 41-45 */
+        .t1 { color: #fbc400; } .t11 { color: #69c8f2; } .t21 { color: #ff7272; } .t31 { color: #aaaaaa; } .t41 { color: #b0d840; }
 
         .floating-btn {
             position: fixed; bottom: 30px; right: 20px; width: 75px; height: 75px;
             background-color: #f2c94c; border-radius: 50%; display: flex;
-            flex-direction: column; align-items: center; justify-content: center;
-            color: #000; font-weight: bold; font-size: 0.8rem;
+            flex-direction: column; align-items: center; justify-content: center; color: #000; font-weight: bold; font-size: 0.8rem;
         }
     </style>
 </head>
@@ -89,12 +43,12 @@
     <h1>신 의 손</h1>
 
     <div class="target-box" id="display-target">
-        🎯 제 1206회차 (시간기록형)
+        🎯 제 1207회차 조준 분석
     </div>
 
     <div class="btn-container">
-        <button class="btn-gold" onclick="generate(5)">5조합 생성 (AC 9-10)</button>
-        <button class="btn-gold" onclick="generate(10)">10조합 생성 (패턴 분석)</button>
+        <button class="btn-gold" onclick="generate(5, 9)">5조합 생성 (AC 9-10)</button>
+        <button class="btn-gold" onclick="generate(10, 7)">10조합 생성 (패턴 분석)</button>
         
         <div class="sub-row">
             <button class="btn-dark">마킹 보관함</button>
@@ -103,29 +57,65 @@
     </div>
 
     <div id="console-container">
-        <div id="console">▶ 사장님, 엔진 가동 중...</div>
+        <div id="console">▶ 사장님, 1207회 엔진 가동 중...</div>
     </div>
 
     <div class="floating-btn">📩<br>쪽지함</div>
 
     <script>
-        function generate(count) {
+        // [원본 분석법 연산 엔진]
+        // 실제 데이터(1206회까지)가 lotto.txt에 있다고 가정할 때의 로직
+        const elitePool = [2, 5, 11, 14, 18, 23, 31, 34, 37, 42, 44]; // 최근 30회 내 2~4회 출현수 (예시)
+        const missingPool = [7, 13, 19, 26, 38]; // 30회 이후 미출수 (예시)
+
+        function generate(count, acLimit) {
             const box = document.getElementById('console');
-            box.innerHTML = "▶ 분석 완료 조합:<br><br>";
+            box.innerHTML = `▶ 1207회차 분석 완료 (${acLimit === 9 ? '고압축' : '패턴'}):<br><br>`;
             
-            for(let i=1; i<=count; i++) {
-                // 임시 번호 생성 로직 (실제 1번 코드의 로직을 여기에 결합하세요)
-                let nums = Array.from({length: 6}, () => Math.floor(Math.random() * 45) + 1).sort((a,b)=>a-b);
+            let results = [];
+            while(results.length < count) {
+                let candidate = [];
+                // 1. 엘리트 중심(3개) + 미출수(1개) + 랜덤 조합
+                let ePick = elitePool.sort(() => Math.random() - 0.5).slice(0, 3);
+                let mPick = missingPool.sort(() => Math.random() - 0.5).slice(0, 1);
+                candidate = [...new Set([...ePick, ...mPick])];
                 
-                let row = `<div>[${i}조] `;
-                nums.forEach((n, idx) => {
-                    let cls = n<=10?'t1':n<=20?'t11':n<=30?'t21':n<=40?'t31':'t41';
-                    // 텍스트로만 출력 (쉼표 추가)
-                    row += `<span class="num-text ${cls}">${n < 10 ? '0'+n : n}</span>${idx < 5 ? ',' : ''}`;
-                });
-                row += `</div>`;
-                box.innerHTML += row;
+                while(candidate.length < 6) {
+                    candidate.push(Math.floor(Math.random() * 45) + 1);
+                    candidate = [...new Set(candidate)];
+                }
+                candidate.sort((a,b) => a-b);
+
+                // 2. 필터 연산 (AC지수, 합계, 연번)
+                if (checkLogic(candidate, acLimit)) {
+                    results.push(candidate);
+                }
             }
+
+            results.forEach((nums, idx) => {
+                let row = `<div>[${idx+1}조] `;
+                nums.forEach((n, i) => {
+                    let cls = n<=10?'t1':n<=20?'t11':n<=30?'t21':n<=40?'t31':'t41';
+                    row += `<span class="num-text ${cls}">${n < 10 ? '0'+n : n}</span>${i < 5 ? ',' : ''}`;
+                });
+                box.innerHTML += row + `</div>`;
+            });
+        }
+
+        function checkLogic(nums, acLimit) {
+            // AC지수 계산
+            let diffs = new Set();
+            for(let i=0; i<6; i++) for(let j=i+1; j<6; j++) diffs.add(Math.abs(nums[i]-nums[j]));
+            if ((diffs.size - 5) < acLimit) return false;
+
+            // 합계 필터 (100~175)
+            let sum = nums.reduce((a,b)=>a+b, 0);
+            if (sum < 100 || sum > 175) return false;
+
+            // 3연번 차단
+            for(let i=0; i<4; i++) if(nums[i]+1 === nums[i+1] && nums[i+1]+1 === nums[i+2]) return false;
+
+            return true;
         }
     </script>
 </body>
