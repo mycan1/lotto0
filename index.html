@@ -12,13 +12,19 @@
         button { border: none; border-radius: 8px; cursor: pointer; font-size: 16px; font-weight: bold; transition: 0.2s; position: relative; overflow: hidden; }
         .btn-main { width: 100%; height: 60px; background: linear-gradient(145deg, #d4a017, #b8860b); color: black; border: 1px solid #f2c94c; margin-bottom: 5px; }
         .btn-sub { width: 48.5%; height: 50px; background-color: #262626; color: white; border: 1px solid #333; }
-        .ball { display: inline-block; width: 32px; height: 32px; line-height: 32px; text-align: center; border-radius: 50%; font-weight: bold; font-size: 14px; margin-right: 5px; color: #fff; text-shadow: 1px 1px 1px #000; box-shadow: 1px 1px 3px rgba(0,0,0,0.5); margin-bottom: 8px; }
+        
+        /* 공 스타일 수정: 모바일 최적화 */
+        .ball { display: inline-block; width: 34px; height: 34px; line-height: 34px; text-align: center; border-radius: 50%; font-weight: bold; font-size: 14px; margin: 3px; color: #fff; text-shadow: 1px 1px 1px #000; box-shadow: 1px 1px 3px rgba(0,0,0,0.5); }
         .b1 { background: #fbc400; } .b11 { background: #69c8f2; } .b21 { background: #ff7272; } .b31 { background: #aaa; } .b41 { background: #b0d840; }
+        
         #console-container { width: 100%; max-width: 400px; margin: 15px auto; background-color: #1a1a1a; border-radius: 12px; border: 2px solid #333; }
-        #console { width: 100%; height: 520px; padding: 15px; text-align: left; overflow-y: auto; color: #f2c94c; box-sizing: border-box; line-height: 1.8; font-size: 14px; white-space: pre-wrap; }
-        .row-item { margin-bottom: 18px; padding-bottom: 10px; border-bottom: 1px solid #262626; position: relative; }
-        .btn-save { position: absolute; top: 0; right: 0; background: transparent; color: #f2c94c; border: 1px solid #f2c94c; border-radius: 4px; padding: 2px 8px; font-size: 11px; cursor: pointer; }
-        .tag-info { font-size: 11px; color: #888; display: block; }
+        #console { width: 100%; height: 520px; padding: 15px; text-align: left; overflow-y: auto; color: #f2c94c; box-sizing: border-box; line-height: 1.8; font-size: 14px; }
+        
+        /* 리스트 아이템 수정: 레이아웃 고정 */
+        .row-item { margin-bottom: 20px; padding: 15px 5px; border-bottom: 1px solid #262626; display: flex; flex-direction: column; align-items: center; }
+        .item-header { width: 100%; display: flex; justify-content: space-between; align-items: center; margin-bottom: 10px; }
+        .btn-save { background: transparent; color: #f2c94c; border: 1px solid #f2c94c; border-radius: 4px; padding: 3px 10px; font-size: 12px; cursor: pointer; }
+        .tag-info { font-size: 12px; color: #888; font-weight: normal; }
         .tag-final { color: #ff4d4d; font-weight: bold; }
         .timer-overlay { position: absolute; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.85); display: none; align-items: center; justify-content: center; color: #ff4d4d; font-size: 18px; }
     </style>
@@ -46,7 +52,7 @@
     </div>
 
     <script>
-        const MY_DATA_FILE = 'lotto.txt'; // 사용 중인 파일명으로 수정 가능
+        const MY_DATA_FILE = 'lotto.txt';
         let rawData = [], missingPool = [], elitePool = [], lastWeekNums = [];
         const PRIMES = [2, 3, 5, 7, 11, 13, 17, 19, 23, 29, 31, 37, 41, 43];
 
@@ -56,7 +62,6 @@
             return d.size - 5;
         }
 
-        // 코드 1에서 가져온 연번 방지 로직 (3연번 이상 금지)
         function isSequentialOk(nums) {
             let sorted = [...nums].sort((a,b)=>a-b);
             for (let i = 0; i < sorted.length - 2; i++) {
@@ -65,7 +70,6 @@
             return true;
         }
 
-        // 코드 2에서 가져온 정밀 필터링 로직
         function isAdvancedOk(nums) {
             let sum = nums.reduce((a,b)=>a+b,0);
             let odd = nums.filter(n=>n%2!==0).length;
@@ -105,19 +109,18 @@
 
         function generateUltimate() {
             const box = document.getElementById('console');
-            box.innerHTML = `▶ [1등 정밀 필터링 및 교집합 분석 시작]\n\n`;
+            box.innerHTML = `<div style="padding:10px; color:#aaa;">▶ 정밀 분석 및 필터링 가동 중...</div>`;
             let results = [], allNumbersForIntersection = [];
 
+            // 1~9번 조합 생성
             for (let i = 1; i <= 9; i++) {
                 let safety = 0;
                 while (safety < 20000) {
                     safety++;
-                    // 미출수 전략적 배분 (1-2-2 변형)
                     let mCount = (i <= 6) ? (i % 3 === 0 ? 1 : 0) : 2; 
                     let mPick = [...missingPool].sort(()=>Math.random()-0.5).slice(0, mCount);
                     let base = [...new Set([...elitePool, ...lastWeekNums, ...Array.from({length:45},(_,k)=>k+1)])].filter(n=>!mPick.includes(n));
                     base.sort(()=>Math.random()-0.5);
-                    
                     let candidate = [...mPick, ...base.slice(0, 6-mCount)].sort((a,b)=>a-b);
 
                     if (isAdvancedOk(candidate)) {
@@ -128,22 +131,39 @@
                 }
             }
 
-            // 10번째 조합: 코드 1의 교집합 필살기 로직
+            // 10번째 조합: 교집합 정밀 필터링
             let freq = {};
             allNumbersForIntersection.forEach(n => freq[n] = (freq[n]||0)+1);
-            let sortedByFreq = Object.keys(freq).sort((a,b) => freq[b] - freq[a]);
-            let intersectionCombo = sortedByFreq.slice(0, 6).map(Number).sort((a,b)=>a-b);
-            results.push({tag: "교집합 필살기", nums: intersectionCombo, mCount: "AI압축"});
+            let sortedByFreq = Object.keys(freq).sort((a,b) => freq[b] - freq[a]).map(Number);
+            
+            let finalCombo = [];
+            let safety = 0;
+            while(safety < 5000) {
+                safety++;
+                // 상위 빈도 15개 숫자 중 6개 랜덤 조합하여 필터링
+                let candidate = sortedByFreq.slice(0, 15).sort(()=>Math.random()-0.5).slice(0, 6).sort((a,b)=>a-b);
+                if (isAdvancedOk(candidate)) {
+                    finalCombo = candidate;
+                    break;
+                }
+            }
+            if(finalCombo.length === 0) finalCombo = sortedByFreq.slice(0, 6).sort((a,b)=>a-b);
+            results.push({tag: "교집합 필살기", nums: finalCombo, mCount: "AI압축"});
 
-            // 결과 출력
+            // 결과 화면 출력
+            box.innerHTML = "";
             results.forEach((res, idx) => {
                 let isFinal = idx === 9;
                 let row = document.createElement('div');
                 row.className = 'row-item';
                 row.innerHTML = `
-                    <span class="tag-info ${isFinal?'tag-final':''}">(${idx+1}) [${res.tag}] 미출수:${res.mCount}</span>
-                    <button class="btn-save" onclick="saveNumber('${res.nums.join(',')}')">저장</button>
-                    ${res.nums.map(n => getBallHtml(n)).join("")}
+                    <div class="item-header">
+                        <span class="tag-info ${isFinal?'tag-final':''}">(${idx+1}) [${res.tag}] 미출수:${res.mCount}</span>
+                        <button class="btn-save" onclick="saveNumber('${res.nums.join(',')}')">저장</button>
+                    </div>
+                    <div style="display:flex; justify-content:center; width:100%;">
+                        ${res.nums.map(n => getBallHtml(n)).join("")}
+                    </div>
                 `;
                 box.appendChild(row);
             });
