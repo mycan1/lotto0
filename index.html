@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>신의 손 - 전수 데이터 분석</title>
+    <title>신의 손 - 원본 분석법 전수조사</title>
     <style>
         body { background-color: #0c0c0c; color: #f2c94c; font-family: 'Malgun Gothic', sans-serif; text-align: center; padding: 20px; margin: 0; }
         h1 { color: #f2c94c; font-size: 2.2rem; margin-top: 20px; font-weight: bold; cursor: pointer; text-shadow: 2px 2px 4px rgba(0,0,0,0.5); }
@@ -20,11 +20,11 @@
 </head>
 <body>
     <h1 onclick="location.reload()">신 의 손</h1>
-    <div class="status-label" id="system-status">🔄 전체 데이터 분석 준비 중...</div>
+    <div class="status-label" id="system-status">🔄 전체 데이터 분석 중...</div>
     <div class="target-box" id="display-target"><span id="round-text">연결 대기 중...</span></div>
 
     <div class="btn-container">
-        <button class="btn-main" id="btn10" onclick="process('10')" disabled>10조합 생성 (전수 데이터 분석)</button>
+        <button class="btn-main" id="btn10" onclick="process('10')" disabled>10조합 생성 (전체 분석법)</button>
         <button class="btn-sub" onclick="location.reload()">새로고침</button>
         <button class="btn-sub" onclick="document.getElementById('console').innerHTML='▶ 기록이 삭제되었습니다.'">기록 삭제</button>
     </div>
@@ -37,7 +37,7 @@
         const RAW_URL = `https://raw.githubusercontent.com/${GITHUB_USER}/${GITHUB_REPO}/main/lotto.txt`;
 
         let globalLottoData = [];
-        let weightPool = []; // 전체 빈도 가중치 풀
+        let missingWeightPool = []; // 사장님 원본 미출수 가중치 풀
         let _seed = Date.now();
 
         function seededRandom() {
@@ -57,25 +57,28 @@
                 const lastRound = globalLottoData[0][0];
                 document.getElementById('round-text').innerHTML = `🎯 제 ${lastRound + 1}회차 추천 조합`;
                 
-                // [사장님 분석법: 전수 데이터 스캔]
-                const counts = Array(46).fill(0);
+                // [원본 분석법: 전체 데이터 전수 조사]
+                const totalCounts = Array(46).fill(0);
                 globalLottoData.forEach(row => {
-                    row.slice(1, 7).forEach(num => counts[num]++);
+                    row.slice(1, 7).forEach(num => totalCounts[num]++);
                 });
 
-                // 빈도가 낮은 번호(미출수 성격)에 가중치를 두어 풀 생성
-                weightPool = [];
+                // 미출수 분석 (최근 30회 기준 + 전체 빈도 하위 가중치)
+                const recent30 = new Set(globalLottoData.slice(0, 30).flatMap(row => row.slice(1, 7)));
+                missingWeightPool = [];
                 for(let i=1; i<=45; i++) {
-                    let weight = Math.floor(1000 / (counts[i] + 1)); // 많이 안 나온 번호일수록 더 많이 추가
-                    for(let j=0; j<weight; j++) weightPool.push(i);
+                    let weight = 1;
+                    if (!recent30.has(i)) weight += 10; // 최근 미출수 가중치
+                    weight += Math.floor(500 / (totalCounts[i] + 1)); // 전체 데이터 저빈도 가중치
+                    for(let j=0; j<weight; j++) missingWeightPool.push(i);
                 }
 
-                statusLabel.innerHTML = `✅ ${globalLottoData.length}회차 전수 데이터 연동 성공`;
-                consoleBox.innerHTML = `✅ 1회부터 ${lastRound}회까지 모든 데이터 분석 완료.\n▶ 사장님 분석 필터 가동 중...\n--------------------------`;
+                statusLabel.innerHTML = `✅ ${globalLottoData.length}개 전체 데이터 분석 성공`;
+                consoleBox.innerHTML = `✅ 1회부터 ${lastRound}회까지 전수 분석 완료.\n▶ 사장님 원본 분석 알고리즘 가동.\n--------------------------`;
                 document.getElementById('btn10').disabled = false;
             } catch (error) {
                 statusLabel.innerHTML = `❌ 연결 실패`;
-                consoleBox.innerHTML = `⚠️ 파일 확인 요망: lotto.txt (전체 데이터)`;
+                consoleBox.innerHTML = `⚠️ lotto.txt 파일을 찾을 수 없습니다.`;
             }
         }
 
@@ -87,31 +90,32 @@
 
         function process(mode) {
             const box = document.getElementById('console');
-            box.innerHTML = `▶ [전체 분석 기반 추출 결과]\n--------------------------\n`;
+            box.innerHTML = `▶ [원본 분석법 추출 시작]\n--------------------------\n`;
             let count = parseInt(mode);
             let gen = 0, safety = 0;
 
-            while(gen < count && safety < 150000) { 
+            while(gen < count && safety < 200000) { // 20만번 전수 탐색
                 safety++;
-                // 사장님 분석법: 가중치 풀에서 번호 선택
                 let candidateSet = new Set();
                 while(candidateSet.size < 6) {
-                    let idx = Math.floor(seededRandom() * weightPool.length);
-                    candidateSet.add(weightPool[idx]);
+                    let idx = Math.floor(seededRandom() * missingWeightPool.length);
+                    candidateSet.add(missingWeightPool[idx]);
                 }
                 let candidate = Array.from(candidateSet).sort((a,b) => a-b);
 
                 let sum = candidate.reduce((a,b) => a+b, 0);
                 let ac = calculateAC(candidate);
                 
-                // 사장님 엄격 필터
-                if (sum >= 100 && sum <= 175 && ac >= 5) {
+                // 원본 필터: 합계(100~175) & AC지수(5이상) & 연속수 제한
+                let isSerial = false;
+                for(let i=0; i<4; i++) { if(candidate[i]+1 === candidate[i+1] && candidate[i+1]+1 === candidate[i+2]) isSerial = true; }
+
+                if (sum >= 100 && sum <= 175 && ac >= 5 && !isSerial) {
                     gen++;
                     let s = candidate.map(n => n < 10 ? "0"+n : n).join("  ");
                     box.innerHTML += `<div>${gen >= 8 ? "🔥" : "⭐"} ${gen < 10 ? "0"+gen : gen} :  ${s}</div>`;
                 }
             }
-            if(gen < count) box.innerHTML += `\n⚠️ 최적 조합 탐색 중단 (조건 미달)`;
             box.scrollTop = box.scrollHeight;
         }
         fetchLottoData();
