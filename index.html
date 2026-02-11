@@ -3,85 +3,23 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>신의 손</title>
+    <title>신의 손 - 원본 로직 복원</title>
     <style>
-        body { 
-            background-color: #0c0c0c; 
-            color: #ffffff; 
-            font-family: 'Malgun Gothic', sans-serif; 
-            text-align: center; 
-            margin: 0; 
-            padding: 20px;
-        }
-
-        h1 { 
-            color: #f2c94c; 
-            font-size: 2.8rem; 
-            font-weight: bold; 
-            margin-top: 30px;
-            margin-bottom: 25px;
-        }
-
-        .target-box { 
-            background-color: #1a1a1a; 
-            border: 2px solid #ff4d4d; 
-            border-radius: 15px; 
-            padding: 15px 30px; 
-            display: inline-flex; 
-            align-items: center; 
-            gap: 10px;
-            font-size: 1.4rem; 
-            font-weight: bold;
-            margin-bottom: 35px;
-        }
-
-        .btn-container { 
-            display: flex; 
-            flex-direction: column; 
-            gap: 12px; 
-            max-width: 420px; 
-            margin: 0 auto; 
-        }
-
-        button { 
-            border: none; 
-            border-radius: 12px; 
-            font-weight: 900; 
-            cursor: pointer; 
-            font-size: 1.1rem;
-        }
-
+        body { background-color: #0c0c0c; color: #ffffff; font-family: 'Malgun Gothic', sans-serif; text-align: center; margin: 0; padding: 20px; }
+        h1 { color: #f2c94c; font-size: 2.8rem; font-weight: bold; margin-top: 30px; margin-bottom: 25px; }
+        .target-box { background-color: #1a1a1a; border: 2px solid #ff4d4d; border-radius: 15px; padding: 15px 30px; display: inline-flex; align-items: center; gap: 10px; font-size: 1.4rem; font-weight: bold; margin-bottom: 35px; }
+        .btn-container { display: flex; flex-direction: column; gap: 12px; max-width: 420px; margin: 0 auto; }
+        button { border: none; border-radius: 12px; font-weight: 900; cursor: pointer; font-size: 1.1rem; transition: 0.2s; }
+        button:active { transform: scale(0.98); opacity: 0.8; }
         .btn-gold { height: 85px; background-color: #d4a017; color: #000; }
         .sub-row { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
         .btn-dark { height: 85px; background-color: #262626; color: #fff; border: 1px solid #333; }
-
-        #console-container { 
-            max-width: 420px; 
-            margin: 20px auto; 
-            background-color: #1a1a1a; 
-            border-radius: 15px; 
-            min-height: 400px;
-            text-align: left;
-            padding: 25px;
-            border: 1px solid #333;
-        }
-
-        #console { color: #f2c94c; font-size: 1.2rem; line-height: 2.2; font-weight: bold; }
-
-        /* [수정] 공 모양 스타일 제거, 텍스트 색상만 유지 */
-        .num-text { display: inline-block; margin: 0 5px; font-size: 1.3rem; }
-        .t1 { color: #fbc400; }  /* 1-10 */
-        .t11 { color: #69c8f2; } /* 11-20 */
-        .t21 { color: #ff7272; } /* 21-30 */
-        .t31 { color: #aaaaaa; } /* 31-40 */
-        .t41 { color: #b0d840; } /* 41-45 */
-
-        .floating-btn {
-            position: fixed; bottom: 30px; right: 20px; width: 75px; height: 75px;
-            background-color: #f2c94c; border-radius: 50%; display: flex;
-            flex-direction: column; align-items: center; justify-content: center;
-            color: #000; font-weight: bold; font-size: 0.8rem;
-        }
+        #console-container { max-width: 420px; margin: 20px auto; background-color: #1a1a1a; border-radius: 15px; min-height: 420px; text-align: left; padding: 25px; border: 1px solid #333; overflow-y: auto; }
+        #console { color: #f2c94c; font-size: 1.1rem; line-height: 2.0; font-weight: bold; }
+        .num-text { display: inline-block; margin: 0 5px; font-size: 1.2rem; }
+        .t1 { color: #fbc400; } .t11 { color: #69c8f2; } .t21 { color: #ff7272; } .t31 { color: #aaaaaa; } .t41 { color: #b0d840; }
+        .tag { font-size: 0.8rem; color: #888; margin-right: 10px; }
+        .floating-btn { position: fixed; bottom: 30px; right: 20px; width: 75px; height: 75px; background-color: #f2c94c; border-radius: 50%; display: flex; flex-direction: column; align-items: center; justify-content: center; color: #000; font-weight: bold; font-size: 0.8rem; }
     </style>
 </head>
 <body>
@@ -89,12 +27,12 @@
     <h1>신 의 손</h1>
 
     <div class="target-box" id="display-target">
-        🎯 제 1206회차 (시간기록형)
+        🎯 제 1206회차 (원본 로직 가동)
     </div>
 
     <div class="btn-container">
-        <button class="btn-gold" onclick="generate(5)">5조합 생성 (AC 9-10)</button>
-        <button class="btn-gold" onclick="generate(10)">10조합 생성 (패턴 분석)</button>
+        <button class="btn-gold" onclick="engineStart(5)">5조합 생성 (AC 필터링)</button>
+        <button class="btn-gold" onclick="engineStart(10)">10조합 생성 (원본 복원 로직)</button>
         
         <div class="sub-row">
             <button class="btn-dark">마킹 보관함</button>
@@ -103,28 +41,82 @@
     </div>
 
     <div id="console-container">
-        <div id="console">▶ 사장님, 엔진 가동 중...</div>
+        <div id="console">▶ 사장님, 분석 엔진 대기 중...</div>
     </div>
 
     <div class="floating-btn">📩<br>쪽지함</div>
 
     <script>
-        function generate(count) {
+        // [원본 필터 1: AC 계산]
+        function calculateAC(nums) {
+            let diffs = new Set();
+            for (let i = 0; i < nums.length; i++) {
+                for (let j = i + 1; j < nums.length; j++) {
+                    diffs.add(Math.abs(nums[i] - nums[j]));
+                }
+            }
+            return diffs.size - (nums.length - 1);
+        }
+
+        // [원본 필터 2: 연번 체크 (3연번 금지)]
+        function isSequentialOk(nums, allowDoublePair = false) {
+            let consecutivePairs = 0;
+            let i = 0;
+            while (i < nums.length - 1) {
+                if (nums[i] + 1 === nums[i+1]) {
+                    if (i < nums.length - 2 && nums[i+1] + 1 === nums[i+2]) return false; // 3연번 차단
+                    consecutivePairs++;
+                    i += 2;
+                } else {
+                    i++;
+                }
+            }
+            return consecutivePairs <= (allowDoublePair ? 2 : 1);
+        }
+
+        // [번호 생성 및 필터 적용]
+        function engineStart(count) {
             const box = document.getElementById('console');
-            box.innerHTML = "▶ 분석 완료 조합:<br><br>";
+            box.innerHTML = "▶ 원본 통계 필터 분석 중...<br><br>";
             
-            for(let i=1; i<=count; i++) {
-                // 임시 번호 생성 로직 (실제 1번 코드의 로직을 여기에 결합하세요)
-                let nums = Array.from({length: 6}, () => Math.floor(Math.random() * 45) + 1).sort((a,b)=>a-b);
-                
-                let row = `<div>[${i}조] `;
-                nums.forEach((n, idx) => {
+            let finalSets = [];
+            let attempts = 0;
+
+            while (finalSets.length < count && attempts < 20000) {
+                attempts++;
+                // 1. 1~45 난수 생성
+                let candidate = [];
+                while(candidate.length < 6) {
+                    let r = Math.floor(Math.random() * 45) + 1;
+                    if(!candidate.includes(r)) candidate.push(r);
+                }
+                candidate.sort((a, b) => a - b);
+
+                // 2. 원본 필터 조건 대입
+                const sum = candidate.reduce((a, b) => a + b, 0);
+                const ac = calculateAC(candidate);
+                const oddCount = candidate.filter(n => n % 2 !== 0).length;
+                const seqOk = isSequentialOk(candidate, false);
+
+                // 필터 조건: 합계 100-170, AC 5-8, 홀짝 2~4개, 연번 통과
+                if (sum >= 100 && sum <= 170 && ac >= 5 && ac <= 8 && oddCount >= 2 && oddCount <= 4 && seqOk) {
+                    finalSets.push(candidate);
+                }
+            }
+
+            // 결과 화면 출력
+            finalSets.forEach((nums, idx) => {
+                let row = `<div><span class="tag">[${idx+1}조]</span>`;
+                nums.forEach((n, i) => {
                     let cls = n<=10?'t1':n<=20?'t11':n<=30?'t21':n<=40?'t31':'t41';
-                    // 텍스트로만 출력 (쉼표 추가)
-                    row += `<span class="num-text ${cls}">${n < 10 ? '0'+n : n}</span>${idx < 5 ? ',' : ''}`;
+                    row += `<span class="num-text ${cls}">${n < 10 ? '0'+n : n}</span>${i < 5 ? ',' : ''}`;
                 });
                 row += `</div>`;
                 box.innerHTML += row;
+            });
+
+            if(finalSets.length < count) {
+                box.innerHTML += `<br><span style="color:red; font-size:0.8rem;">* 필터 조건이 까다로워 ${finalSets.length}조합만 추출되었습니다.</span>`;
             }
         }
     </script>
