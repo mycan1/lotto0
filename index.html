@@ -34,18 +34,26 @@
     <div id="console-container"><div id="console">▶ 깃허브 데이터 로딩 중... (0000)</div></div>
 
     <script>
-        const DATA_URL = 'lotto.txt'; // 깃허브 같은 경로의 파일
+        const DATA_URL = 'lotto.txt'; 
         let globalLottoData = [];
         let missingPool = [];
         let isAttackTiming = false;
-        let _seed = 1208;
+        let _seed = 1208; // 고정 시드 유지
 
         function seededRandom() {
             _seed = (_seed * 1664525 + 1013904223) % 4294967296;
             return _seed / 4294967296;
         }
 
-        // 깃허브 데이터 자동 로드 함수
+        // 시드 기반 셔플 함수 추가 (안정성 강화)
+        function shuffle(array) {
+            for (let i = array.length - 1; i > 0; i--) {
+                const j = Math.floor(seededRandom() * (i + 1));
+                [array[i], array[j]] = [array[j], array[i]];
+            }
+            return array;
+        }
+
         async function initSystem() {
             const box = document.getElementById('console');
             try {
@@ -55,11 +63,9 @@
                 const lines = text.trim().split('\n').filter(l => l.length > 0);
                 globalLottoData = lines.map(line => line.split(',').map(Number));
                 
-                // 파일 첫 줄 첫 숫자 기준 회차 설정
                 const lastRound = globalLottoData[0][0];
                 const nextRound = lastRound + 1;
 
-                // 분석 엔진
                 let clusterScore = 0;
                 const recent5 = globalLottoData.slice(0, 5);
                 recent5.forEach(row => {
@@ -75,7 +81,7 @@
                 box.innerHTML = `✅ [${lastRound}회] 데이터 동기화 완료.\n▶ 분석 모드: ${isAttackTiming ? '🔥공격형' : '🍀안정형'}\n▶ 미출수: ${missingPool.length}개 확보\n--------------------------`;
                 document.getElementById('btn10').disabled = false;
             } catch (e) {
-                box.innerHTML = "❌ 데이터 로드 실패! lotto.txt 파일이 같은 경로에 있는지 확인하세요.";
+                box.innerHTML = "❌ 데이터 로드 실패! lotto.txt 파일을 확인하세요.";
             }
         }
 
@@ -97,25 +103,29 @@
             box.innerHTML = `▶ [${mode}조합 추출 결과]\n`;
             let count = parseInt(mode), gen = 0, safety = 0;
 
-            while(gen < count && safety < 20000) {
+            // safety를 100,000으로 늘려 시드가 돌면서 조건을 찾을 때까지 충분히 시도함
+            while(gen < count && safety < 100000) {
                 safety++;
                 let candidate = [];
                 let isPower = (mode === '10' && gen >= 7);
 
-                if (isPower) {
+                if (isPower && missingPool.length >= 3) {
                     let mCount = (gen - 6); 
-                    let mPicks = [...missingPool].sort(() => seededRandom() - 0.5).slice(0, mCount);
+                    let shuffledMissing = shuffle([...missingPool]);
+                    let mPicks = shuffledMissing.slice(0, mCount);
                     let others = Array.from({length: 45}, (_, i) => i + 1).filter(n => !mPicks.includes(n));
-                    candidate = [...mPicks, ...others.sort(() => seededRandom() - 0.5).slice(0, 6 - mCount)].sort((a,b) => a-b);
+                    candidate = [...mPicks, ...shuffle(others).slice(0, 6 - mCount)].sort((a,b) => a-b);
                 } else {
-                    candidate = Array.from({length: 45}, (_, i) => i + 1).sort(() => seededRandom() - 0.5).slice(0, 6).sort((a,b) => a-b);
+                    let pool = Array.from({length: 45}, (_, i) => i + 1);
+                    candidate = shuffle(당구).slice(0, 6).sort((a,b) => a-b);
                 }
 
                 let sum = candidate.reduce((a,b) => a+b, 0);
                 let ac = calculateAC(candidate);
                 let odd = candidate.filter(n => n % 2 !== 0).length;
 
-                if (sum >= 100 && sum <= 170 && ac >= 5 && [2,3,4].includes(odd) && isSequentialOk(candidate, isAttackTiming)) {
+                // 필터 조건: 시드 고정 시 범위를 너무 좁히면 안 나올 수 있어 소폭 조정 (합계 90~180, AC 4이상)
+                if (sum >= 90 && sum <= 180 && ac >= 4 && [2,3,4].includes(odd) && isSequentialOk(candidate, isAttackTiming)) {
                     gen++;
                     let s = candidate.map(n => n < 10 ? "0"+n : n).join("  ");
                     let prefix = isPower ? "🔥 " : "⭐ ";
@@ -123,6 +133,8 @@
                     box.innerHTML += `<div class="res-line" ${style}>${prefix}${gen < 10 ? "0"+gen : gen} : ${s} <span style="font-size:11px; color:#555; margin-left:10px;">AC:${ac}</span></div>`;
                 }
             }
+            
+            if(gen < count) box.innerHTML += `\n⚠️ 조건에 맞는 조합을 모두 찾지 못했습니다.`;
             box.scrollTop = box.scrollHeight;
             startTimer(mode);
         }
