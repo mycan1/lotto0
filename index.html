@@ -15,7 +15,7 @@
         .ball { display: inline-block; width: 32px; height: 32px; line-height: 32px; text-align: center; border-radius: 50%; font-weight: bold; font-size: 14px; margin-right: 5px; color: #fff; text-shadow: 1px 1px 1px #000; box-shadow: 1px 1px 3px rgba(0,0,0,0.5); margin-bottom: 8px; }
         .b1 { background: #fbc400; } .b11 { background: #69c8f2; } .b21 { background: #ff7272; } .b31 { background: #aaa; } .b41 { background: #b0d840; }
         #console-container { width: 100%; max-width: 400px; margin: 15px auto; background-color: #1a1a1a; border-radius: 12px; border: 2px solid #333; }
-        #console { width: 100%; height: 520px; padding: 15px; text-align: left; overflow-y: auto; color: #f2c94c; box-sizing: border-box; line-height: 1.8; font-size: 14px; }
+        #console { width: 100%; height: 520px; padding: 15px; text-align: left; overflow-y: auto; color: #f2c94c; box-sizing: border-box; line-height: 1.8; font-size: 14px; white-space: pre-wrap; }
         .row-item { margin-bottom: 18px; padding-bottom: 10px; border-bottom: 1px solid #262626; position: relative; }
         .btn-save { position: absolute; top: 0; right: 0; background: transparent; color: #f2c94c; border: 1px solid #f2c94c; border-radius: 4px; padding: 2px 8px; font-size: 11px; cursor: pointer; }
         .tag-info { font-size: 11px; color: #888; display: block; }
@@ -25,7 +25,7 @@
 </head>
 <body>
     <h1 onclick="location.reload()">🏆 신의 손 : 얼티밋 🏆</h1>
-    <div class="target-box" id="display-target">🎯 분석 데이터 연동 중...</div>
+    <div class="target-box" id="display-target">🎯 데이터 연동 대기 중...</div>
 
     <div class="btn-container">
         <button class="btn-main" id="btn-run" onclick="generateUltimate()">
@@ -46,7 +46,7 @@
     </div>
 
     <script>
-        const MY_DATA_FILE = 'lotto.txt';
+        const MY_DATA_FILE = 'lotto.txt'; // 사용 중인 파일명으로 수정 가능
         let rawData = [], missingPool = [], elitePool = [], lastWeekNums = [];
         const PRIMES = [2, 3, 5, 7, 11, 13, 17, 19, 23, 29, 31, 37, 41, 43];
 
@@ -56,7 +56,7 @@
             return d.size - 5;
         }
 
-        // 3연번 방지 로직 (코드 1 이식)
+        // 코드 1에서 가져온 연번 방지 로직 (3연번 이상 금지)
         function isSequentialOk(nums) {
             let sorted = [...nums].sort((a,b)=>a-b);
             for (let i = 0; i < sorted.length - 2; i++) {
@@ -65,7 +65,7 @@
             return true;
         }
 
-        // 정밀 필터링 (코드 2 이식 및 강화)
+        // 코드 2에서 가져온 정밀 필터링 로직
         function isAdvancedOk(nums) {
             let sum = nums.reduce((a,b)=>a+b,0);
             let odd = nums.filter(n=>n%2!==0).length;
@@ -79,7 +79,7 @@
             if (low < 2 || low > 4) return false;
             if (Math.max(...Object.values(endFreq)) >= 3) return false;
             if (getAC(nums) < 7) return false;
-            if (!isSequentialOk(nums)) return false; // 연번 체크 추가
+            if (!isSequentialOk(nums)) return false;
             return true;
         }
 
@@ -95,7 +95,7 @@
                 elitePool = Object.keys(counts).filter(n => counts[n]>=2 && counts[n]<=4).map(Number);
                 lastWeekNums = rawData[0].slice(1,7);
                 document.getElementById('display-target').innerText = `🎯 제 ${rawData[0][0] + 1}회차 조준 분석`;
-            } catch (e) { document.getElementById('console').innerText = "lotto.txt 로딩 대기 중..."; }
+            } catch (e) { document.getElementById('console').innerText = "lotto.txt 연동을 확인하세요."; }
         }
 
         function getBallHtml(n) {
@@ -105,40 +105,37 @@
 
         function generateUltimate() {
             const box = document.getElementById('console');
-            box.innerHTML = `▶ [1-2-2 전략 & 교집합 분석 가동]\n\n`;
-            let results = [], allSelectedNums = [];
+            box.innerHTML = `▶ [1등 정밀 필터링 및 교집합 분석 시작]\n\n`;
+            let results = [], allNumbersForIntersection = [];
 
-            // 1~9번 조합: 전략적 미출수 배분 및 정밀 필터
             for (let i = 1; i <= 9; i++) {
                 let safety = 0;
-                while (safety < 15000) {
+                while (safety < 20000) {
                     safety++;
-                    // 전략 1: 미출수 배분 (1~7번은 0~1개, 8~9번은 2개)
-                    let mTargetCount = (i <= 7) ? (i % 3 === 0 ? 1 : 0) : 2;
-                    let mPick = [...missingPool].sort(()=>Math.random()-0.5).slice(0, mTargetCount);
+                    // 미출수 전략적 배분 (1-2-2 변형)
+                    let mCount = (i <= 6) ? (i % 3 === 0 ? 1 : 0) : 2; 
+                    let mPick = [...missingPool].sort(()=>Math.random()-0.5).slice(0, mCount);
+                    let base = [...new Set([...elitePool, ...lastWeekNums, ...Array.from({length:45},(_,k)=>k+1)])].filter(n=>!mPick.includes(n));
+                    base.sort(()=>Math.random()-0.5);
                     
-                    let basePool = [...new Set([...elitePool, ...lastWeekNums, ...Array.from({length:45},(_,k)=>k+1)])].filter(n=>!mPick.includes(n));
-                    basePool.sort(()=>Math.random()-0.5);
-                    
-                    let candidate = [...mPick, ...basePool.slice(0, 6 - mTargetCount)].sort((a,b)=>a-b);
+                    let candidate = [...mPick, ...base.slice(0, 6-mCount)].sort((a,b)=>a-b);
 
                     if (isAdvancedOk(candidate)) {
-                        let tag = (i <= 7) ? "안정형" : "타격형";
-                        results.push({tag: tag, nums: candidate, mCount: mTargetCount});
-                        allSelectedNums.push(...candidate);
+                        results.push({tag: i<=6?"안정형":"타격형", nums: candidate, mCount: mCount});
+                        allNumbersForIntersection.push(...candidate);
                         break;
                     }
                 }
             }
 
-            // 10번 조합: 교집합 필살기 (코드 1 이식)
+            // 10번째 조합: 코드 1의 교집합 필살기 로직
             let freq = {};
-            allSelectedNums.forEach(n => freq[n] = (freq[n]||0)+1);
-            let sortedNums = Object.keys(freq).sort((a,b) => freq[b] - freq[a]);
-            let intersectionCombo = sortedNums.slice(0, 6).map(Number).sort((a,b)=>a-b);
+            allNumbersForIntersection.forEach(n => freq[n] = (freq[n]||0)+1);
+            let sortedByFreq = Object.keys(freq).sort((a,b) => freq[b] - freq[a]);
+            let intersectionCombo = sortedByFreq.slice(0, 6).map(Number).sort((a,b)=>a-b);
             results.push({tag: "교집합 필살기", nums: intersectionCombo, mCount: "AI압축"});
 
-            // 화면 출력
+            // 결과 출력
             results.forEach((res, idx) => {
                 let isFinal = idx === 9;
                 let row = document.createElement('div');
@@ -155,8 +152,7 @@
         }
 
         function startTimer() {
-            const btn = document.getElementById('btn-run');
-            const overlay = document.getElementById('timer-box');
+            const btn = document.getElementById('btn-run'), overlay = document.getElementById('timer-box');
             btn.disabled = true; overlay.style.display = 'flex';
             let sec = 60;
             let itv = setInterval(() => {
@@ -166,16 +162,16 @@
         }
 
         function saveNumber(numStr) {
-            let saved = JSON.parse(localStorage.getItem('ultimate_king') || "[]");
+            let saved = JSON.parse(localStorage.getItem('ultimate_storage') || "[]");
             if(!saved.includes(numStr)) {
                 saved.push(numStr);
-                localStorage.setItem('ultimate_king', JSON.stringify(saved));
+                localStorage.setItem('ultimate_storage', JSON.stringify(saved));
                 alert("보관함에 저장되었습니다!");
             }
         }
 
         function showStorage() {
-            let saved = JSON.parse(localStorage.getItem('ultimate_king') || "[]");
+            let saved = JSON.parse(localStorage.getItem('ultimate_storage') || "[]");
             const listDiv = document.getElementById('list-history');
             listDiv.innerHTML = '<b style="display:block;margin-bottom:15px;color:#f2c94c;">📜 저장된 필살 조합</b>';
             if(saved.length === 0) listDiv.innerHTML += "저장된 번호가 없습니다.";
@@ -186,7 +182,7 @@
             document.getElementById('storage-modal').style.display = 'block';
         }
 
-        function clearAll() { if(confirm("모든 데이터를 초기화할까요?")) { localStorage.clear(); location.reload(); } }
+        function clearAll() { if(confirm("모든 기록을 초기화하시겠습니까?")) { localStorage.clear(); location.reload(); } }
 
         loadData();
     </script>
