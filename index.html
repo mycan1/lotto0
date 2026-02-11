@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>신의 손 - 자동 회차 연동 시스템</title>
+    <title>신의 손 - 자동 회차 연동</title>
     <style>
         body { background-color: #0c0c0c; color: #f2c94c; font-family: 'Malgun Gothic', sans-serif; text-align: center; padding: 20px; margin: 0; }
         h1 { color: #f2c94c; font-size: 2.5rem; margin-top: 30px; margin-bottom: 25px; font-weight: bold; letter-spacing: -1px; cursor: pointer; }
@@ -25,25 +25,18 @@
     <div class="target-box" id="display-target">🎯 데이터를 불러오는 중...</div>
 
     <div class="btn-container">
-        <button class="btn-main" id="btn5" onclick="process('5')">5조합 생성 (패턴 분석)<div id="timer5" class="timer-overlay"></div></button>
-        <button class="btn-main" id="btn10" onclick="process('10')">10조합 생성 (심화 분석)<div id="timer10" class="timer-overlay"></div></button>
+        <button class="btn-main" id="btn5" onclick="process('5')">5조합 생성 (분석 엔진)<div id="timer5" class="timer-overlay"></div></button>
+        <button class="btn-main" id="btn10" onclick="process('10')">10조합 생성 (패턴 분석)<div id="timer10" class="timer-overlay"></div></button>
         <button class="btn-sub" onclick="showStorage()">마킹 보관함</button>
         <button class="btn-sub" onclick="clearAll()">전체 삭제</button>
     </div>
 
-    <div id="console-container"><div id="console">▶ 사장님, lotto.txt 연결 대기 중...</div></div>
+    <div id="console-container"><div id="console">▶ lotto.txt 연결 시도 중...</div></div>
 
-    <div id="storage-modal">
-        <div class="modal-content">
-            <div id="list-5"></div>
-            <div id="list-10"></div>
-            <button class="close-btn" onclick="closeModal()">창 닫기</button>
-        </div>
-    </div>
+    <div id="storage-modal"><div class="modal-content"><div id="list-5"></div><div id="list-10"></div><button class="close-btn" onclick="closeModal()">창 닫기</button></div></div>
 
     <script>
         const MY_DATA_FILE = 'lotto.txt'; 
-        var WAIT_TIME = 60000;
         var globalLottoData = [];
         var storageData = JSON.parse(localStorage.getItem('kingStorageTime')) || { '5': [], '10': [] };
 
@@ -53,31 +46,32 @@
             try {
                 const response = await fetch(MY_DATA_FILE + '?v=' + Math.random());
                 if (!response.ok) throw new Error();
-                
                 const text = await response.text();
                 const lines = text.trim().split('\n').filter(line => line.length > 0);
                 
-                globalLottoData = lines.map(line => line.split(',').map(Number));
+                // 사장님 데이터 특성 반영: 첫번째 숫자(회차)는 버리고 2~7번째 숫자만 사용
+                globalLottoData = lines.map(line => {
+                    const row = line.split(',').map(Number);
+                    return row.slice(1, 7); // 회차 번호 제외하고 당첨번호 6개만 추출
+                });
                 
-                // [자동 회차 계산 로직]
-                // 데이터가 1207줄이면 다음 회차는 1208회로 표시
-                const nextRound = globalLottoData.length + 1;
+                // 최신 회차 번호 추출 (데이터의 맨 윗줄 첫번째 숫자 + 1)
+                const firstRow = lines[0].split(',').map(Number);
+                const nextRound = firstRow[0] + 1;
+                
                 targetBox.innerHTML = `🎯 제 ${nextRound}회차 예상 엔진 연동본`;
-                
-                consoleBox.innerHTML = `✅ [${MY_DATA_FILE}] 연결 성공!<br>총 ${globalLottoData.length}회차 분석 완료.<br>${nextRound}회차 번호를 생성하세요.`;
+                consoleBox.innerHTML = `✅ [${MY_DATA_FILE}] 연결 성공!<br>최신 데이터(${firstRow[0]}회) 기반 분석 완료.<br>${nextRound}회차 번호를 생성하세요.`;
             } catch (err) {
-                consoleBox.innerHTML = "❌ 파일 연결 실패!<br>저장소에 lotto.txt가 있는지 확인하세요.";
+                consoleBox.innerHTML = "❌ 파일 연결 실패!<br>이름이 [lotto.txt]인지 확인하세요.";
                 targetBox.innerHTML = "🎯 데이터 연결 오류";
             }
         }
 
         loadFileData();
 
-        // ... (이하 로직 코드는 동일하여 생략, 위 코드에 맞춰 나머지 getAC, process 함수 등을 그대로 사용하시면 됩니다)
-        // (지면상 생략하지만 실제 index.html에는 이전 답변의 전체 로직을 다 넣으셔야 합니다.)
-        
         function getAC(arr) { let d = new Set(); for (let i = 0; i < 6; i++) { for (let j = i + 1; j < 6; j++) d.add(Math.abs(arr[i] - arr[j])); } return d.size - 5; }
         function isSequentialOk(nums) { for(let i=0; i<nums.length-2; i++) { if(nums[i]+1 === nums[i+1] && nums[i+1]+1 === nums[i+2]) return false; } return true; }
+
         function process(mode) {
             if(globalLottoData.length === 0) { alert("데이터 로딩 중입니다."); return; }
             var box = document.getElementById('console');
@@ -85,7 +79,8 @@
             var count = (mode === '5') ? 5 : 10;
             var gen = 0, safety = 0;
             var timeStr = new Date().getHours() + ":" + (new Date().getMinutes()<10?'0':'') + new Date().getMinutes();
-            while(gen < count && safety < 10000) {
+            
+            while(gen < count && safety < 15000) {
                 safety++;
                 var res = [];
                 while(res.length < 6) { var pick = Math.floor(Math.random() * 45) + 1; if(!res.includes(pick)) res.push(pick); }
@@ -107,7 +102,7 @@
         function closeModal() { document.getElementById('storage-modal').style.display = 'none'; }
         function renderList(mode) {
             var listDiv = document.getElementById('list-' + mode);
-            listDiv.innerHTML = '<div style="color:#f2c94c; font-weight:bold; padding:10px;">📜 ' + mode + '조합 기록</div>';
+            listDiv.innerHTML = '<div style="color:#f2c94c; font-weight:bold; padding:10px;">📜 ' + mode + '조합 최근 기록</div>';
             storageData[mode].slice(-10).forEach(item => {
                 var div = document.createElement('div');
                 div.style.cssText = "color:#FFF; padding:5px; border-bottom:1px solid #333; font-size:14px;";
@@ -119,7 +114,7 @@
         function startTimer(m) {
             var b = document.getElementById('btn'+m), o = document.getElementById('timer'+m);
             b.disabled = true; o.style.display = 'flex';
-            var e = new Date().getTime() + WAIT_TIME;
+            var e = new Date().getTime() + 60000;
             var t = setInterval(function() {
                 var r = e - new Date().getTime();
                 if(r <= 0) { clearInterval(t); b.disabled = false; o.style.display = 'none'; }
