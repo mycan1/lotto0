@@ -3,194 +3,78 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>신의 손 - 시간기록형</title>
+    <title>신의 손 - 교집합 필살기 v2.0</title>
     <style>
-        /* 스크린샷의 블랙 & 골드 테마 완벽 재현 */
-        body { 
-            background-color: #000000; 
-            color: #ffffff; 
-            font-family: 'Malgun Gothic', sans-serif; 
-            margin: 0; 
-            padding: 20px; 
-            display: flex; 
-            flex-direction: column; 
-            align-items: center;
-        }
-
-        h1 { 
-            color: #f2c94c; 
-            font-size: 2.8rem; 
-            margin: 20px 0; 
-            font-weight: bold; 
-        }
-
-        /* 회차 표시 박스 */
-        .round-box {
-            width: 100%;
-            max-width: 400px;
-            border: 2px solid #f2c94c;
-            border-radius: 12px;
-            padding: 15px 0;
-            font-size: 1.4rem;
-            font-weight: bold;
-            margin-bottom: 25px;
-            background-color: #000;
-        }
-        .round-box span { color: #f2c94c; }
-
-        /* 시드 입력 영역 (추가됨) */
-        .seed-area {
-            margin-bottom: 15px;
-            color: #888;
-            font-size: 0.9rem;
-        }
-        #seed-val {
-            background: #1a1a1a;
-            border: 1px solid #333;
-            color: #f2c94c;
-            padding: 5px;
-            width: 80px;
-            text-align: center;
-            border-radius: 4px;
-            margin-left: 10px;
-        }
-
-        /* 메인 버튼 스타일 */
-        .btn-gold {
-            width: 100%;
-            max-width: 400px;
-            height: 75px;
-            background-color: #d4a017;
-            color: #000;
-            border: none;
-            border-radius: 12px;
-            font-size: 1.3rem;
-            font-weight: bold;
-            margin-bottom: 12px;
-            cursor: pointer;
-        }
-
-        /* 하단 서브 버튼 레이아웃 */
-        .sub-btn-container {
-            display: flex;
-            width: 100%;
-            max-width: 400px;
-            gap: 10px;
-            margin-bottom: 20px;
-        }
-        .btn-dark {
-            flex: 1;
-            height: 65px;
-            background-color: #1a1a1a;
-            color: #fff;
-            border: 1px solid #333;
-            border-radius: 12px;
-            font-size: 1.1rem;
-            font-weight: bold;
-            cursor: pointer;
-        }
-
-        /* 결과 콘솔 박스 */
-        #console-container {
-            width: 100%;
-            max-width: 400px;
-            min-height: 400px;
-            background-color: #111111;
-            border: 1px solid #333;
-            border-radius: 15px;
-            padding: 20px;
-            box-sizing: border-box;
-            text-align: left;
-        }
-        #console {
-            color: #f2c94c;
-            font-size: 1.1rem;
-            line-height: 1.8;
-            white-space: pre-wrap;
-        }
-
-        /* 번호 공 스타일 */
-        .ball {
-            display: inline-block;
-            width: 32px;
-            height: 32px;
-            line-height: 32px;
-            text-align: center;
-            border-radius: 50%;
-            font-weight: bold;
-            font-size: 14px;
-            margin-right: 4px;
-            color: #fff;
-        }
+        body { background-color: #0c0c0c; color: #f2c94c; font-family: 'Malgun Gothic', sans-serif; text-align: center; padding: 20px; margin: 0; overflow-x: hidden; }
+        h1 { color: #f2c94c; font-size: 2.2rem; margin-top: 20px; margin-bottom: 20px; font-weight: bold; letter-spacing: -1px; cursor: pointer; text-shadow: 0 0 10px rgba(242, 201, 76, 0.5); }
+        .target-box { color: #FFF; font-size: 1.1rem; margin-bottom: 15px; background: #1a1a1a; padding: 10px 20px; border-radius: 10px; display: inline-block; border: 2px solid #f2c94c; font-weight: bold; box-shadow: 0 4px 15px rgba(242, 201, 76, 0.2); }
+        .status-badge { display: block; margin: 5px auto 15px; font-size: 0.85rem; color: #00ffcc; font-weight: bold; }
+        .btn-container { display: flex; flex-wrap: wrap; justify-content: center; gap: 10px; max-width: 400px; margin: 0 auto 15px auto; }
+        button { border: none; border-radius: 8px; cursor: pointer; font-size: 16px; font-weight: bold; transition: 0.3s; position: relative; overflow: hidden; }
+        .btn-main { width: 100%; height: 60px; background: linear-gradient(145deg, #f2c94c, #d4a017); color: #000; border: 1px solid #f2c94c; }
+        .btn-main:active { transform: scale(0.98); }
+        .btn-sub { width: 48%; height: 50px; background-color: #262626; color: white; border: 1px solid #444; }
+        .ball { display: inline-block; width: 32px; height: 32px; line-height: 32px; text-align: center; border-radius: 50%; font-weight: bold; font-size: 14px; margin-right: 4px; color: #fff; text-shadow: 1px 1px 1px #000; box-shadow: inset -2px -2px 4px rgba(0,0,0,0.4); }
         .b1 { background: #fbc400; } .b11 { background: #69c8f2; } .b21 { background: #ff7272; } .b31 { background: #aaa; } .b41 { background: #b0d840; }
-
-        /* 쪽지함 아이콘 재현 */
-        .mailbox {
-            position: fixed;
-            bottom: 30px;
-            right: 30px;
-            width: 70px;
-            height: 70px;
-            background-color: #f2c94c;
-            border-radius: 50%;
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-            justify-content: center;
-            color: #000;
-            font-size: 0.8rem;
-            font-weight: bold;
-            box-shadow: 0 4px 10px rgba(0,0,0,0.5);
-        }
+        #console-container { width: 100%; max-width: 400px; margin: 15px auto; background-color: #111; border-radius: 12px; border: 1px solid #333; }
+        #console { width: 100%; height: 520px; padding: 15px; text-align: left; overflow-y: auto; color: #eee; box-sizing: border-box; font-size: 13.5px; line-height: 1.8; white-space: pre-wrap; font-family: 'Consolas', monospace; }
+        .timer-overlay { position: absolute; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.85); display: none; align-items: center; justify-content: center; border-radius: 8px; color: #ff4d4d; font-size: 20px; }
+        #storage-modal { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.9); z-index: 1000; overflow-y: auto; padding-top: 30px; }
+        .modal-content { background: #1a1a1a; width: 90%; max-width: 380px; margin: 0 auto; padding: 20px; border: 1px solid #f2c94c; border-radius: 15px; }
+        .close-btn { background: #444; color: white; width: 100%; height: 50px; border-radius: 8px; margin-top: 20px; font-size: 16px; border: none; cursor: pointer; }
+        .row-item { margin-bottom: 15px; padding-bottom: 10px; border-bottom: 1px solid #222; }
+        .tag-info { font-size: 11px; color: #aaa; display: block; margin-bottom: 5px; }
+        .tag-final { color: #f2c94c; font-weight: bold; border: 1px solid #f2c94c; padding: 2px 6px; border-radius: 4px; display: inline-block; margin-bottom: 5px; }
     </style>
 </head>
 <body>
+    <h1 onclick="location.reload()">신의 손 AI 🚀</h1>
+    <div class="target-box" id="display-target">🎯 데이터 로딩 중...</div>
+    <div id="ai-status" class="status-badge">교집합 필살기 가동 준비 완료</div>
 
-    <h1>신 의 손</h1>
-
-    <div class="round-box" id="round-display">
-        🎯 제 <span>----</span>회차 (시간기록형)
+    <div class="btn-container">
+        <button class="btn-main" id="btn10" onclick="processIntersectionStrategy()">전략 10조합 추출 (AI 필살기)<div id="timer10" class="timer-overlay"></div></button>
+        <button class="btn-sub" onclick="showStorage()">필살기 기록</button>
+        <button class="btn-sub" onclick="clearAll()">초기화</button>
     </div>
 
-    <div class="seed-area">
-        운명의 시드 고정: <input type="number" id="seed-val" value="777">
-    </div>
+    <div id="console-container"><div id="console">▶ lotto.txt 데이터를 분석 중입니다...</div></div>
 
-    <button class="btn-gold" onclick="generateFixed(5, 'AC 9-10')">5조합 생성 (AC 9-10)</button>
-    <button class="btn-gold" onclick="generateFixed(10, '패턴 분석')">10조합 생성 (패턴 분석)</button>
-
-    <div class="sub-btn-container">
-        <button class="btn-dark" onclick="alert('보관함으로 이동합니다.')">마킹 보관함</button>
-        <button class="btn-dark" onclick="location.reload()">전체 삭제</button>
-    </div>
-
-    <div id="console-container">
-        <div id="console">▶ 사장님, 시간 기록 엔진 가동 중...</div>
-    </div>
-
-    <div class="mailbox">
-        <span>📩 쪽지</span>
-        <span>함</span>
-    </div>
+    <div id="storage-modal"><div class="modal-content"><div id="list-history"></div><button class="close-btn" onclick="closeModal()">닫기</button></div></div>
 
     <script>
         const MY_DATA_FILE = 'lotto.txt';
-        let _seed = 777;
-        let rawData = [];
+        let rawData = [], missingPool = [], elitePool = [], lastWeekNums = [];
+        let storageData = JSON.parse(localStorage.getItem('kingIntersection')) || [];
 
-        // 시드 기반 난수 엔진 (오류 수정됨)
-        function seededRandom() {
-            _seed = (_seed * 1664525 + 1013904223) % 4294967296;
-            return _seed / 4294967296;
+        // 산술 복잡도 계산
+        function getAC(arr) {
+            let diffs = new Set();
+            for (let i = 0; i < 6; i++) {
+                for (let j = i + 1; j < 6; j++) {
+                    diffs.add(Math.abs(arr[i] - arr[j]));
+                }
+            }
+            return diffs.size - 5;
         }
 
-        function seededShuffle(array) {
-            let arr = [...array];
-            for (let i = arr.length - 1; i > 0; i--) {
-                const j = Math.floor(seededRandom() * (i + 1));
-                [arr[i], arr[j]] = [arr[j], arr[i]];
+        // 연속 번호 체크 강화
+        function isSequentialOk(nums) {
+            let sorted = [...nums].sort((a,b)=>a-b);
+            let pairCount = 0;
+            for (let i = 0; i < sorted.length - 1; i++) {
+                if (sorted[i] + 1 === sorted[i+1]) {
+                    if (i < sorted.length - 2 && sorted[i+1] + 1 === sorted[i+2]) return false; // 3연번 금지
+                    pairCount++;
+                }
             }
-            return arr;
+            return pairCount <= 2; // 2쌍까지만 허용
+        }
+
+        function getBallHtml(n) {
+            let cls = 'b1';
+            if(n>10) cls='b11'; if(n>20) cls='b21'; if(n>30) cls='b31'; if(n>40) cls='b41';
+            return `<span class="ball ${cls}">${n}</span>`;
         }
 
         async function loadData() {
@@ -198,54 +82,116 @@
                 const response = await fetch(MY_DATA_FILE + '?v=' + Math.random());
                 const text = await response.text();
                 const lines = text.trim().split('\n');
-                rawData = lines.map(line => line.split(',').map(Number)).filter(r => r.length >= 7);
-                document.getElementById('round-display').innerHTML = `🎯 제 <span>${rawData[0][0] + 1}</span>회차 (시간기록형)`;
-            } catch (e) {
-                document.getElementById('round-display').innerHTML = `🎯 제 <span>미연결</span>회차`;
-            }
-        }
-
-        function generateFixed(count, typeName) {
-            _seed = parseInt(document.getElementById('seed-val').value) || 777;
-            const box = document.getElementById('console');
-            box.innerHTML = `▶ [${typeName}] 시드 ${_seed} 분석 결과\n\n`;
-
-            let poolForIntersection = [];
-
-            for (let i = 1; i <= count; i++) {
-                let comboSet = new Set();
-                let fullPool = Array.from({length:45}, (_,idx)=>idx+1);
-                let shuffled = seededShuffle(fullPool);
-
-                // 중복 없이 6개 추출
-                for(let n of shuffled) {
-                    if(comboSet.size >= 6) break;
-                    comboSet.add(n);
-                }
-
-                let nums = Array.from(comboSet).sort((a,b)=>a-b);
-                poolForIntersection.push(...nums);
                 
-                displayNumbers(nums, i, box);
-            }
+                rawData = lines.map(line => line.split(',').map(Number)).filter(row => row.length >= 7);
+                
+                if (rawData.length === 0) throw new Error("데이터 없음");
 
-            // 10조합일 경우 마지막에 교집합 필살기 추가 (선택사항)
-            if(count === 10) {
-                box.innerHTML += `\n<span style="color:#fff; border-bottom:1px solid #f2c94c;">🔥 교집합 필살기 (AI 압축)</span>\n`;
-                let freq = {};
-                poolForIntersection.forEach(n => freq[n] = (freq[n]||0)+1);
-                let sorted = Object.keys(freq).sort((a,b)=>freq[b]-freq[a]);
-                let finalNums = sorted.slice(0, 6).map(Number).sort((a,b)=>a-b);
-                displayNumbers(finalNums, "결정", box);
+                let maxRound = rawData[0][0];
+                let counts = {};
+                const recent30 = rawData.slice(0, 30);
+                recent30.forEach(row => row.slice(1,7).forEach(n => counts[n] = (counts[n]||0)+1));
+                
+                missingPool = Array.from({length:45},(_,i)=>i+1).filter(n => !counts[n]);
+                elitePool = Object.keys(counts).filter(n => counts[n]>=2 && counts[n]<=5).map(Number);
+                lastWeekNums = rawData[0].slice(1,7);
+                
+                document.getElementById('display-target').innerHTML = `🎯 제 ${maxRound + 1}회차 분석 엔진`;
+                document.getElementById('console').innerHTML = `▶ 데이터 로드 완료 (${rawData.length}회분)\n▶ 미출수: ${missingPool.length}개 / 우수수: ${elitePool.length}개`;
+            } catch (e) { 
+                document.getElementById('console').innerHTML = "❌ lotto.txt를 찾을 수 없거나 형식이 잘못되었습니다.\n파일을 서버(혹은 로컬호스트)에 업로드하세요."; 
             }
         }
 
-        function displayNumbers(nums, idx, box) {
-            let ballHtml = nums.map(n => {
-                let cls = n<=10?'b1':n<=20?'b11':n<=30?'b21':n<=40?'b31':'b41';
-                return `<span class="ball ${cls}">${n}</span>`;
-            }).join("");
-            box.innerHTML += `<div style="margin-bottom:10px;">${idx}. ${ballHtml}</div>`;
+        function processIntersectionStrategy() {
+            if (rawData.length === 0) { alert("데이터가 없습니다."); return; }
+            
+            const box = document.getElementById('console');
+            box.innerHTML = `[1-2-2 시스템 가동 중...]\n\n`;
+            
+            let poolForIntersection = [];
+            let currentResults = [];
+            let timeStamp = new Date().toLocaleString();
+
+            // 1~9번 조합 생성 (안정/타격 혼합)
+            for (let i = 1; i <= 9; i++) {
+                let safety = 0;
+                while (safety < 20000) {
+                    safety++;
+                    let mCount = (i <= 5) ? 0 : (i <= 8 ? 1 : 2); // 점진적 공격성 증가
+                    let mPick = [...missingPool].sort(()=>Math.random()-0.5).slice(0, mCount);
+                    
+                    let base = [...new Set([...elitePool, ...lastWeekNums, ...Array.from({length:45},(_,idx)=>idx+1)])];
+                    let others = base.filter(n=>!mPick.includes(n)).sort(()=>Math.random()-0.5).slice(0, 6-mCount);
+                    
+                    let candidate = [...mPick, ...others].sort((a,b)=>a-b);
+                    let sum = candidate.reduce((a,b)=>a+b,0);
+                    let ac = getAC(candidate);
+                    let odd = candidate.filter(n=>n%2!==0).length;
+
+                    // 강화된 필터링
+                    if (sum>=100 && sum<=180 && ac>=5 && [2,3,4].includes(odd) && isSequentialOk(candidate)) {
+                        let type = i <= 5 ? "안정" : "타격";
+                        currentResults.push({tag: type, nums: candidate, mCount: mCount});
+                        poolForIntersection.push(...candidate);
+                        break;
+                    }
+                }
+            }
+
+            // 10번: 교집합 필살기 (앞선 9개 조합 중 가장 빈번한 수 추출)
+            let freq = {};
+            poolForIntersection.forEach(n => freq[n] = (freq[n] || 0) + 1);
+            let sortedNums = Object.keys(freq).sort((a,b) => freq[b] - freq[a]);
+            let intersectionCombo = sortedNums.slice(0, 6).map(Number).sort((a,b)=>a-b);
+            currentResults.push({tag: "교집합", nums: intersectionCombo, mCount: "AI압축"});
+
+            // 화면 출력 및 저장
+            currentResults.forEach((res, idx) => {
+                let ballHtml = res.nums.map(n => getBallHtml(n)).join("");
+                let isFinal = (idx === 9);
+                let tagStr = isFinal ? `<span class="tag-final">★ 필살기 ★</span>` : `<span class="tag-info">(${idx+1}) [${res.tag}] 미출:${res.mCount}</span>`;
+                
+                box.innerHTML += `<div class="row-item">${tagStr}${ballHtml}</div>`;
+                
+                // 보관함용 데이터
+                if(isFinal) storageData.push({time: timeStamp, html: ballHtml});
+            });
+
+            if(storageData.length > 50) storageData.shift(); // 최대 50개 유지
+            localStorage.setItem('kingIntersection', JSON.stringify(storageData));
+            startTimer('10');
+        }
+
+        function showStorage() {
+            const listDiv = document.getElementById('list-history');
+            listDiv.innerHTML = '<div style="color:#f2c94c; font-weight:bold; padding-bottom:15px; border-bottom:1px solid #444;">📜 필살기 추출 기록 (최근)</div>';
+            if(storageData.length === 0) listDiv.innerHTML += '<div style="padding:20px; color:#888;">기록이 없습니다.</div>';
+            
+            [...storageData].reverse().forEach(item => {
+                listDiv.innerHTML += `<div style="padding:12px 0; border-bottom:1px solid #222; text-align:left;"><div style="font-size:10px; color:#666; margin-bottom:5px;">${item.time}</div>${item.html}</div>`;
+            });
+            document.getElementById('storage-modal').style.display = 'block';
+        }
+
+        function closeModal() { document.getElementById('storage-modal').style.display = 'none'; }
+        
+        function clearAll() { 
+            if(confirm("모든 기록을 초기화하시겠습니까?")) { 
+                localStorage.removeItem('kingIntersection'); 
+                location.reload(); 
+            } 
+        }
+
+        function startTimer(m) {
+            let b = document.getElementById('btn'+m), o = document.getElementById('timer'+m);
+            b.disabled = true; o.style.display = 'flex';
+            let end = new Date().getTime() + 10000; // 10초 대기 (테스트용으로 짧게 조정)
+            let t = setInterval(() => {
+                let remain = end - new Date().getTime();
+                if(remain <= 0) { clearInterval(t); b.disabled = false; o.style.display = 'none'; }
+                else { o.innerText = Math.ceil(remain/1000) + "s"; }
+            }, 100);
         }
 
         window.onload = loadData;
