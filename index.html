@@ -33,7 +33,13 @@
 
     <div id="console-container"><div id="console">▶ lotto.txt 연결 시도 중...</div></div>
 
-    <div id="storage-modal"><div class="modal-content"><div id="list-5"></div><div id="list-10"></div><button class="close-btn" onclick="closeModal()">창 닫기</button></div></div>
+    <div id="storage-modal">
+        <div class="modal-content">
+            <div id="list-5"></div>
+            <div id="list-10"></div>
+            <button class="close-btn" onclick="closeModal()">창 닫기</button>
+        </div>
+    </div>
 
     <script>
         const MY_DATA_FILE = 'lotto.txt'; 
@@ -49,18 +55,21 @@
                 const text = await response.text();
                 const lines = text.trim().split('\n').filter(line => line.length > 0);
                 
-                // 사장님 데이터 특성 반영: 첫번째 숫자(회차)는 버리고 2~7번째 숫자만 사용
+                let maxRound = 0;
+
                 globalLottoData = lines.map(line => {
                     const row = line.split(',').map(Number);
-                    return row.slice(1, 7); // 회차 번호 제외하고 당첨번호 6개만 추출
+                    const roundNum = row[0];
+                    // 파일 내에서 가장 큰 회차 번호를 찾음 (중복 방어)
+                    if (roundNum > maxRound) maxRound = roundNum;
+                    return row.slice(1, 7); 
                 });
                 
-                // 최신 회차 번호 추출 (데이터의 맨 윗줄 첫번째 숫자 + 1)
-                const firstRow = lines[0].split(',').map(Number);
-                const nextRound = firstRow[0] + 1;
+                // 찾은 최대 회차에 +1을 하여 예상 회차 설정
+                const nextRound = maxRound + 1;
                 
                 targetBox.innerHTML = `🎯 제 ${nextRound}회차 예상 엔진 연동본`;
-                consoleBox.innerHTML = `✅ [${MY_DATA_FILE}] 연결 성공!<br>최신 데이터(${firstRow[0]}회) 기반 분석 완료.<br>${nextRound}회차 번호를 생성하세요.`;
+                consoleBox.innerHTML = `✅ [${MY_DATA_FILE}] 연결 성공!<br>최신 데이터(${maxRound}회) 기반 분석 완료.<br>${nextRound}회차 번호를 생성하세요.`;
             } catch (err) {
                 consoleBox.innerHTML = "❌ 파일 연결 실패!<br>이름이 [lotto.txt]인지 확인하세요.";
                 targetBox.innerHTML = "🎯 데이터 연결 오류";
@@ -69,8 +78,20 @@
 
         loadFileData();
 
-        function getAC(arr) { let d = new Set(); for (let i = 0; i < 6; i++) { for (let j = i + 1; j < 6; j++) d.add(Math.abs(arr[i] - arr[j])); } return d.size - 5; }
-        function isSequentialOk(nums) { for(let i=0; i<nums.length-2; i++) { if(nums[i]+1 === nums[i+1] && nums[i+1]+1 === nums[i+2]) return false; } return true; }
+        function getAC(arr) { 
+            let d = new Set(); 
+            for (let i = 0; i < 6; i++) { 
+                for (let j = i + 1; j < 6; j++) d.add(Math.abs(arr[i] - arr[j])); 
+            } 
+            return d.size - 5; 
+        }
+
+        function isSequentialOk(nums) { 
+            for(let i=0; i<nums.length-2; i++) { 
+                if(nums[i]+1 === nums[i+1] && nums[i+1]+1 === nums[i+2]) return false; 
+            } 
+            return true; 
+        }
 
         function process(mode) {
             if(globalLottoData.length === 0) { alert("데이터 로딩 중입니다."); return; }
@@ -80,13 +101,18 @@
             var gen = 0, safety = 0;
             var timeStr = new Date().getHours() + ":" + (new Date().getMinutes()<10?'0':'') + new Date().getMinutes();
             
-            while(gen < count && safety < 15000) {
+            while(gen < count && safety < 20000) {
                 safety++;
                 var res = [];
-                while(res.length < 6) { var pick = Math.floor(Math.random() * 45) + 1; if(!res.includes(pick)) res.push(pick); }
+                while(res.length < 6) { 
+                    var pick = Math.floor(Math.random() * 45) + 1; 
+                    if(!res.includes(pick)) res.push(pick); 
+                }
                 res.sort((a,b) => a-b);
                 let sum = res.reduce((a,b)=>a+b, 0);
                 let ac = getAC(res);
+
+                // 분석 필터: 합계 100~175, 3연번 금지, AC값 7 이상
                 if (sum >= 100 && sum <= 175 && isSequentialOk(res) && ac >= 7) {
                     gen++;
                     var s = res.map(n => n<10 ? "0"+n : n).join("  ");
@@ -98,19 +124,24 @@
             box.scrollTop = box.scrollHeight;
             startTimer(mode);
         }
+
         function showStorage() { renderList('5'); renderList('10'); document.getElementById('storage-modal').style.display = 'block'; }
         function closeModal() { document.getElementById('storage-modal').style.display = 'none'; }
+        
         function renderList(mode) {
             var listDiv = document.getElementById('list-' + mode);
             listDiv.innerHTML = '<div style="color:#f2c94c; font-weight:bold; padding:10px;">📜 ' + mode + '조합 최근 기록</div>';
-            storageData[mode].slice(-10).forEach(item => {
+            // 최근 10개만 표시
+            storageData[mode].slice(-10).reverse().forEach(item => {
                 var div = document.createElement('div');
-                div.style.cssText = "color:#FFF; padding:5px; border-bottom:1px solid #333; font-size:14px;";
+                div.style.cssText = "color:#FFF; padding:8px; border-bottom:1px solid #333; font-size:14px; text-align:left;";
                 div.innerHTML = "[" + item.time + "] " + item.num;
                 listDiv.appendChild(div);
             });
         }
-        function clearAll() { if(confirm("삭제할까요?")) { localStorage.removeItem('kingStorageTime'); location.reload(); } }
+
+        function clearAll() { if(confirm("모든 기록을 삭제할까요?")) { localStorage.removeItem('kingStorageTime'); location.reload(); } }
+
         function startTimer(m) {
             var b = document.getElementById('btn'+m), o = document.getElementById('timer'+m);
             b.disabled = true; o.style.display = 'flex';
