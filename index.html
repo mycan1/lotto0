@@ -7,8 +7,8 @@
     <style>
         body { background-color: #0c0c0c; color: #f2c94c; font-family: 'Malgun Gothic', sans-serif; text-align: center; padding: 20px; margin: 0; }
         h1 { color: #f2c94c; font-size: 2.2rem; margin-top: 20px; font-weight: bold; cursor: pointer; text-shadow: 2px 2px 4px rgba(0,0,0,0.5); }
-        .target-box { color: #FFF; font-size: 1.1rem; margin-bottom: 20px; background: #1a1a1a; padding: 12px 15px; border-radius: 10px; display: inline-block; border: 2px solid #f2c94c; font-weight: bold; box-shadow: 0 0 10px rgba(242, 201, 76, 0.2); }
-        .status-label { background: #262626; color: #fff; padding: 10px 20px; border-radius: 8px; border: 1px dashed #f2c94c; font-size: 0.85rem; display: inline-block; margin-bottom: 20px; transition: 0.3s; }
+        .target-box { color: #FFF; font-size: 1.1rem; margin-bottom: 20px; background: #1a1a1a; padding: 12px 15px; border-radius: 10px; display: inline-block; border: 2px solid #f2c94c; font-weight: bold; }
+        .status-label { background: #262626; color: #fff; padding: 10px 20px; border-radius: 8px; border: 1px dashed #f2c94c; font-size: 0.85rem; display: inline-block; margin-bottom: 20px; }
         .btn-container { display: flex; flex-wrap: wrap; justify-content: center; gap: 8px; max-width: 400px; margin: 0 auto 15px auto; }
         button { border: none; border-radius: 8px; cursor: pointer; font-size: 17px; font-weight: bold; transition: 0.2s; position: relative; }
         .btn-main { width: 100%; height: 60px; background-color: #d4a017; color: black; box-shadow: 0 4px 0 #967111; }
@@ -21,12 +21,8 @@
 </head>
 <body>
     <h1 onclick="location.reload()">신 의 손</h1>
-    
     <div class="status-label" id="system-status">🔄 데이터 연동 시도 중...</div>
-
-    <div class="target-box" id="display-target">
-        <span id="round-text">연결 대기 중...</span>
-    </div>
+    <div class="target-box" id="display-target"><span id="round-text">연결 대기 중...</span></div>
 
     <div class="btn-container">
         <button class="btn-main" id="btn10" onclick="process('10')" disabled>10조합 생성 (심화 분석)</button>
@@ -37,14 +33,12 @@
     <div id="console-container"><div id="console">▶ 시스템 부팅 중...</div></div>
 
     <script>
-        // 사진 분석 최종 결과: 아이디 mycan1 / 저장소 lotto0 (숫자 0)
         const GITHUB_USER = "mycan1"; 
         const GITHUB_REPO = "lotto0"; 
         const RAW_URL = `https://raw.githubusercontent.com/${GITHUB_USER}/${GITHUB_REPO}/main/lotto.txt`;
 
         let globalLottoData = [];
         let missingPool = [];
-        let isAttackTiming = false;
         let _seed = Date.now();
 
         function seededRandom() {
@@ -55,39 +49,26 @@
         async function fetchLottoData() {
             const statusLabel = document.getElementById('system-status');
             const consoleBox = document.getElementById('console');
-            
             try {
-                // 캐시 방지를 위해 랜덤 쿼리 추가
                 const response = await fetch(`${RAW_URL}?t=${Date.now()}`);
-                if (!response.ok) throw new Error("데이터 로드 실패");
+                if (!response.ok) throw new Error("로드 실패");
                 const text = await response.text();
-                
                 const lines = text.trim().split('\n').filter(l => l.length > 0);
                 globalLottoData = lines.map(line => line.split(',').map(Number));
                 
                 const lastRound = globalLottoData[0][0];
-                const nextRound = lastRound + 1;
-
-                let clusterScore = 0;
-                const recent5 = globalLottoData.slice(0, 5);
-                recent5.forEach(row => {
-                    let nums = row.slice(1, 7).sort((a,b) => a-b);
-                    if(nums.some((n, i) => n+1 === nums[i+1])) clusterScore++;
-                });
-                isAttackTiming = clusterScore <= 2;
-
+                document.getElementById('round-text').innerHTML = `🎯 제 ${lastRound + 1}회차 추천 조합`;
+                
                 const recent30 = globalLottoData.slice(0, 30).flatMap(row => row.slice(1, 7));
                 missingPool = Array.from({length: 45}, (_, i) => i + 1).filter(n => !new Set(recent30).has(n));
 
                 statusLabel.innerHTML = `✅ 데이터 연동 성공`;
                 statusLabel.style.borderColor = "#b0d840";
-                document.getElementById('round-text').innerHTML = `🎯 제 ${nextRound}회차 추천 조합`;
-                consoleBox.innerHTML = `✅ [${lastRound}회] 데이터 동기화 성공.\n▶ 분석 모드: ${isAttackTiming ? '🔥공격형' : '🍀안정형'}\n--------------------------`;
+                consoleBox.innerHTML = `✅ 데이터 동기화 완료.\n--------------------------`;
                 document.getElementById('btn10').disabled = false;
-
             } catch (error) {
                 statusLabel.innerHTML = `❌ 연결 실패`;
-                consoleBox.innerHTML = `⚠️ 오류: lotto.txt 연동 실패\n[현재 경로 확인]\n경로: mycan1 / lotto0\n파일: lotto.txt 가 맞는지 확인하세요.`;
+                consoleBox.innerHTML = `⚠️ 파일 확인 요망: lotto.txt`;
             }
         }
 
@@ -97,42 +78,35 @@
             return d.size - 5;
         }
 
-        function isSequentialOk(nums) {
-            for(let i=0; i<5; i++) { if(nums[i]+1 === nums[i+1]) { if(i<4 && nums[i+1]+1 === nums[i+2]) return false; } }
-            return true;
-        }
-
         function process(mode) {
-            if(globalLottoData.length === 0) return;
             const box = document.getElementById('console');
             box.innerHTML = `▶ [추출 결과]\n--------------------------\n`;
-            
             let count = parseInt(mode);
             let gen = 0, safety = 0;
 
-            while(gen < count && safety < 10000) {
+            while(gen < count && safety < 50000) { // 안전 루프 확장
                 safety++;
                 let candidate = [];
-                let isPower = (gen >= 7);
+                let isPower = (gen >= 7); // 8, 9, 10번은 파워 조합(미출수 강화)
 
                 if (isPower) {
-                    let mCount = (gen - 6); 
-                    let mPicks = [...missingPool].sort(() => seededRandom() - 0.5).slice(0, mCount);
+                    let mPicks = [...missingPool].sort(() => seededRandom() - 0.5).slice(0, 2);
                     let others = Array.from({length: 45}, (_, i) => i + 1).filter(n => !mPicks.includes(n));
-                    candidate = [...mPicks, ...others.sort(() => seededRandom() - 0.5).slice(0, 6 - mCount)].sort((a,b) => a-b);
+                    candidate = [...mPicks, ...others.sort(() => seededRandom() - 0.5).slice(0, 4)].sort((a,b) => a-b);
                 } else {
                     candidate = Array.from({length: 45}, (_, i) => i + 1).sort(() => seededRandom() - 0.5).slice(0, 6).sort((a,b) => a-b);
                 }
 
                 let sum = candidate.reduce((a,b) => a+b, 0);
                 let ac = calculateAC(candidate);
-                let odd = candidate.filter(n => n % 2 !== 0).length;
-
-                if (sum >= 100 && sum <= 175 && ac >= 5 && [2,3,4].includes(odd) && isSequentialOk(candidate)) {
+                
+                // 필터링 조건 최적화 (막힘 방지)
+                if (sum >= 90 && sum <= 180 && ac >= 4) {
                     gen++;
                     let s = candidate.map(n => n < 10 ? "0"+n : n).join("  ");
-                    let style = isPower ? "style='color:#FFD700; font-weight:bold;'" : "";
-                    box.innerHTML += `<div ${style}>${isPower ? "🔥" : "⭐"} ${gen < 10 ? "0"+gen : gen} :  ${s}</div>`;
+                    let icon = isPower ? "🔥" : "⭐";
+                    let color = isPower ? "#FFD700" : "#f2c94c";
+                    box.innerHTML += `<div style="color:${color}">${icon} ${gen < 10 ? "0"+gen : gen} :  ${s}</div>`;
                 }
             }
             box.scrollTop = box.scrollHeight;
