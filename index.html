@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>신의 손 v6.2 - 저격형 엔진</title>
+    <title>신의 손 v6.2 - 자연지능 엔진</title>
     <style>
         body { background-color: #000; color: #ffd700; font-family: 'Malgun Gothic', sans-serif; text-align: center; padding: 20px; margin: 0; }
         .outer-border { border: 4px solid #ffd700; border-radius: 40px; padding: 10px; max-width: 450px; margin: 0 auto; box-shadow: 0 0 30px rgba(255, 215, 0, 0.4); }
@@ -12,7 +12,7 @@
         .target-box { color: #00ffcc; font-size: 16px; font-weight: 900; margin: 20px 0; background: #1a1a1a; padding: 15px; border-radius: 15px; border: 2px solid #00ffcc; line-height: 1.6; }
         .btn-main { width: 100%; height: 70px; background: linear-gradient(to bottom, #fdf24d, #b8a000); border: none; border-radius: 20px; font-size: 20px; font-weight: 900; cursor: pointer; margin-bottom: 20px; color: #000; }
         #console { background-color: #050505; border: 2px solid #333; border-radius: 20px; height: 500px; padding: 15px; text-align: left; overflow-y: auto; color: #ffd700; font-size: 14px; line-height: 2.2; border-left: 4px solid #ffd700; }
-        .ball { display: inline-block; width: 32px; height: 32px; background: radial-gradient(circle at 30% 30%, #ffd700, #b8a000); color: #000; border-radius: 50%; text-align: center; line-height: 32px; font-weight: bold; margin-right: 5px; font-size: 15px; box-shadow: 2px 2px 4px rgba(0,0,0,0.5); }
+        .ball { display: inline-block; width: 30px; height: 30px; background: radial-gradient(circle at 30% 30%, #ffd700, #b8a000); color: #000; border-radius: 50%; text-align: center; line-height: 30px; font-weight: bold; margin-right: 5px; font-size: 14px; box-shadow: 2px 2px 4px rgba(0,0,0,0.5); }
         .ball-cold { border: 2px solid #ff4500; background: radial-gradient(circle at 30% 30%, #ff6347, #ff4500); color: #fff; }
         .tag { font-size: 11px; padding: 3px 8px; border-radius: 5px; background: #333; color: #fff; margin-right: 8px; font-weight: bold; }
         .tag-win { background: #b8a000; }
@@ -24,8 +24,8 @@
 <div class="outer-border">
     <div class="inner-container">
         <h1 onclick="location.reload()">신 의 손 v6.2</h1>
-        <div class="target-box">💎 1210회 연관성 분석 엔진 가동<br>10번 조합: 보너스2 + 미출1 + 최저빈도3 저격</div>
-        <button class="btn-main" onclick="process()">로직 집도: 10조합 가동</button>
+        <div class="target-box">💎 1210회 자연 추출 모드 가동<br>합계 100~190 고정 · 최저 빈도 저격 적용</div>
+        <button class="btn-main" onclick="process()">분석 엔진 10조합 가동</button>
         <div id="console">▶ 시스템 준비 완료.</div>
     </div>
 </div>
@@ -39,7 +39,11 @@
         [1194,3,13,15,24,33,37,2],[1193,6,9,16,19,24,28,17],[1192,10,16,23,36,39,40,11],[1191,1,4,11,12,20,41,2],
         [1190,7,9,19,23,26,45,33],[1189,9,19,29,35,37,38,31],[1188,3,4,12,19,22,27,9],[1187,5,13,26,29,37,40,42],
         [1186,2,8,13,16,23,28,35],[1185,6,17,22,28,29,32,38],[1184,14,16,23,25,31,37,42],[1183,4,15,17,23,27,36,31],
-        [1182,1,13,21,25,28,31,22],[1181,8,10,14,20,33,41,28]
+        [1182,1,13,21,25,28,31,22],[1181,8,10,14,20,33,41,28],[1180,6,14,25,33,40,44,30],[1179,10,22,29,33,37,40,19],
+        [1178,6,11,16,19,21,32,45],[1177,3,12,19,21,24,35,44],[1176,10,11,15,20,35,42,14],[1175,1,14,34,35,37,41,12],
+        [1174,2,6,13,15,27,45,11],[1173,1,14,15,19,21,25,37],[1172,4,10,15,21,28,31,6],[1171,1,3,15,22,34,45,19],
+        [1170,11,16,19,21,32,45,6],[1169,5,12,14,19,33,42,4],[1168,10,16,21,28,34,42,3],[1167,4,11,13,15,19,22,38],
+        [1166,1,7,12,14,33,40,45]
     ];
 
     let top12 = [], basket2 = [], finalBonusOnly = [], remainInR30 = [], freqMap = {};
@@ -52,9 +56,9 @@
 
         let r30WinSet = new Set(); 
         let bStats = {}; 
-        freqMap = {}; // 빈도수 초기화
+        freqMap = {};
+        finalBonusOnly = [];
 
-        // 최근 30회 분석
         RAW_DATA.slice(0, 30).forEach(d => {
             for(let i=1; i<=6; i++) {
                 r30WinSet.add(d[i]);
@@ -63,18 +67,15 @@
             bStats[d[7]] = (bStats[d[7]] || 0) + 1; 
         });
 
-        // 보너스 전용 바구니
         Object.keys(bStats).forEach(num => {
             let n = Number(num);
             if(!r30WinSet.has(n)) finalBonusOnly.push(n);
         });
-        finalBonusOnly.sort((a,b) => bStats[b] - bStats[a]); // 빈도순 정렬
+        finalBonusOnly.sort((a,b) => bStats[b] - bStats[a]);
 
-        // 미출수 바구니
         let totalUnion = new Set([...r30WinSet, ...Object.keys(bStats).map(Number)]);
         basket2 = Array.from({length:45}, (_,i)=>i+1).filter(n => !totalUnion.has(n));
 
-        // 가중치 계산 (Top 12 추출용)
         let scores = {};
         for(let i=1; i<=45; i++) scores[i] = 0;
         totalUnion.forEach(num => {
@@ -84,15 +85,13 @@
         });
 
         top12 = Object.keys(scores).map(Number).sort((a,b) => scores[b] - scores[a]).slice(0, 12);
-        
-        // 비주류 바구니 (R30 출현수 중 Top12 제외)
         remainInR30 = Array.from(r30WinSet).filter(n => !top12.includes(n));
     }
 
     function process() {
         init();
         const box = document.getElementById('console');
-        box.innerHTML = `<div class="stat-line">📊 10번 조합 수술 완료: 최저 빈도수 필터 적용됨</div>`;
+        box.innerHTML = `<div class="stat-line">📊 합계 100-190 구간 고정 추출을 시작합니다.</div>`;
         
         let count = 0, safety = 0;
         while(count < 10 && safety < 100000) {
@@ -101,18 +100,12 @@
             let idx = count + 1;
 
             if(idx === 10) {
-                // [수술 핵심: 10번 조합 전용 빌드]
-                if(finalBonusOnly[0]) res.push(finalBonusOnly[0]); // 보너스 상위 1위
-                if(finalBonusOnly[1]) res.push(finalBonusOnly[1]); // 보너스 상위 2위
-                if(basket2.length > 0) res.push(basket2[Math.floor(Math.random()*basket2.length)]); // 미출수 1개
-                
-                // 30회차 중 당첨 횟수 적은 순 정렬
+                if(finalBonusOnly[0]) res.push(finalBonusOnly[0]);
+                if(finalBonusOnly[1]) res.push(finalBonusOnly[1]);
+                if(basket2.length > 0) res.push(basket2[Math.floor(Math.random()*basket2.length)]);
                 let rareSorted = [...remainInR30].sort((a, b) => (freqMap[a] || 0) - (freqMap[b] || 0));
-                for(let num of rareSorted) {
-                    if(res.length < 6 && !res.includes(num)) res.push(num);
-                }
+                for(let num of rareSorted) { if(res.length < 6 && !res.includes(num)) res.push(num); }
             } else {
-                // 1~9번 조합 로직
                 if(idx <= 3 && finalBonusOnly[idx-1]) res.push(finalBonusOnly[idx-1]);
                 else if(idx === 8 && basket2.length > 0) res.push(basket2[Math.floor(Math.random()*basket2.length)]);
                 else if(idx === 9 && basket2.length > 1) {
@@ -121,23 +114,21 @@
                 }
             }
 
-            // 나머지 채우기
             let pool = [...top12];
             while(res.length < 6) {
                 let pick = (pool.length > 0 && Math.random() < 0.8) ? pool.splice(Math.floor(Math.random()*pool.length), 1)[0] : Math.floor(Math.random()*45)+1;
                 if(!res.includes(pick)) res.push(pick);
             }
-
             res.sort((a,b) => a-b);
+            
             const sum = res.reduce((a,b)=>a+b, 0);
-            let consecutive = 0;
-            for(let i=0; i<5; i++) if(res[i] + 1 === res[i+1]) consecutive++;
-
-            if(sum >= 80 && sum <= 220 && consecutive >= 1) {
+            
+            // [수정: 합계 범위를 100~190으로 고정]
+            if(sum >= 100 && sum <= 190) {
                 count++;
                 let isCold = res.some(n => basket2.includes(n));
                 const ballHtml = res.map(n => `<span class="${basket2.includes(n) ? 'ball ball-cold' : 'ball'}">${n}</span>`).join('');
-                box.innerHTML += `<div><span class="tag ${isCold?'tag-cold':'tag-win'}">${isCold?'저격':'안정'}</span>#${count} ${ballHtml} <small style="color:#555">연번:${consecutive}</small></div>`;
+                box.innerHTML += `<div><span class="tag ${isCold?'tag-cold':'tag-win'}">${isCold?'저격':'안정'}</span>#${count} ${ballHtml} <small style="color:#555">합:${sum}</small></div>`;
             }
         }
     }
