@@ -3,36 +3,31 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>신의 손 v6.1 - 최신 45회 데이터 탑재</title>
+    <title>신의 손 v5.3 - 연관수 가점 엔진</title>
     <style>
         body { background-color: #000; color: #ffd700; font-family: 'Malgun Gothic', sans-serif; text-align: center; padding: 20px; margin: 0; }
-        .outer-border { border: 4px solid #ffd700; border-radius: 40px; padding: 10px; max-width: 450px; margin: 0 auto; box-shadow: 0 0 30px rgba(255, 215, 0, 0.4); }
+        .outer-border { border: 4px solid #ffd700; border-radius: 40px; padding: 10px; max-width: 420px; margin: 0 auto; box-shadow: 0 0 30px rgba(255, 215, 0, 0.4); }
         .inner-container { border: 2px solid #ffd700; border-radius: 32px; padding: 30px 20px; background: #0c0c0c; }
-        h1 { font-size: 40px; font-weight: 900; margin: 0; letter-spacing: 5px; cursor: pointer; color: #ffd700; text-shadow: 2px 2px 4px #000; }
-        .target-box { color: #00ffcc; font-size: 17px; font-weight: 900; margin: 20px 0; background: #1a1a1a; padding: 15px; border-radius: 15px; border: 2px solid #00ffcc; line-height: 1.6; }
-        .btn-main { width: 100%; height: 70px; background: linear-gradient(to bottom, #fdf24d, #b8a000); border: none; border-radius: 20px; font-size: 20px; font-weight: 900; cursor: pointer; margin-bottom: 20px; color: #000; transition: 0.3s; }
-        .btn-main:active { transform: scale(0.98); opacity: 0.8; }
-        #console { background-color: #050505; border: 2px solid #333; border-radius: 20px; height: 500px; padding: 15px; text-align: left; overflow-y: auto; color: #ffd700; font-size: 14px; line-height: 2.0; border-left: 4px solid #ffd700; }
-        .ball { display: inline-block; width: 30px; height: 30px; background: radial-gradient(circle at 30% 30%, #ffd700, #b8a000); color: #000; border-radius: 50%; text-align: center; line-height: 30px; font-weight: bold; margin-right: 5px; font-size: 14px; box-shadow: 2px 2px 4px rgba(0,0,0,0.5); }
-        .ball-cold { border: 2px solid #ff4500; background: radial-gradient(circle at 30% 30%, #ff6347, #ff4500); color: #fff; }
-        .tag { font-size: 11px; padding: 3px 8px; border-radius: 5px; background: #333; color: #fff; margin-right: 8px; font-weight: bold; }
-        .tag-win { background: #b8a000; }
-        .tag-cold { background: #ff4500; }
-        .stat-line { color: #888; font-size: 12px; margin-bottom: 10px; border-bottom: 1px solid #222; padding-bottom: 5px; }
+        h1 { font-size: 45px; font-weight: 900; margin: 0; letter-spacing: 8px; cursor: pointer; }
+        .target-box { color: #ff4500; font-size: 19px; font-weight: 900; margin: 20px 0; background: #1a1a1a; padding: 10px; border-radius: 10px; border: 2px solid #ff4500; line-height: 1.4; }
+        .btn-main { width: 100%; height: 70px; background: linear-gradient(to bottom, #fdf24d, #b8a000); border: none; border-radius: 20px; font-size: 20px; font-weight: 900; cursor: pointer; margin-bottom: 20px; color: #000; }
+        #console { background-color: #050505; border: 2px solid #333; border-radius: 20px; height: 450px; padding: 15px; text-align: left; overflow-y: auto; color: #ffd700; font-size: 14px; line-height: 1.8; }
+        .ball { display: inline-block; width: 28px; height: 28px; background: #ffd700; color: #000; border-radius: 50%; text-align: center; line-height: 28px; font-weight: bold; margin-right: 4px; font-size: 13px; }
+        .tag { font-size: 11px; padding: 2px 6px; border-radius: 4px; background: #333; color: #fff; margin-right: 5px; }
+        .tag-cold { background: #ff4500 !important; } 
     </style>
 </head>
 <body>
 <div class="outer-border">
     <div class="inner-container">
-        <h1 onclick="location.reload()">신 의 손 v6.1</h1>
-        <div class="target-box">💎 최신 45회차 데이터 분석 완료<br>연번 필터 및 가중치 엔진 가동</div>
-        <button class="btn-main" onclick="process()">분석 엔진 10조합 가동</button>
-        <div id="console">▶ 데이터 로드 완료. (Code: 0000)</div>
+        <h1 onclick="location.reload()">신 의 손</h1>
+        <div class="target-box">🎯 1211회 연관수 가점 모드<br>(이월·인접·거울·동반수 집중)</div>
+        <button class="btn-main" onclick="process()">연관 분석 10조합 가동</button>
+        <div id="console">▶ 시스템 준비 완료. (Code: 0000)</div>
     </div>
 </div>
 
 <script>
-    [span_1](start_span)// lotto.txt에서 추출한 최신 45회차 데이터[span_1](end_span)
     const RAW_DATA = [
         [1210,1,7,9,17,27,38,31],[1209,2,17,20,35,37,39,24],[1208,6,27,30,36,38,42,25],[1207,10,22,24,27,38,45,11],
         [1206,1,3,17,26,27,42,23],[1205,1,4,16,23,31,41,2],[1204,8,16,28,30,31,44,27],[1203,3,6,18,29,35,39,24],
@@ -48,96 +43,104 @@
         [1166,14,23,25,27,29,42,16]
     ];
 
-    let basket1 = [], basket2 = [], top12 = [], bonusRanked = [];
+    let top12 = [], coldNumbers = [], bonusOnlyHot = [];
 
     function init() {
-        let stats = {};
-        let allAppear = new Set();
-        for(let i=1; i<=45; i++) stats[i] = 0;
-        
-        [span_2](start_span)// 최신 회차(1210회) 정보[span_2](end_span)
-        const lastWin = [1, 7, 9, 17, 27, 38];
-        const mirrors = lastWin.map(n => 46 - n);
+        const lastWin = [1, 7, 9, 17, 27, 38]; // 1210회차 기준
+        const r30 = RAW_DATA.slice(0, 30);
+        let r30Nums = new Set();
+        let appearCount = {};
+        for(let i=1; i<=45; i++) appearCount[i] = 0;
 
-        RAW_DATA.forEach(d => { d.slice(1,7).forEach(n => { allAppear.add(n); stats[n]++; }); });
-        basket1 = Array.from(allAppear);
-        basket2 = Array.from({length:45}, (_,i)=>i+1).filter(n => !allAppear.has(n));
-
-        let weightedScores = {...stats};
-        lastWin.forEach(n => {
-            if(n > 1) weightedScores[n-1] += 3; 
-            if(n < 45) weightedScores[n+1] += 3;
-            weightedScores[n] += 8; 
+        // 30회차 바구니 구성 및 미출수 파악
+        r30.forEach(d => {
+            for(let i=1; i<=6; i++) {
+                r30Nums.add(d[i]);
+                appearCount[d[i]]++;
+            }
         });
-        mirrors.forEach(m => { weightedScores[m] += 15; });
-        top12 = Object.keys(weightedScores).map(Number).sort((a,b) => weightedScores[b] - weightedScores[a]).slice(0, 12);
-        
-        let bStats = {};
-        RAW_DATA.forEach(d => { bStats[d[7]] = (bStats[d[7]] || 0) + 1; });
-        bonusRanked = Object.keys(bStats).map(Number).sort((a,b) => bStats[b] - bStats[a]);
+
+        coldNumbers = Object.keys(appearCount).filter(k => appearCount[k] === 0).map(Number);
+
+        // 연관수 기반 신규 가점 시스템 (기존 가점 폐지)
+        let scores = {};
+        for(let i=1; i<=45; i++) scores[i] = 0;
+
+        // 연관 그룹 정의
+        const neighbor = lastWin.flatMap(n => [n-1, n+1]).filter(n => n>0 && n<46);
+        const mirror = lastWin.map(n => 46 - n);
+        const companion = [3, 15, 24, 33, 42]; // 1210회 연관 동반수 통계 데이터
+
+        r30Nums.forEach(num => {
+            if(lastWin.includes(num)) scores[num] += 15;   // 이월 가점
+            if(neighbor.includes(num)) scores[num] += 10;  // 인접 가점
+            if(mirror.includes(num)) scores[num] += 8;     // 거울 가점
+            if(companion.includes(num)) scores[num] += 5;  // 동반 가점
+        });
+
+        top12 = Object.keys(scores).map(Number).sort((a,b) => scores[b] - scores[a]).slice(0, 12);
+
+        // 보너스 승격수 처리
+        let bOnly = {};
+        r30.forEach((d, idx) => {
+            let b = d[7];
+            if(!top12.includes(b)) bOnly[b] = (bOnly[b] || 0) + (30-idx);
+        });
+        bonusOnlyHot = Object.keys(bOnly).map(Number).sort((a,b) => bOnly[b] - bOnly[a]);
     }
 
     function getAC(arr) {
-        let diffs = new Set();
-        for(let i=0; i<6; i++) { for(let j=i+1; j<6; j++) diffs.add(Math.abs(arr[i]-arr[j])); }
-        return diffs.size - 5;
+        let d = new Set();
+        for(let i=0; i<6; i++) { for(let j=i+1; j<6; j++) d.add(Math.abs(arr[i]-arr[j])); }
+        return d.size - 5;
+    }
+
+    function checkConsecutive(arr) {
+        let s = [...arr].sort((a,b) => a-b);
+        for(let i=0; i<4; i++) { if(s[i]+1 === s[i+1] && s[i+1]+1 === s[i+2]) return false; }
+        return true;
     }
 
     function process() {
-        init();
         const box = document.getElementById('console');
-        box.innerHTML = `<div class="stat-line">📊 최신 45회 분석: 미출수(${basket2.length}개) / 전략추출 가동 중...</div>`;
+        box.innerHTML = `▶ 분석 완료! (1210회 연관수 기반)<br><b>핵심 가점 12수:</b> ${top12.join(', ')}<br>----------------------------<br>`;
         
-        let count = 0;
-        let safety = 0;
-
-        while(count < 10 && safety < 200000) {
+        let gen = 0, safety = 0;
+        while(gen < 10 && safety < 500000) {
             safety++;
-            let res = [];
-            let idx = count + 1;
+            let res = [], cur = gen + 1;
+            let tempCold = [...coldNumbers];
 
-            if(idx <= 3 && bonusRanked[idx-1]) res.push(bonusRanked[idx-1]);
-            else if(idx === 8) res.push(basket2[Math.floor(Math.random()*basket2.length)]);
-            else if(idx === 9) {
-                let b2 = [...basket2];
-                res.push(b2.splice(Math.floor(Math.random()*b2.length), 1)[0]);
-                res.push(b2.splice(Math.floor(Math.random()*b2.length), 1)[0]);
+            if(cur <= 3 && bonusOnlyHot.length >= cur) {
+                res.push(bonusOnlyHot[cur-1]); 
+            } else if(cur === 8 && tempCold.length >= 1) {
+                res.push(tempCold[Math.floor(Math.random() * tempCold.length)]);
+            } else if(cur === 9 && tempCold.length >= 2) {
+                res.push(tempCold.splice(Math.floor(Math.random()*tempCold.length), 1)[0]);
+                res.push(tempCold.splice(Math.floor(Math.random()*tempCold.length), 1)[0]);
+            } else if(cur === 10 && tempCold.length >= 1) {
+                res.push(tempCold[Math.floor(Math.random() * tempCold.length)]);
             }
 
             let pool = [...top12];
             while(res.length < 6) {
-                let pick = pool.length > 0 ? pool.splice(Math.floor(Math.random()*pool.length), 1)[0] : Math.floor(Math.random()*45)+1;
+                let pick = (pool.length > 0 && Math.random() < 0.8) 
+                           ? pool.splice(Math.floor(Math.random() * pool.length), 1)[0]
+                           : Math.floor(Math.random() * 45) + 1;
                 if(!res.includes(pick)) res.push(pick);
             }
-            res.sort((a,b) => a-b);
             
+            res.sort((a,b) => a-b);
             const sum = res.reduce((a,b)=>a+b, 0);
             const ac = getAC(res);
             const odds = res.filter(n => n%2 !== 0).length;
-            
-            let consecutiveCount = 0;
-            let hasTriple = false;
-            for(let i=0; i<5; i++) {
-                if(res[i] + 1 === res[i+1]) {
-                    consecutiveCount++;
-                    if(i < 4 && res[i+1] + 1 === res[i+2]) hasTriple = true;
-                }
-            }
 
-            // 필터: 합계(100~180), AC(6이상), 홀짝(2~4개), 3연번금지, 2연번 필수 포함
-            if(sum >= 100 && sum <= 180 && ac >= 6 && odds >= 2 && odds <= 4 && !hasTriple && consecutiveCount >= 1) {
-                count++;
-                let tagClass = (res.some(n => basket2.includes(n))) ? "tag-cold" : "tag-win";
-                let tagText = (res.some(n => basket2.includes(n))) ? "저격" : "안정";
-
-                const ballHtml = res.map(n => {
-                    let isConsec = res.some((v, i) => (v === n && res[i+1] === n+1) || (v === n && res[i-1] === n-1));
-                    let c = basket2.includes(n) ? "ball ball-cold" : "ball";
-                    let style = isConsec ? "border: 2px solid #fff; box-shadow: 0 0 10px #fff;" : "";
-                    return `<span class="${c}" style="${style}">${n}</span>`;
-                }).join('');
-
-                box.innerHTML += `<div><span class="tag ${tagClass}">${tagText}</span>#${count} ${ballHtml} <small style="color:#555">AC:${ac} 쌍:${consecutiveCount}</small></div>`;
+            if(sum >= 100 && sum <= 185 && ac >= 6 && ac <= 10 && checkConsecutive(res) && odds > 0 && odds < 6) {
+                gen++;
+                let typeText = (cur <= 3) ? "승격" : (cur >= 8 && res.some(r => coldNumbers.includes(r))) ? "저격" : "안정";
+                let typeClass = (typeText === "저격") ? "tag-cold" : "";
+                const balls = res.map(n => `<span class="ball" ${coldNumbers.includes(n) ? 'style="border:2px solid #ff4500;"' : ''}>${n}</span>`).join('');
+                box.innerHTML += `<div><span class="tag ${typeClass}">${typeText}</span> #${gen} ${balls}</div>`;
             }
         }
     }
