@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>신의 손 v6.2 - 자연지능 엔진</title>
+    <title>신의 손 v7.0 - 15수 가중치 엔진</title>
     <style>
         body { background-color: #000; color: #ffd700; font-family: 'Malgun Gothic', sans-serif; text-align: center; padding: 20px; margin: 0; }
         .outer-border { border: 4px solid #ffd700; border-radius: 40px; padding: 10px; max-width: 450px; margin: 0 auto; box-shadow: 0 0 30px rgba(255, 215, 0, 0.4); }
@@ -17,14 +17,13 @@
         .tag { font-size: 11px; padding: 3px 8px; border-radius: 5px; background: #333; color: #fff; margin-right: 8px; font-weight: bold; }
         .tag-win { background: #b8a000; }
         .tag-cold { background: #ff4500; }
-        .stat-line { color: #888; font-size: 12px; margin-bottom: 10px; border-bottom: 1px solid #222; padding-bottom: 5px; }
     </style>
 </head>
 <body>
 <div class="outer-border">
     <div class="inner-container">
-        <h1 onclick="location.reload()">신 의 손 v6.2</h1>
-        <div class="target-box">💎 1210회 자연 추출 모드 가동<br>합계 100~190 고정 · 최저 빈도 저격 적용</div>
+        <h1 onclick="location.reload()">신 의 손 v7.0</h1>
+        <div class="target-box">💎 거울·동반·인접 가중치 15수 확장<br>합계 100~190 · 10번 저격 모드</div>
         <button class="btn-main" onclick="process()">분석 엔진 10조합 가동</button>
         <div id="console">▶ 시스템 준비 완료.</div>
     </div>
@@ -39,14 +38,10 @@
         [1194,3,13,15,24,33,37,2],[1193,6,9,16,19,24,28,17],[1192,10,16,23,36,39,40,11],[1191,1,4,11,12,20,41,2],
         [1190,7,9,19,23,26,45,33],[1189,9,19,29,35,37,38,31],[1188,3,4,12,19,22,27,9],[1187,5,13,26,29,37,40,42],
         [1186,2,8,13,16,23,28,35],[1185,6,17,22,28,29,32,38],[1184,14,16,23,25,31,37,42],[1183,4,15,17,23,27,36,31],
-        [1182,1,13,21,25,28,31,22],[1181,8,10,14,20,33,41,28],[1180,6,14,25,33,40,44,30],[1179,10,22,29,33,37,40,19],
-        [1178,6,11,16,19,21,32,45],[1177,3,12,19,21,24,35,44],[1176,10,11,15,20,35,42,14],[1175,1,14,34,35,37,41,12],
-        [1174,2,6,13,15,27,45,11],[1173,1,14,15,19,21,25,37],[1172,4,10,15,21,28,31,6],[1171,1,3,15,22,34,45,19],
-        [1170,11,16,19,21,32,45,6],[1169,5,12,14,19,33,42,4],[1168,10,16,21,28,34,42,3],[1167,4,11,13,15,19,22,38],
-        [1166,1,7,12,14,33,40,45]
+        [1182,1,13,21,25,28,31,22],[1181,8,10,14,20,33,41,28]
     ];
 
-    let top12 = [], basket2 = [], finalBonusOnly = [], remainInR30 = [], freqMap = {};
+    let top15 = [], basket2 = [], finalBonusOnly = [], remainInR30 = [], freqMap = {};
 
     function init() {
         const lastWin = [1, 7, 9, 17, 27, 38];
@@ -57,7 +52,6 @@
         let r30WinSet = new Set(); 
         let bStats = {}; 
         freqMap = {};
-        finalBonusOnly = [];
 
         RAW_DATA.slice(0, 30).forEach(d => {
             for(let i=1; i<=6; i++) {
@@ -66,12 +60,6 @@
             }
             bStats[d[7]] = (bStats[d[7]] || 0) + 1; 
         });
-
-        Object.keys(bStats).forEach(num => {
-            let n = Number(num);
-            if(!r30WinSet.has(n)) finalBonusOnly.push(n);
-        });
-        finalBonusOnly.sort((a,b) => bStats[b] - bStats[a]);
 
         let totalUnion = new Set([...r30WinSet, ...Object.keys(bStats).map(Number)]);
         basket2 = Array.from({length:45}, (_,i)=>i+1).filter(n => !totalUnion.has(n));
@@ -84,14 +72,20 @@
             if(companions.includes(num)) scores[num] += 10; 
         });
 
-        top12 = Object.keys(scores).map(Number).sort((a,b) => scores[b] - scores[a]).slice(0, 12);
-        remainInR30 = Array.from(r30WinSet).filter(n => !top12.includes(n));
+        // 가중치 15위까지 추출 (13, 14, 15위 포함)
+        top15 = Object.keys(scores).map(Number).sort((a,b) => scores[b] - scores[a]).slice(0, 15);
+        
+        finalBonusOnly = Object.keys(bStats).map(Number)
+            .filter(n => !r30WinSet.has(n) && !top15.includes(n))
+            .sort((a,b) => bStats[b] - bStats[a]);
+
+        remainInR30 = Array.from(r30WinSet).filter(n => !top15.includes(n));
     }
 
     function process() {
         init();
         const box = document.getElementById('console');
-        box.innerHTML = `<div class="stat-line">📊 합계 100-190 구간 고정 추출을 시작합니다.</div>`;
+        box.innerHTML = `<div style="color:#888; font-size:12px; margin-bottom:10px;">📊 가중치 상위 15수 압축 완료</div>`;
         
         let count = 0, safety = 0;
         while(count < 10 && safety < 100000) {
@@ -114,16 +108,14 @@
                 }
             }
 
-            let pool = [...top12];
+            let pool = [...top15];
             while(res.length < 6) {
                 let pick = (pool.length > 0 && Math.random() < 0.8) ? pool.splice(Math.floor(Math.random()*pool.length), 1)[0] : Math.floor(Math.random()*45)+1;
                 if(!res.includes(pick)) res.push(pick);
             }
             res.sort((a,b) => a-b);
-            
             const sum = res.reduce((a,b)=>a+b, 0);
             
-            // [수정: 합계 범위를 100~190으로 고정]
             if(sum >= 100 && sum <= 190) {
                 count++;
                 let isCold = res.some(n => basket2.includes(n));
