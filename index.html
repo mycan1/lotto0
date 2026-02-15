@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>신 의 손 v14.0 - 16수 정밀타격</title>
+    <title>신 의 손 v14.5 - 16수 정예전략</title>
     <style>
         body { background-color: #000; color: #ffd700; font-family: 'Malgun Gothic', sans-serif; padding: 15px; margin: 0; }
         .outer-border { border: 2px solid #ffd700; border-radius: 20px; padding: 5px; max-width: 450px; margin: 0 auto; }
@@ -24,8 +24,8 @@
 <body>
 <div class="outer-border">
     <div class="inner-container">
-        <h1 onclick="location.reload()">신 의 손 v14.0</h1>
-        <div class="target-box">🎯 1-5: 16수(상위14+40대 소외수2) 압축<br>🎲 6-10: 22수 가중치 분산 (40대 보정)</div>
+        <h1 onclick="location.reload()">신 의 손 v14.5</h1>
+        <div class="target-box">🎯 1-5: 16수(상위15+40대 소외수1) 압축<br>🎲 6-10: 22수 가중치 분산 (기존 로직)</div>
         <button class="btn-main" onclick="process()">분석 엔진 10조합 가동</button>
         <div id="console"></div>
     </div>
@@ -62,15 +62,15 @@
             return sB - sA;
         });
 
-        // 1. 40번대 소외수 상위 2개 추출 (40~45 중 30회차 빈도 최저순)
-        let loneliestForties = [40,41,42,43,44,45].sort((a,b) => freq[a] - freq[b]).slice(0, 2);
+        // 1. 40번대 소외수 딱 1개 추출 (40~45 중 빈도 최저)
+        let loneliestForty = [40,41,42,43,44,45].sort((a,b) => freq[a] - freq[b])[0];
 
-        // 2. [수정] 16수 바구니: 상위 14개(40번대 제외) + 소외 40번대 2개
+        // 2. 16수 바구니: 상위 15개(40번대 제외) + 소외 40번대 1개
         let filteredScored = scored.filter(n => n < 40); 
-        basket16 = [...filteredScored.slice(0, 14), ...loneliestForties]; 
+        basket16 = [...filteredScored.slice(0, 15), loneliestForty]; 
         
-        // 3. 22수 바구니 (기존)
-        basket22 = [...scored.slice(0, 20), ...loneliestForties];
+        // 3. 22수 바구니 (분산형 보정)
+        basket22 = [...scored.slice(0, 21), loneliestForty];
 
         machineFixed = scored.slice(0, 3); 
         zeroFreqNums = Object.keys(freq).filter(n => freq[n] === 0).map(Number);
@@ -86,12 +86,12 @@
             safety++;
             let res = [];
             
-            if(count < 5) {
+            if(count < 5) { // 🎯 상위 5개: 16수 정밀 압축
                 res.push(machineFixed[count % 3]);
                 let temp = [...basket16].sort(() => Math.random() - 0.5);
                 for(let n of temp) { if(res.length < 6 && !res.includes(n)) res.push(n); }
             } 
-            else {
+            else { // 🎲 하위 5개: 22수 분산
                 if(count < 7) { res.push(machineFixed[count % 3]); } 
                 else {
                     res.push(bonus[count - 7]);
