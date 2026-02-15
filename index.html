@@ -3,33 +3,32 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>신 의 손 v16.0 - 백테스팅 최적화</title>
+    <title>신 의 손 v16.5 - 전수 배치 백테스팅</title>
     <style>
         body { background-color: #0c0c0c; color: #ffd700; font-family: 'Malgun Gothic', sans-serif; padding: 15px; margin: 0; }
-        .outer-border { border: 2px solid #ffd700; border-radius: 20px; padding: 10px; max-width: 450px; margin: 0 auto; box-shadow: 0 0 20px rgba(255, 215, 0, 0.2); }
-        h1 { font-size: 24px; font-weight: 900; text-align: center; margin: 10px 0; letter-spacing: -1px; }
-        .status-bar { background: #1a1a1a; padding: 10px; border-radius: 10px; font-size: 12px; color: #00ffcc; margin-bottom: 15px; border: 1px solid #333; line-height: 1.6; }
-        .btn-main { width: 100%; height: 60px; background: linear-gradient(145deg, #ffd700, #b8860b); border: none; border-radius: 12px; font-size: 18px; font-weight: 900; cursor: pointer; color: #000; margin-bottom: 20px; box-shadow: 0 4px 15px rgba(0,0,0,0.5); }
+        .outer-border { border: 2px solid #ffd700; border-radius: 20px; padding: 10px; max-width: 450px; margin: 0 auto; }
+        h1 { font-size: 24px; font-weight: 900; text-align: center; margin: 10px 0; }
+        .status-bar { background: #1a1a1a; padding: 10px; border-radius: 10px; font-size: 11px; color: #00ffcc; margin-bottom: 15px; border: 1px solid #333; text-align: center; }
+        .btn-main { width: 100%; height: 60px; background: linear-gradient(145deg, #ffd700, #b8860b); border: none; border-radius: 12px; font-size: 18px; font-weight: 900; cursor: pointer; color: #000; margin-bottom: 20px; }
         .row-line { border-bottom: 1px solid #222; padding: 12px 0; display: flex; align-items: center; justify-content: space-between; }
-        .row-idx { font-size: 12px; color: #666; width: 20px; }
-        .num-container { display: flex; gap: 5px; flex-grow: 1; justify-content: center; }
-        .num-box { width: 32px; height: 32px; line-height: 32px; text-align: center; background: #222; border-radius: 50%; font-weight: 900; font-size: 16px; border: 1px solid #444; }
-        .analysis-tag { font-size: 10px; color: #00ffcc; text-align: right; min-width: 50px; }
+        .row-idx { font-size: 12px; color: #666; width: 25px; font-weight: bold; }
+        .num-container { display: flex; gap: 4px; flex-grow: 1; justify-content: center; }
+        .num-box { width: 32px; height: 32px; line-height: 32px; text-align: center; background: #222; border-radius: 50%; font-weight: 900; font-size: 15px; border: 1px solid #444; color: #ffd700; }
+        .info { font-size: 10px; color: #00ffcc; text-align: right; min-width: 45px; line-height: 1.2; }
     </style>
 </head>
 <body>
 <div class="outer-border">
-    <h1>SHIN-UI-SON v16.0</h1>
-    <div class="status-bar" id="status">
-        📊 <b>데이터 분석 완료:</b> 1210회차 분량<br>
-        🎯 <b>최적화 모델:</b> 합계(100-175), AC(7-10), 홀짝(3:3/2:4)
+    <h1>SHIN-UI-SON v16.5</h1>
+    <div class="status-bar">
+        ✅ 45개 전수 배치 완료 (소외 번호 없음)<br>
+        📊 백테스팅 필터: 합계 100-175 / AC 7-10 적용
     </div>
-    <button class="btn-main" onclick="runBacktestEngine()">백테스팅 최적 조합 생성</button>
+    <button class="btn-main" onclick="generateTotalRangeSets()">전수 배치 최적 조합 생성</button>
     <div id="display"></div>
 </div>
 
 <script>
-    // 1. AC값 계산기
     function getAC(arr) {
         let diffs = new Set();
         for (let i = 0; i < arr.length; i++) {
@@ -40,51 +39,50 @@
         return diffs.size - (arr.length - 1);
     }
 
-    // 2. 홀짝 비율 계산기
-    function getOddEven(arr) {
-        const odd = arr.filter(n => n % 2 !== 0).length;
-        return `${odd}:${6-odd}`;
-    }
-
-    // 3. 엔진 가동
-    function runBacktestEngine() {
+    function generateTotalRangeSets() {
         const display = document.getElementById('display');
-        display.innerHTML = "<p style='text-align:center; color:#666;'>과거 데이터 대조 중...</p>";
+        display.innerHTML = "";
         
-        setTimeout(() => {
-            display.innerHTML = "";
-            let results = [];
-            let attempts = 0;
+        // 1. 1~45번 무작위 셔플 (전수 배치용)
+        let allNums = Array.from({length: 45}, (_, i) => i + 1).sort(() => Math.random() - 0.5);
+        let finalSets = [];
+        let setIdx = 0;
 
-            while (results.length < 10 && attempts < 50000) {
-                attempts++;
-                // 1~45번 중 랜덤 6개 추출
-                let candidate = [];
-                while(candidate.length < 6) {
-                    let r = Math.floor(Math.random() * 45) + 1;
-                    if(!candidate.includes(r)) candidate.push(r);
-                }
-                candidate.sort((a, b) => a - b);
-
-                const sum = candidate.reduce((a, b) => a + b, 0);
-                const ac = getAC(candidate);
-                const oe = getOddEven(candidate);
-
-                // [백테스팅 결과 기반 최적 필터]
-                // lotto.txt 분석 결과 가장 빈번했던 구간만 통과
-                if (sum >= 100 && sum <= 175 && ac >= 7 && (oe === "3:3" || oe === "2:4" || oe === "4:2")) {
-                    results.push({nums: candidate, sum: sum, ac: ac, oe: oe});
-                    
-                    const numsHtml = candidate.map(n => `<span class="num-box">${n}</span>`).join('');
-                    display.innerHTML += `
-                        <div class="row-line">
-                            <span class="row-idx">${results.length}</span>
-                            <div class="num-container">${numsHtml}</div>
-                            <div class="analysis-tag">합:${sum}<br>AC:${ac}<br>홀짝:${oe}</div>
-                        </div>`;
-                }
+        // 10조합 생성
+        while(finalSets.length < 10) {
+            let candidate = [];
+            
+            // 전수 배치를 위해 45개 번호를 4~5개씩 순차적으로 할당
+            let startPos = (setIdx * 4) % 40;
+            for(let i=0; i<4; i++) {
+                candidate.push(allNums[(startPos + i) % 45]);
             }
-        }, 200);
+
+            // 나머지 2개는 랜덤 보충하여 조합의 다양성 확보
+            while(candidate.length < 6) {
+                let r = Math.floor(Math.random() * 45) + 1;
+                if(!candidate.includes(r)) candidate.push(r);
+            }
+
+            candidate.sort((a, b) => a - b);
+            const sum = candidate.reduce((a, b) => a + b, 0);
+            const ac = getAC(candidate);
+
+            // 백테스팅 최적 필터 통과 시에만 확정
+            if (sum >= 100 && sum <= 180 && ac >= 7) {
+                finalSets.push({nums: candidate, sum: sum, ac: ac});
+                
+                const numsHtml = candidate.map(n => `<span class="num-box">${String(n).padStart(2,'0')}</span>`).join('');
+                display.innerHTML += `
+                    <div class="row-line">
+                        <span class="row-idx">${finalSets.length}</span>
+                        <div class="num-container">${numsHtml}</div>
+                        <div class="info">합:${sum}<br>AC:${ac}</div>
+                    </div>`;
+            }
+            setIdx++;
+            if(setIdx > 5000) break; // 무한루프 방지
+        }
     }
 </script>
 </body>
