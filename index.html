@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>신 의 손 v13.0 - 16수 황금압축</title>
+    <title>신 의 손 v14.0 - 16수 정밀타격</title>
     <style>
         body { background-color: #000; color: #ffd700; font-family: 'Malgun Gothic', sans-serif; padding: 15px; margin: 0; }
         .outer-border { border: 2px solid #ffd700; border-radius: 20px; padding: 5px; max-width: 450px; margin: 0 auto; }
@@ -24,8 +24,8 @@
 <body>
 <div class="outer-border">
     <div class="inner-container">
-        <h1 onclick="location.reload()">신 의 손 v13.0</h1>
-        <div class="target-box">🎯 1-5: 16수 정밀 압축 타격<br>🎲 6-10: 22수 가중치 분산 (40대 보정)</div>
+        <h1 onclick="location.reload()">신 의 손 v14.0</h1>
+        <div class="target-box">🎯 1-5: 16수(상위14+40대 소외수2) 압축<br>🎲 6-10: 22수 가중치 분산 (40대 보정)</div>
         <button class="btn-main" onclick="process()">분석 엔진 10조합 가동</button>
         <div id="console"></div>
     </div>
@@ -49,7 +49,6 @@
     function analyze() {
         let freq = {}, serial = {};
         for(let i=1; i<=45; i++) { freq[i]=0; serial[i]=0; }
-        
         DATA.forEach(row => {
             row.forEach((n, i) => {
                 freq[n]++;
@@ -57,21 +56,21 @@
             });
         });
 
-        // 30회차 가중치 분석 (가장 성적이 좋았던 로직으로 복구)
         let scored = Object.keys(freq).map(Number).sort((a,b) => {
             let sA = freq[a] * 1.5 + (serial[a] || 0) * 2;
             let sB = freq[b] * 1.5 + (serial[b] || 0) * 2;
             return sB - sA;
         });
 
-        // 40번대 소외수 (40~45 중 가장 안 나온 놈 하나)
-        let loneliestForty = [40,41,42,43,44,45].sort((a,b) => freq[a] - freq[b])[0];
+        // 1. 40번대 소외수 상위 2개 추출 (40~45 중 30회차 빈도 최저순)
+        let loneliestForties = [40,41,42,43,44,45].sort((a,b) => freq[a] - freq[b]).slice(0, 2);
+
+        // 2. [수정] 16수 바구니: 상위 14개(40번대 제외) + 소외 40번대 2개
+        let filteredScored = scored.filter(n => n < 40); 
+        basket16 = [...filteredScored.slice(0, 14), ...loneliestForties]; 
         
-        // [수정] 16수 압축 바구니 (상위 16개)
-        basket16 = scored.slice(0, 16); 
-        
-        // 22수 분산 바구니 (상위 21개 + 40번대 소외수)
-        basket22 = [...scored.slice(0, 21), loneliestForty];
+        // 3. 22수 바구니 (기존)
+        basket22 = [...scored.slice(0, 20), ...loneliestForties];
 
         machineFixed = scored.slice(0, 3); 
         zeroFreqNums = Object.keys(freq).filter(n => freq[n] === 0).map(Number);
@@ -87,11 +86,12 @@
             safety++;
             let res = [];
             
-            if(count < 5) { // 🎯 상위 5개: 16수 압축
+            if(count < 5) {
                 res.push(machineFixed[count % 3]);
                 let temp = [...basket16].sort(() => Math.random() - 0.5);
                 for(let n of temp) { if(res.length < 6 && !res.includes(n)) res.push(n); }
-            } else { // 🎲 하위 5개: 22수 분산 및 보너스 전략
+            } 
+            else {
                 if(count < 7) { res.push(machineFixed[count % 3]); } 
                 else {
                     res.push(bonus[count - 7]);
@@ -111,8 +111,6 @@
 
             res.sort((a,b)=>a-b);
             let sum = res.reduce((a,b)=>a+b, 0);
-            
-            // 필터 범위 안정화 (합계 100~190)
             if(!used.has(res.join(',')) && sum >= 100 && sum <= 190) {
                 used.add(res.join(','));
                 count++;
@@ -122,7 +120,6 @@
                     if(zeroFreqNums.includes(n)) c = "zero";
                     return `<span class="num-box ${c}">${String(n).padStart(2,'0')}</span>`;
                 }).join('');
-                
                 let tag = (count <= 5) ? "🎯" : "🎲";
                 box.innerHTML += `<div class="row-line"><span class="row-idx">${tag}</span><div class="num-container">${numsHtml}</div><span class="info">합:${sum}</span></div>`;
             }
