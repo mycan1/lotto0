@@ -3,78 +3,96 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>신의 손 v10.5.0 - 전체 데이터 전수조사 엔진</title>
+    <title>신 의 손 v9.9.0 - 분석의 완성</title>
     <style>
         body { background-color: #000; color: #ffd700; font-family: 'Malgun Gothic', sans-serif; padding: 15px; margin: 0; }
-        .outer-border { border: 4px solid #ffd700; border-radius: 25px; padding: 10px; max-width: 500px; margin: 20px auto; box-shadow: 0 0 20px #ffd700; }
-        .inner-container { padding: 25px 15px; background: #111; border-radius: 15px; text-align: center; }
-        h1 { font-size: 28px; font-weight: 900; color: #ffd700; letter-spacing: 3px; margin: 0 0 10px 0; text-shadow: 2px 2px #555; }
-        .ver-info { font-size: 12px; color: #888; margin-bottom: 20px; }
-        .target-box { color: #00ffcc; font-size: 14px; margin-bottom: 20px; border: 1px solid #00ffcc; padding: 12px; border-radius: 10px; line-height: 1.6; background: rgba(0,255,204,0.05); }
-        .btn-main { width: 100%; height: 70px; background: linear-gradient(180deg, #ffd700, #b8860b); border: none; border-radius: 12px; font-size: 20px; font-weight: 900; cursor: pointer; color: #000; box-shadow: 0 5px 0 #8b4513; active { transform: translateY(4px); box-shadow: none; } }
-        .row-line { border-bottom: 1px solid #333; padding: 15px 0; font-size: 24px; display: flex; align-items: center; justify-content: space-around; }
-        .row-idx { font-size: 14px; color: #666; width: 35px; font-style: italic; }
-        .num-box { font-family: 'Consolas', monospace; font-weight: 900; background: #222; padding: 5px 8px; border-radius: 5px; min-width: 35px; }
-        .fixed { color: #ff8c00; border: 1px solid #ff8c00; } /* 고정수/보너스 */
-        .flow { color: #00ffcc; } /* 흐름 분석수 */
-        .info-footer { font-size: 11px; color: #555; margin-top: 20px; text-align: left; border-top: 1px dotted #333; padding-top: 10px; }
+        .outer-border { border: 2px solid #ffd700; border-radius: 20px; padding: 5px; max-width: 450px; margin: 0 auto; }
+        .inner-container { padding: 20px 10px; background: #000; }
+        h1 { font-size: 26px; font-weight: 900; margin: 0; color: #ffd700; letter-spacing: 2px; text-align: center; cursor: pointer; }
+        .target-box { color: #00ffcc; font-size: 13px; margin: 15px 0; border: 1px solid #00ffcc; padding: 10px; border-radius: 10px; font-weight: bold; text-align: center; }
+        .btn-main { width: 100%; height: 60px; background: #ffd700; border: none; border-radius: 10px; font-size: 18px; font-weight: 900; cursor: pointer; color: #000; margin-bottom: 20px; }
+        .row-line { border-bottom: 1px solid #222; padding: 10px 0; font-size: 20px; display: flex; align-items: center; justify-content: space-between; }
+        .row-idx { font-size: 13px; color: #555; min-width: 25px; }
+        .num-container { display: flex; gap: 5px; flex-grow: 1; justify-content: center; }
+        .num-box { font-family: 'Consolas', monospace; font-weight: 900; width: 32px; text-align: center; }
+        .fixed { color: #ff8c00; } 
+        .zero { color: #ff4500; text-decoration: underline; } 
+        .normal { color: #ffd700; }
+        .info { font-size: 11px; color: #444; min-width: 45px; text-align: right; }
     </style>
 </head>
 <body>
 <div class="outer-border">
     <div class="inner-container">
-        <h1>신 의 손 v10.5.0</h1>
-        <div class="ver-info">FULL DATA FLOW ENGINE</div>
-        <div class="target-box">
-            <b>[전수조사 분석 가동]</b><br>
-            769회~1210회 전체 데이터 흐름 이식 완료<br>
-            20번대 보상 출현 및 27번 맥락 분석 적용
-        </div>
-        <button class="btn-main" onclick="process()">1212회 분석 조합 추출</button>
+        <h1 onclick="location.reload()">신 의 손 v9.9.0</h1>
+        <div class="target-box">💎 제 1211회 [30회차 전수 데이터 탑재]<br>가중치 분석 바구니 + 40번대 전략 배분</div>
+        <button class="btn-main" onclick="process()">분석 엔진 10조합 가동</button>
         <div id="console"></div>
-        <div class="info-footer">
-            * 오렌지 테두리: 데이터 기반 핵심 기둥(27 포함)<br>
-            * 민트색: 전체 데이터 흐름상 '나올 타이밍'인 번호
-        </div>
     </div>
 </div>
 
 <script>
-    // 형님이 주신 전체 데이터 기반 요약 (메모리 최적화 이식)
-    const RAW_DATA = [[1,7,9,17,27,38],[2,17,20,35,37,39],[6,27,30,36,38,42],[10,22,24,27,38,45],[1,3,17,26,27,42],[1,4,16,23,31,41],[8,16,28,30,31,44],[3,6,18,29,35,39],[5,12,21,33,37,40],[7,9,24,27,35,36],[1,2,4,16,20,32],[16,24,25,30,31,32],[26,30,33,38,39,41],[1,5,7,26,28,43],[8,12,15,29,40,45],[3,15,27,33,34,36],[3,13,15,24,33,37],[6,9,16,19,24,28],[10,16,23,36,39,40],[1,4,11,12,20,41],[7,9,19,23,26,45],[9,19,29,35,37,38],[3,4,12,19,22,27],[5,13,26,29,37,40],[2,8,13,16,23,28],[6,17,22,28,29,32],[14,16,23,25,31,37],[4,15,17,23,27,36],[1,13,21,25,28,31],[8,10,14,20,33,41]];
-    const bonusSet = [35, 10, 43, 31, 24]; // 최근 보너스 흐름
+    // 형님이 직접 박아놓으신 30회차 정밀 데이터
+    const DATA = [
+        [1,7,9,17,27,38],[2,17,20,35,37,39],[6,27,30,36,38,42],[10,22,24,27,38,45],
+        [1,3,17,26,27,42],[1,4,16,23,31,41],[8,16,28,30,31,44],[3,6,18,29,35,39],
+        [5,12,21,33,37,40],[7,9,24,27,35,36],[1,2,4,16,20,32],[16,24,25,30,31,32],
+        [26,30,33,38,39,41],[1,5,7,26,28,43],[8,12,15,29,40,45],[3,15,27,33,34,36],
+        [3,13,15,24,33,37],[6,9,16,19,24,28],[10,16,23,36,39,40],[1,4,11,12,20,41],
+        [7,9,19,23,26,45],[9,19,29,35,37,38],[3,4,12,19,22,27],[5,13,26,29,37,40],
+        [2,8,13,16,23,28],[6,17,22,28,29,32],[14,16,23,25,31,37],[4,15,17,23,27,36],
+        [1,13,21,25,28,31],[8,10,14,20,33,41]
+    ];
+    
+    let basket = [], zeroFreqNums = [], machineFixed = [];
+    const bonus = [35, 10, 43]; 
+
+    function analyze() {
+        let freq = {}, serial = {};
+        for(let i=1; i<=45; i++) { freq[i]=0; serial[i]=0; }
+        
+        DATA.forEach(row => {
+            row.forEach((n, i) => {
+                freq[n]++;
+                if(i < 5 && row[i+1] === n + 1) { serial[n]++; serial[n+1]++; }
+            });
+        });
+
+        // 형님의 핵심 로직: 빈도 1.5배 + 연번 2배 가중치
+        let scored = Object.keys(freq).map(Number).sort((a,b) => {
+            let sA = freq[a] * 1.5 + (serial[a] || 0) * 2;
+            let sB = freq[b] * 1.5 + (serial[b] || 0) * 2;
+            return sB - sA;
+        });
+
+        basket = scored.slice(0, 22); // 상위 22수 바구니
+        machineFixed = [scored[0], scored[1], 27]; // 27번 포함 상위권 고정
+        zeroFreqNums = Object.keys(freq).filter(n => freq[n] === 0).map(Number);
+    }
 
     function process() {
+        analyze();
         const box = document.getElementById('console');
         box.innerHTML = "";
-        
-        // 1. 전체 데이터 전수조사 (빈도 및 주기 계산)
-        let freq = {}; for(let i=1; i<=45; i++) freq[i]=0;
-        RAW_DATA.forEach(row => row.forEach(n => freq[n]++));
-        let sorted = Object.keys(freq).map(Number).sort((a,b) => freq[b] - freq[a]);
+        let count = 0, used = new Set(), safety = 0;
 
-        // 2. [핵심] 흐름 분석 바구니 (25수)
-        // 정석 상위 + 최근 멸 구간(20번대) 보상수 + 장기 미출수 믹스
-        let top12 = sorted.slice(0, 12);
-        let coldNums = sorted.slice(-10).sort(() => Math.random() - 0.5).slice(0, 5);
-        let targetSection = [21, 22, 23, 24, 25, 26, 28, 29]; // 20번대 보상 구역
-        let combinedBasket = [...new Set([...top12, ...coldNums, ...targetSection])];
-
-        let count = 0, used = new Set();
-        while(count < 10) {
+        while(count < 10 && safety < 5000) {
+            safety++;
             let res = [];
-            // 형님 지정 기둥 27과 데이터 1위 16번 고정 배치 전략
-            res.push(27);
-            if(count % 2 === 0) res.push(16);
-            else res.push(bonusSet[count % 5]);
-
-            // 바구니에서 번호 채우기
-            let tempB = [...combinedBasket].sort(() => Math.random() - 0.5);
-            for(let n of tempB) {
-                if(res.length < 6 && !res.includes(n)) res.push(n);
+            
+            if(count < 7) { 
+                res.push(machineFixed[count % 3]); 
+            } else {
+                res.push(bonus[count - 7]);
+                if(count === 9 && zeroFreqNums.length > 0) { 
+                    let shuffledZeros = [...zeroFreqNums].sort(() => Math.random() - 0.5);
+                    for(let z of shuffledZeros) { if(res.length < 6) res.push(z); }
+                }
             }
-
-            // 안전장치
+            
+            let tempBasket = [...basket].sort(() => Math.random() - 0.5);
+            for(let n of tempBasket) { if(res.length < 6 && !res.includes(n)) res.push(n); }
+            
             while(res.length < 6) {
                 let n = Math.floor(Math.random()*45)+1;
                 if(!res.includes(n)) res.push(n);
@@ -82,21 +100,22 @@
 
             res.sort((a,b)=>a-b);
             let sum = res.reduce((a,b)=>a+b, 0);
-            
-            // 데이터 흐름상 최적 합계 필터 (95~190)
-            if(!used.has(res.join(',')) && sum >= 95 && sum <= 190) {
+            let isPass = (count === 9) ? (sum >= 70 && sum <= 220) : (sum >= 100 && sum <= 190);
+
+            if(!used.has(res.join(',')) && isPass) {
                 used.add(res.join(','));
                 count++;
-                const html = res.map(n => {
-                    let cls = "normal";
-                    if(n === 27 || n === 16) cls = "fixed";
-                    else if(targetSection.includes(n)) cls = "flow";
-                    return `<span class="num-box ${cls}">${String(n).padStart(2,'0')}</span>`;
+                const numsHtml = res.map(n => {
+                    let c = "normal";
+                    if(machineFixed.includes(n) || bonus.includes(n)) c = "fixed";
+                    if(zeroFreqNums.includes(n)) c = "zero";
+                    return `<span class="num-box ${c}">${String(n).padStart(2,'0')}</span>`;
                 }).join('');
-                box.innerHTML += `<div class="row-line"><span class="row-idx">#${count}</span> ${html}</div>`;
+                box.innerHTML += `<div class="row-line"><span class="row-idx">#${count}</span><div class="num-container">${numsHtml}</div><span class="info">합:${sum}</span></div>`;
             }
         }
     }
+    window.onload = analyze;
 </script>
 </body>
 </html>
