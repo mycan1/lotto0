@@ -3,69 +3,57 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>신 의 손 v23.0 - 필승 공식</title>
+    <title>신 의 손 v27.0 - 9수 전담 시스템</title>
     <style>
         body { background-color: #000; color: #ffd700; font-family: 'Malgun Gothic', sans-serif; padding: 15px; margin: 0; }
-        .outer-border { border: 2px solid #ffd700; border-radius: 20px; padding: 10px; max-width: 450px; margin: 0 auto; box-shadow: 0 0 20px rgba(255,215,0,0.5); }
-        h1 { font-size: 26px; font-weight: 900; text-align: center; margin: 10px 0; letter-spacing: -1px; }
-        .formula-card { background: linear-gradient(145deg, #1a1a1a, #000); border: 1px solid #ffd700; padding: 12px; margin-bottom: 15px; border-radius: 12px; font-size: 12px; color: #fff; text-align: center; }
-        .btn-main { width: 100%; height: 65px; background: #ffd700; border: none; border-radius: 15px; font-size: 20px; font-weight: 900; cursor: pointer; color: #000; margin-bottom: 20px; transition: 0.2s; }
-        .btn-main:active { transform: translateY(4px); }
+        .outer-border { border: 2px solid #ffd700; border-radius: 20px; padding: 10px; max-width: 450px; margin: 0 auto; }
+        h1 { font-size: 26px; font-weight: 900; text-align: center; margin: 10px 0; color: #ffd700; }
+        .formula-box { background: #111; border: 1px dashed #ffd700; padding: 12px; margin-bottom: 15px; border-radius: 10px; font-size: 13px; color: #00ffcc; text-align: center; line-height: 1.6; }
+        .btn-main { width: 100%; height: 70px; background: #ffd700; border: none; border-radius: 15px; font-size: 20px; font-weight: 900; cursor: pointer; color: #000; margin-bottom: 20px; }
         .row-line { border-bottom: 1px solid #222; padding: 12px 0; display: flex; align-items: center; justify-content: space-between; }
-        .row-idx { font-size: 13px; color: #ff4500; width: 30px; font-weight: bold; }
-        .num-container { display: flex; gap: 5px; flex-grow: 1; justify-content: center; }
-        .num-box { width: 34px; height: 34px; line-height: 34px; text-align: center; background: #111; border: 1.5px solid #ffd700; border-radius: 50%; font-weight: 900; font-size: 17px; }
-        .tag-win { font-size: 10px; color: #00ffcc; font-weight: bold; text-align: right; min-width: 50px; }
+        .num-container { display: flex; gap: 4px; flex-grow: 1; justify-content: center; }
+        .num-box { width: 34px; height: 34px; line-height: 34px; text-align: center; background: #000; border: 1.5px solid #ffd700; border-radius: 5px; font-weight: 900; font-size: 16px; }
+        .group-tag { font-size: 11px; color: #ff4500; font-weight: bold; min-width: 50px; text-align: right; line-height: 1.2; }
     </style>
 </head>
 <body>
 <div class="outer-border">
-    <h1>SHIN-UI-SON v23.0</h1>
-    <div class="formula-card">
-        📐 <b>9수 완전 보장 압축 기법</b> (v23.0)<br>
-        - 1~45번 전수 배치 완료<br>
-        - 9개 번호 집중 타격 및 도미노 설계
+    <h1>SHIN-UI-SON v27.0</h1>
+    <div class="formula-box">
+        🎯 <b>9수 1개 조합 전담 방식:</b><br>
+        1~5번 조합: 45개 번호를 9개씩 쪼개서 각 줄에 배정<br>
+        6~10번 조합: 다시 45개를 9개씩 쪼개서 재배정 (총 2회 전수)
     </div>
-    <button class="btn-main" onclick="runLottoSystem()">필승 공식 조합 생성</button>
+    <button class="btn-main" onclick="generate9NumbersPerLine()">공식대로 10조합 생성</button>
     <div id="display"></div>
 </div>
 
 <script>
-    function runLottoSystem() {
+    function generate9NumbersPerLine() {
         const display = document.getElementById('display');
         display.innerHTML = "";
 
-        // 1. 1~45번 전수 번호를 셔플
-        let all = Array.from({length: 45}, (_, i) => i + 1).sort(() => Math.random() - 0.5);
-        
-        // 2. [공식 핵심] 핵심 타격 9수 선정 (이 안에서 3개 나오면 5등 무더기 당첨)
-        let core9 = all.slice(0, 9); 
-        let rest = all.slice(9); // 나머지 36수 (전수 배치용)
+        // 1. 첫 번째 전수 배치 (1~5번 조합용)
+        let master1 = Array.from({length: 45}, (_, i) => i + 1).sort(() => Math.random() - 0.5);
+        // 2. 두 번째 전수 배치 (6~10번 조합용 - 번호 섞기)
+        let master2 = Array.from({length: 45}, (_, i) => i + 1).sort(() => Math.random() - 0.5);
 
-        // 3. 10조합 생성
+        let combinedMaster = [...master1, ...master2];
+
+        // 10조합 생성
         for (let i = 0; i < 10; i++) {
-            let candidate = [];
+            // [핵심] 각 조합(줄)은 할당된 9개의 숫자 덩어리 안에서만 6개를 뽑음
+            let my9Numbers = combinedMaster.slice(i * 9, (i + 1) * 9);
             
-            if (i < 5) {
-                // 상위 5조합: 핵심 9수를 엇갈려 배치 (3개만 맞으면 이 5개 중 대다수 당첨)
-                // 9개 중 6개를 골라 촘촘하게 채움
-                let offset = i;
-                for(let j=0; j<6; j++) {
-                    candidate.push(core9[(offset + j) % 9]);
-                }
-            } else {
-                // 하위 5조합: 나머지 36수를 6개씩 쪼개서 배치 (소외 번호 방어)
-                let start = (i - 5) * 6;
-                candidate = rest.slice(start, start + 6);
-            }
+            // 9개 중 6개 무작위 추출
+            let candidate = my9Numbers.sort(() => Math.random() - 0.5).slice(0, 6).sort((a, b) => a - b);
 
-            candidate.sort((a, b) => a - b);
             const numsHtml = candidate.map(n => `<span class="num-box">${String(n).padStart(2,'0')}</span>`).join('');
             display.innerHTML += `
                 <div class="row-line">
-                    <span class="row-idx">${i + 1}</span>
+                    <span style="color:#555; font-size:12px; font-weight:bold;">${i + 1}</span>
                     <div class="num-container">${numsHtml}</div>
-                    <div class="tag-win">${i < 5 ? '🎯FOCUS' : '🛡️SAFE'}</div>
+                    <div class="group-tag">9수 전담<br>${i < 5 ? 'A차' : 'B차'}</div>
                 </div>`;
         }
     }
