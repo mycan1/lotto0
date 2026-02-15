@@ -3,18 +3,12 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>신 의 손 v15.5 - 운명의 분석</title>
+    <title>신 의 손 v15.5 - 순차 전수 분석</title>
     <style>
         body { background-color: #000; color: #ffd700; font-family: 'Malgun Gothic', sans-serif; padding: 15px; margin: 0; }
         .outer-border { border: 2px solid #ffd700; border-radius: 20px; padding: 5px; max-width: 450px; margin: 0 auto; }
         .inner-container { padding: 20px 10px; background: #000; }
         h1 { font-size: 26px; font-weight: 900; margin: 0; color: #ffd700; letter-spacing: 2px; text-align: center; cursor: pointer; }
-        
-        .fate-box { background: #111; border: 1px dashed #ffd700; padding: 10px; margin: 15px 0; border-radius: 10px; font-size: 12px; }
-        .fate-title { color: #00ffcc; font-weight: bold; margin-bottom: 5px; display: block; text-align: center; }
-        .fate-item { display: flex; justify-content: space-between; margin: 2px 0; border-bottom: 1px dotted #333; }
-        .fate-up { color: #00ffcc; font-weight: bold; }
-
         .target-box { color: #00ffcc; font-size: 13px; margin: 15px 0; border: 1px solid #00ffcc; padding: 10px; border-radius: 10px; font-weight: bold; text-align: center; }
         .btn-main { width: 100%; height: 60px; background: #ffd700; border: none; border-radius: 10px; font-size: 18px; font-weight: 900; cursor: pointer; color: #000; margin-bottom: 20px; }
         .row-line { border-bottom: 1px solid #222; padding: 10px 0; font-size: 20px; display: flex; align-items: center; justify-content: space-between; }
@@ -29,27 +23,17 @@
     <div class="inner-container">
         <h1 onclick="location.reload()">신 의 손 v15.5</h1>
         
-        <div id="fate-display" class="fate-box">
-            <span class="fate-title">🔮 고밀도 뭉텅이 엔진 분석 상태</span>
-            <div id="fate-content">
-                <div class="fate-item"><span>엔진 모드</span> <span class="fate-up">3등 사냥 고밀도 셔플</span></div>
-                <div class="fate-item"><span>필터링</span> <span class="fate-up">AC 6-10 & 합 100-190</span></div>
-            </div>
+        <div class="target-box">
+            📊 1~45번 순차 배치 시스템 가동<br>
+            🔍 필터: AC 6~10 / 합계 100~190
         </div>
 
-        <div class="target-box">🎯 전수 배치 셔플 (1~45번 소외 방지)<br>🎲 4개 번호 연속 뭉텅이(Cluster) 전략</div>
-        <button class="btn-main" onclick="process()">분석 엔진 10조합 가동</button>
+        <button class="btn-main" onclick="process()">순차 전수 10조합 생성</button>
         <div id="console"></div>
     </div>
 </div>
 
 <script>
-    // 1. 전수 배치 셔플 (1~45번 소외되는 번호 없게)
-    function getShuffledFullRange() {
-        return Array.from({length: 45}, (_, i) => i + 1).sort(() => Math.random() - 0.5);
-    }
-
-    // 2. AC 계산 (6~10 필터: 당첨 가능한 복잡도 유지)
     function calculateAC(arr) {
         let diffs = new Set();
         for (let i = 0; i < arr.length; i++) {
@@ -60,57 +44,47 @@
         return diffs.size - (arr.length - 1);
     }
 
-    // 3. 메인 프로세스 (기존 UI에 사용자 로직 이식)
     function process() {
         const box = document.getElementById('console');
         box.innerHTML = "";
         
-        let allNums = getShuffledFullRange(); // 전수 배치 셔플 실행
+        // 1. 1부터 45까지 순서대로 배열 생성
+        const baseNums = Array.from({length: 45}, (_, i) => i + 1);
         let sets = [];
-        let setIndex = 0;
-        let safety = 0;
+        let offset = 0; // 시작점 오프셋
 
-        while (sets.length < 10 && safety < 5000) {
-            safety++;
+        // 10조합을 채울 때까지 순차적으로 탐색
+        while (sets.length < 10) {
             let candidate = [];
             
-            // [핵심 로직] 4개의 번호는 무조건 '연속 뭉텅이'로 가져옴
-            let startIdx = (setIndex * 4) % 40;
-            
-            // 뭉텅이 파트 (4개)
-            for (let i = 0; i < 4; i++) {
-                candidate.push(allNums[(startIdx + i) % 45]);
-            }
-            
-            // 보정 파트 (2개)
-            candidate.push(allNums[(startIdx + 15) % 45]);
-            candidate.push(allNums[(startIdx + 25) % 45]);
-
-            candidate = [...new Set(candidate)].sort((a, b) => a - b);
-            
-            if (candidate.length < 6) { 
-                setIndex++; 
-                continue; 
+            // 1~45번 대역 내에서 6개를 순차적(이지만 약간의 변동성)으로 추출
+            // 사용자님의 의도: "1,2,3,4... 순서대로 조합을 만들자"
+            for (let i = 0; i < 6; i++) {
+                // (offset + i)를 통해 순차성을 유지하되 45를 넘으면 처음으로 순환
+                candidate.push(baseNums[(offset + i) % 45]);
             }
 
-            let ac = calculateAC(candidate);
-            let sum = candidate.reduce((a, b) => a + b, 0);
+            candidate.sort((a, b) => a - b);
+            const ac = calculateAC(candidate);
+            const sum = candidate.reduce((a, b) => a + b, 0);
 
-            // [필터] 사용자님 전용: AC 6~10 & 합계 100~190
+            // 필터링 적용: 순차 배치는 합계와 AC가 낮을 확률이 높으므로, 
+            // 조건에 맞지 않으면 오프셋을 옮겨가며 다음 후보를 찾음
             if (ac >= 6 && ac <= 10 && sum >= 100 && sum <= 190) {
                 sets.push({ nums: candidate, ac: ac, sum: sum });
-                
                 const numsHtml = candidate.map(n => `<span class="num-box">${String(n).padStart(2,'0')}</span>`).join('');
-                let tag = (sets.length <= 5) ? "🎯" : "🎲";
-                
                 box.innerHTML += `
                     <div class="row-line">
-                        <span class="row-idx">${tag}</span>
+                        <span class="row-idx">${sets.length}</span>
                         <div class="num-container">${numsHtml}</div>
                         <span class="info">AC:${ac}<br>합:${sum}</span>
                     </div>`;
             }
-            setIndex++;
+            
+            // 다음 번호 대역으로 이동 (사용자님 방식대로 촘촘하게 이동)
+            offset++; 
+            
+            if (offset > 1000) break; // 무한루프 방지
         }
     }
 </script>
