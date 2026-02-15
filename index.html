@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>신 의 손 v9.9.0 - 분석의 완성</title>
+    <title>신 의 손 v12.0 - 소외수 정밀타격</title>
     <style>
         body { background-color: #000; color: #ffd700; font-family: 'Malgun Gothic', sans-serif; padding: 15px; margin: 0; }
         .outer-border { border: 2px solid #ffd700; border-radius: 20px; padding: 5px; max-width: 450px; margin: 0 auto; }
@@ -24,8 +24,8 @@
 <body>
 <div class="outer-border">
     <div class="inner-container">
-        <h1 onclick="location.reload()">신 의 손 v9.9.0</h1>
-        <div class="target-box">💎 제 1211회 [30회차 전수 데이터 탑재]<br>가중치 분석 바구니 + 40번대 전략 배분</div>
+        <h1 onclick="location.reload()">신 의 손 v12.0</h1>
+        <div class="target-box">🎯 1-5: 12수(상위11+복병1) 정밀타격<br>🎲 6-10: 22수(40대 소외수 포함) 분산투자</div>
         <button class="btn-main" onclick="process()">분석 엔진 10조합 가동</button>
         <div id="console"></div>
     </div>
@@ -43,31 +43,28 @@
         [1,13,21,25,28,31],[8,10,14,20,33,41]
     ];
     
-    let basket = [], zeroFreqNums = [], machineFixed = [];
+    let basket12 = [], basket22 = [], zeroFreqNums = [], machineFixed = [], loneliestForty = 0;
     const bonus = [35, 10, 43]; 
 
     function analyze() {
-        let freq = {}, serial = {};
-        for(let i=1; i<=45; i++) { freq[i]=0; serial[i]=0; }
-        
-        DATA.forEach(row => {
-            row.forEach((n, i) => {
-                freq[n]++;
-                if(i < 5 && row[i+1] === n + 1) { serial[n]++; serial[n+1]++; }
-            });
-        });
+        let freq = {};
+        for(let i=1; i<=45; i++) freq[i] = 0;
+        DATA.forEach(row => row.forEach(n => freq[n]++));
 
-        let scored = Object.keys(freq).map(Number).sort((a,b) => {
-            let sA = freq[a] * 1.5 + (serial[a] || 0) * 2;
-            let sB = freq[b] * 1.5 + (serial[b] || 0) * 2;
-            return sB - sA;
-        });
+        // 가중치 계산 (기존 형님 로직)
+        let scored = Object.keys(freq).map(Number).sort((a,b) => freq[b] - freq[a]);
 
-        basket = scored.slice(0, 22); 
-        
-        // [수정 포인트] 27번 고정을 제거하고, 가중치 분석 결과 상위 3수를 고정수로 사용
-        machineFixed = [scored[0], scored[1], scored[2]]; 
-        
+        // 1. 40번대 소외수 추출 (40~45 중 빈도 최하위)
+        loneliestForty = [40,41,42,43,44,45].sort((a,b) => freq[a] - freq[b])[0];
+
+        // 2. 전체 복병수 추출 (전체 중 빈도 최하위 하나)
+        let totalLoneliest = [...scored].reverse()[0];
+
+        // 3. 바구니 구성
+        basket12 = [...scored.slice(0, 11), totalLoneliest]; // 상위 11 + 최저빈도 1
+        basket22 = [...scored.slice(0, 21), loneliestForty]; // 상위 21 + 40대 소외 1
+
+        machineFixed = scored.slice(0, 3); 
         zeroFreqNums = Object.keys(freq).filter(n => freq[n] === 0).map(Number);
     }
 
@@ -81,18 +78,17 @@
             safety++;
             let res = [];
             
-            if(count < 7) { 
-                res.push(machineFixed[count % 3]); 
-            } else {
-                res.push(bonus[count - 7]);
-                if(count === 9 && zeroFreqNums.length > 0) { 
-                    let shuffledZeros = [...zeroFreqNums].sort(() => Math.random() - 0.5);
-                    for(let z of shuffledZeros) { if(res.length < 6) res.push(z); }
-                }
+            if(count < 5) { // 정밀 압축 5조합
+                res.push(machineFixed[count % 3]);
+                let temp = [...basket12].sort(() => Math.random() - 0.5);
+                for(let n of temp) if(res.length < 6 && !res.includes(n)) res.push(n);
+            } else { // 기존 하이브리드 5조합
+                if(count < 7) res.push(machineFixed[count % 3]); 
+                else res.push(bonus[count - 7]);
+                
+                let temp = [...basket22].sort(() => Math.random() - 0.5);
+                for(let n of temp) if(res.length < 6 && !res.includes(n)) res.push(n);
             }
-            
-            let tempBasket = [...basket].sort(() => Math.random() - 0.5);
-            for(let n of tempBasket) { if(res.length < 6 && !res.includes(n)) res.push(n); }
             
             while(res.length < 6) {
                 let n = Math.floor(Math.random()*45)+1;
@@ -101,18 +97,18 @@
 
             res.sort((a,b)=>a-b);
             let sum = res.reduce((a,b)=>a+b, 0);
-            let isPass = (count === 9) ? (sum >= 70 && sum <= 220) : (sum >= 100 && sum <= 190);
+            let isPass = (sum >= 100 && sum <= 195); // 압축을 위해 범위 살짝 조정
 
             if(!used.has(res.join(',')) && isPass) {
                 used.add(res.join(','));
                 count++;
                 const numsHtml = res.map(n => {
                     let c = "normal";
-                    if(machineFixed.includes(n) || bonus.includes(n)) c = "fixed";
+                    if(machineFixed.includes(n) || (count > 5 && bonus.includes(n))) c = "fixed";
                     if(zeroFreqNums.includes(n)) c = "zero";
                     return `<span class="num-box ${c}">${String(n).padStart(2,'0')}</span>`;
                 }).join('');
-                box.innerHTML += `<div class="row-line"><span class="row-idx">#${count}</span><div class="num-container">${numsHtml}</div><span class="info">합:${sum}</span></div>`;
+                box.innerHTML += `<div class="row-line"><span class="row-idx">${count<=5?'🎯':'🎲'}</span><div class="num-container">${numsHtml}</div><span class="info">합:${sum}</span></div>`;
             }
         }
     }
