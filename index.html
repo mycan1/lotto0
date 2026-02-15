@@ -9,42 +9,26 @@
         .outer-border { border: 2px solid #ffd700; border-radius: 20px; padding: 5px; max-width: 450px; margin: 0 auto; }
         .inner-container { padding: 20px 10px; background: #000; }
         h1 { font-size: 26px; font-weight: 900; margin: 0; color: #ffd700; letter-spacing: 2px; text-align: center; cursor: pointer; }
-        
-        .fate-box { background: #111; border: 1px dashed #ffd700; padding: 10px; margin: 15px 0; border-radius: 10px; font-size: 12px; }
-        .fate-title { color: #00ffcc; font-weight: bold; margin-bottom: 5px; display: block; text-align: center; }
-        .fate-item { display: flex; justify-content: space-between; margin: 2px 0; border-bottom: 1px dotted #333; }
-        .fate-up { color: #00ffcc; font-weight: bold; }
-
         .target-box { color: #00ffcc; font-size: 13px; margin: 15px 0; border: 1px solid #00ffcc; padding: 10px; border-radius: 10px; font-weight: bold; text-align: center; }
-        .btn-main { width: 100%; height: 60px; background: #ffd700; border: none; border-radius: 10px; font-size: 18px; font-weight: 900; cursor: pointer; color: #000; margin-bottom: 20px; }
+        .btn-main { width: 100%; height: 60px; background: #ffd700; border: none; border-radius: 10px; font-size: 18px; font-weight: 900; cursor: pointer; color: #000; margin-bottom: 20px; box-shadow: 0 0 10px #ffd700; }
         .row-line { border-bottom: 1px solid #222; padding: 10px 0; font-size: 20px; display: flex; align-items: center; justify-content: space-between; }
         .row-idx { font-size: 13px; color: #555; min-width: 25px; }
         .num-container { display: flex; gap: 5px; flex-grow: 1; justify-content: center; }
-        .num-box { font-family: 'Consolas', monospace; font-weight: 900; width: 32px; text-align: center; color: #ffd700; }
-        .info { font-size: 11px; color: #444; min-width: 45px; text-align: right; line-height: 1.2; }
+        .num-box { font-family: 'Consolas', monospace; font-weight: 900; width: 32px; text-align: center; color: #ffd700; border: 1px solid #333; border-radius: 5px; }
+        .info { font-size: 11px; color: #00ffcc; min-width: 45px; text-align: right; line-height: 1.2; }
     </style>
 </head>
 <body>
 <div class="outer-border">
     <div class="inner-container">
         <h1 onclick="location.reload()">신 의 손 v15.5</h1>
-        
-        <div id="fate-display" class="fate-box">
-            <span class="fate-title">🔮 순차 전수 배치 엔진 가동</span>
-            <div id="fate-content">
-                <div class="fate-item"><span>생성 방식</span> <span class="fate-up">1-45 순차 밀기(Slide)</span></div>
-                <div class="fate-item"><span>필터링</span> <span class="fate-up">AC 6-10 & 합 100-190</span></div>
-            </div>
-        </div>
-
-        <div class="target-box">🎯 1,2,3...45 순서대로 조합 생성<br>🎲 황금 필터 통과 조합만 10개 추출</div>
-        <button class="btn-main" onclick="process()">순차 전수 10조합 가동</button>
+        <div class="target-box">🔍 1~45번 순차 슬라이드 엔진<br>🎯 필터: AC 6~10 / 합계 100~190</div>
+        <button class="btn-main" onclick="process()">순차 분석 10조합 가동</button>
         <div id="console"></div>
     </div>
 </div>
 
 <script>
-    // 산술변동폭(AC) 계산 함수
     function calculateAC(arr) {
         let diffs = new Set();
         for (let i = 0; i < arr.length; i++) {
@@ -57,54 +41,50 @@
 
     function process() {
         const box = document.getElementById('console');
-        box.innerHTML = "";
+        box.innerHTML = "<p style='text-align:center; color:#555;'>조합 생성 중...</p>";
         
-        const baseNums = Array.from({length: 45}, (_, i) => i + 1); // [1, 2, 3, ..., 45]
-        let sets = [];
-        let offset = Math.floor(Math.random() * 30); // 시작점만 랜덤하게 살짝 변경 (매번 똑같은 결과 방지)
-        let safety = 0;
+        setTimeout(() => {
+            box.innerHTML = "";
+            let sets = [];
+            let offset = Math.floor(Math.random() * 45); // 시작점만 랜덤
+            let attempts = 0;
 
-        while (sets.length < 10 && safety < 10000) {
-            safety++;
-            let candidate = [];
-            
-            // 1~45 순차 대역에서 6개를 뽑음 (사용자 로직: 촘촘하게 옆으로 밀기)
-            for (let i = 0; i < 6; i++) {
-                // offset을 기준으로 순서대로 가져오되 45를 넘으면 다시 1로 순환
-                let val = baseNums[(offset + i) % 45];
-                candidate.push(val);
+            // 10조합을 찾을 때까지 무한 루프 방지용 safety 장치 강화
+            while (sets.length < 10 && attempts < 20000) {
+                attempts++;
+                let candidate = [];
+                
+                // [수정된 순차 로직] 1~45번 사이에서 6개를 순차적으로 고르되
+                // 필터 통과율을 높이기 위해 간격을 두고 추출
+                for (let i = 0; i < 6; i++) {
+                    let val = ((offset + (i * 7)) % 45) + 1; // 7칸씩 점프하며 순차 추출
+                    candidate.push(val);
+                }
+
+                candidate.sort((a, b) => a - b);
+                let ac = calculateAC(candidate);
+                let sum = candidate.reduce((a, b) => a + b, 0);
+
+                // 사용자 지정 황금 필터
+                if (ac >= 6 && ac <= 10 && sum >= 100 && sum <= 190) {
+                    // 중복 조합 방지
+                    let combo = candidate.join(',');
+                    if(!sets.some(s => s.combo === combo)) {
+                        sets.push({ combo: combo, nums: candidate, ac: ac, sum: sum });
+                        
+                        const numsHtml = candidate.map(n => `<span class="num-box">${String(n).padStart(2,'0')}</span>`).join('');
+                        box.innerHTML += `
+                            <div class="row-line">
+                                <span class="row-idx">${sets.length}</span>
+                                <div class="num-container">${numsHtml}</div>
+                                <span class="info">AC:${ac}<br>합:${sum}</span>
+                            </div>`;
+                    }
+                }
+                offset++; // 다음 조합을 위해 한 칸 이동
             }
-
-            candidate.sort((a, b) => a - b);
-            
-            // 필터링 적용 (중복 제거 후 6개 확인)
-            candidate = [...new Set(candidate)];
-            if (candidate.length < 6) { offset++; continue; }
-
-            const ac = calculateAC(candidate);
-            const sum = candidate.reduce((a, b) => a + b, 0);
-
-            // [사용자 황금 필터] AC 6~10 & 합계 100~190
-            if (ac >= 6 && ac <= 10 && sum >= 100 && sum <= 190) {
-                sets.push({ nums: candidate, ac: ac, sum: sum });
-                
-                const numsHtml = candidate.map(n => `<span class="num-box">${String(n).padStart(2,'0')}</span>`).join('');
-                let tag = (sets.length <= 5) ? "🎯" : "🎲";
-                
-                box.innerHTML += `
-                    <div class="row-line">
-                        <span class="row-idx">${tag}</span>
-                        <div class="num-container">${numsHtml}</div>
-                        <span class="info">AC:${ac}<br>합:${sum}</span>
-                    </div>`;
-                
-                // 조합 하나를 찾으면 다음 조합은 번호가 겹치지 않도록 적절히 건너뜀 (5등 방어를 위해 촘촘하게)
-                offset += 2; 
-            } else {
-                // 필터를 통과 못하면 한 칸만 옆으로 이동해서 다시 검사
-                offset++;
-            }
-        }
+            if(sets.length === 0) box.innerHTML = "<p style='color:red;'>필터 조건에 맞는 조합을 찾지 못했습니다. 다시 시도해 주세요.</p>";
+        }, 100);
     }
 </script>
 </body>
