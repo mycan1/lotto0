@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>신 의 손 v11.5 - 전략 하이브리드</title>
+    <title>신 의 손 v13.0 - 16수 황금압축</title>
     <style>
         body { background-color: #000; color: #ffd700; font-family: 'Malgun Gothic', sans-serif; padding: 15px; margin: 0; }
         .outer-border { border: 2px solid #ffd700; border-radius: 20px; padding: 5px; max-width: 450px; margin: 0 auto; }
@@ -24,8 +24,8 @@
 <body>
 <div class="outer-border">
     <div class="inner-container">
-        <h1 onclick="location.reload()">신 의 손 v11.5</h1>
-        <div class="target-box">💎 1~5번: 12수 정밀 압축 타격<br>💎 6~10번: 기존 전수 가중치 엔진</div>
+        <h1 onclick="location.reload()">신 의 손 v13.0</h1>
+        <div class="target-box">🎯 1-5: 16수 정밀 압축 타격<br>🎲 6-10: 22수 가중치 분산 (40대 보정)</div>
         <button class="btn-main" onclick="process()">분석 엔진 10조합 가동</button>
         <div id="console"></div>
     </div>
@@ -43,12 +43,13 @@
         [1,13,21,25,28,31],[8,10,14,20,33,41]
     ];
     
-    let basket = [], zeroFreqNums = [], machineFixed = [], scoredGlobal = [];
+    let basket16 = [], basket22 = [], zeroFreqNums = [], machineFixed = [];
     const bonus = [35, 10, 43]; 
 
     function analyze() {
         let freq = {}, serial = {};
         for(let i=1; i<=45; i++) { freq[i]=0; serial[i]=0; }
+        
         DATA.forEach(row => {
             row.forEach((n, i) => {
                 freq[n]++;
@@ -56,13 +57,23 @@
             });
         });
 
-        scoredGlobal = Object.keys(freq).map(Number).sort((a,b) => {
+        // 30회차 가중치 분석 (가장 성적이 좋았던 로직으로 복구)
+        let scored = Object.keys(freq).map(Number).sort((a,b) => {
             let sA = freq[a] * 1.5 + (serial[a] || 0) * 2;
             let sB = freq[b] * 1.5 + (serial[b] || 0) * 2;
             return sB - sA;
         });
 
-        machineFixed = scoredGlobal.slice(0, 3); 
+        // 40번대 소외수 (40~45 중 가장 안 나온 놈 하나)
+        let loneliestForty = [40,41,42,43,44,45].sort((a,b) => freq[a] - freq[b])[0];
+        
+        // [수정] 16수 압축 바구니 (상위 16개)
+        basket16 = scored.slice(0, 16); 
+        
+        // 22수 분산 바구니 (상위 21개 + 40번대 소외수)
+        basket22 = [...scored.slice(0, 21), loneliestForty];
+
+        machineFixed = scored.slice(0, 3); 
         zeroFreqNums = Object.keys(freq).filter(n => freq[n] === 0).map(Number);
     }
 
@@ -76,30 +87,23 @@
             safety++;
             let res = [];
             
-            // --- 1~5조합: 12수 압축 로직 ---
-            if(count < 5) {
-                let compressedBasket = scoredGlobal.slice(0, 12);
+            if(count < 5) { // 🎯 상위 5개: 16수 압축
                 res.push(machineFixed[count % 3]);
-                let temp = [...compressedBasket].sort(() => Math.random() - 0.5);
+                let temp = [...basket16].sort(() => Math.random() - 0.5);
                 for(let n of temp) { if(res.length < 6 && !res.includes(n)) res.push(n); }
-            } 
-            // --- 6~10조합: 기존 오리지널 로직 ---
-            else {
-                let normalBasket = scoredGlobal.slice(0, 22);
-                if(count < 7) { 
-                    res.push(machineFixed[count % 3]); 
-                } else {
+            } else { // 🎲 하위 5개: 22수 분산 및 보너스 전략
+                if(count < 7) { res.push(machineFixed[count % 3]); } 
+                else {
                     res.push(bonus[count - 7]);
-                    if(count === 9 && zeroFreqNums.length > 0) { 
+                    if(count === 9 && zeroFreqNums.length > 0) {
                         let shuffledZeros = [...zeroFreqNums].sort(() => Math.random() - 0.5);
                         for(let z of shuffledZeros) { if(res.length < 6) res.push(z); }
                     }
                 }
-                let temp = [...normalBasket].sort(() => Math.random() - 0.5);
+                let temp = [...basket22].sort(() => Math.random() - 0.5);
                 for(let n of temp) { if(res.length < 6 && !res.includes(n)) res.push(n); }
             }
             
-            // 번호 보충
             while(res.length < 6) {
                 let n = Math.floor(Math.random()*45)+1;
                 if(!res.includes(n)) res.push(n);
@@ -107,9 +111,9 @@
 
             res.sort((a,b)=>a-b);
             let sum = res.reduce((a,b)=>a+b, 0);
-            let isPass = (count === 9) ? (sum >= 70 && sum <= 220) : (sum >= 100 && sum <= 190);
-
-            if(!used.has(res.join(',')) && isPass) {
+            
+            // 필터 범위 안정화 (합계 100~190)
+            if(!used.has(res.join(',')) && sum >= 100 && sum <= 190) {
                 used.add(res.join(','));
                 count++;
                 const numsHtml = res.map(n => {
