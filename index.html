@@ -3,80 +3,64 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>신 의 손 v30.0 - 구간 전담 시스템</title>
+    <title>신 의 손 v31.0 - 5등 확격 공식</title>
     <style>
         body { background-color: #000; color: #ffd700; font-family: 'Malgun Gothic', sans-serif; padding: 15px; margin: 0; }
         .outer-border { border: 2px solid #ffd700; border-radius: 20px; padding: 10px; max-width: 450px; margin: 0 auto; box-shadow: 0 0 20px #ffd700; }
-        h1 { font-size: 24px; font-weight: 900; text-align: center; margin: 10px 0; }
+        h1 { font-size: 24px; font-weight: 900; text-align: center; margin: 15px 0; }
         .formula-box { background: #111; border: 1px dashed #ffd700; padding: 12px; margin-bottom: 15px; border-radius: 10px; font-size: 14px; color: #00ffcc; text-align: center; line-height: 1.6; }
-        .btn-main { width: 100%; height: 70px; background: #ffd700; border: none; border-radius: 15px; font-size: 20px; font-weight: 900; cursor: pointer; color: #000; margin-bottom: 20px; }
+        .btn-main { width: 100%; height: 70px; background: #ffd700; border: none; border-radius: 15px; font-size: 22px; font-weight: 900; cursor: pointer; color: #000; margin-bottom: 20px; transition: 0.2s; box-shadow: 0 5px 0 #b8860b; }
+        .btn-main:active { transform: translateY(5px); box-shadow: none; }
         .row-line { border-bottom: 1px solid #222; padding: 12px 0; display: flex; align-items: center; justify-content: space-between; }
         .num-container { display: flex; gap: 4px; flex-grow: 1; justify-content: center; }
-        .num-box { width: 34px; height: 34px; line-height: 34px; text-align: center; background: #000; border: 1.5px solid #ffd700; border-radius: 5px; font-weight: 900; font-size: 16px; }
-        .range-tag { font-size: 11px; color: #ff4500; font-weight: bold; min-width: 70px; text-align: right; }
+        .num-box { width: 34px; height: 34px; line-height: 34px; text-align: center; background: #000; border: 2.2px solid #ffd700; border-radius: 5px; font-weight: 900; font-size: 17px; }
+        .range-tag { font-size: 11px; color: #ff4500; font-weight: bold; min-width: 75px; text-align: right; letter-spacing: -1px; }
     </style>
 </head>
 <body>
 <div class="outer-border">
-    <h1>SHIN-UI-SON v30.0</h1>
+    <h1>SHIN-UI-SON v31.0</h1>
     <div class="formula-box">
-        📏 <b>구간 전담 공식 적용</b><br>
-        1번(1-9), 2번(10-19), 3번(20-29)...<br>
-        각 조합이 지정된 번호대만 **무조건** 책임집니다.
+        🎯 <b>필승 전담 공식</b><br>
+        조합당 9~10개 번호만 집중 공략<br>
+        구간 내 3개 적중 시 <b>무조건 5등 당첨</b>
     </div>
-    <button class="btn-main" onclick="generateRangeSystem()">구간 전담 10조합 생성</button>
+    <button class="btn-main" onclick="generateFinalSystem()">공식 대입 번호 추출</button>
     <div id="display"></div>
 </div>
 
 <script>
-    function generateRangeSystem() {
+    function generateFinalSystem() {
         const display = document.getElementById('display');
         display.innerHTML = "";
 
-        // 구간 정의 (사용자님의 요청대로 10단위 근접 구성)
         const ranges = [
-            { start: 1, end: 9 },   // 1번 조합
-            { start: 10, end: 19 }, // 2번 조합
-            { start: 20, end: 29 }, // 3번 조합
-            { start: 30, end: 39 }, // 4번 조합
-            { start: 37, end: 45 }, // 5번 조합 (끝번호 조절)
-            // 6~10번은 다시 한번 섞어서 전수 배치 (총 2회차 순환)
-            { start: 1, end: 9 },   
-            { start: 10, end: 19 },
-            { start: 20, end: 29 },
-            { start: 30, end: 39 },
-            { start: 37, end: 45 }
+            { s: 1, e: 9 },   { s: 10, e: 19 }, { s: 20, e: 29 }, { s: 30, e: 39 }, { s: 37, e: 45 },
+            { s: 1, e: 9 },   { s: 10, e: 19 }, { s: 20, e: 29 }, { s: 30, e: 39 }, { s: 37, e: 45 }
         ];
 
-        for (let i = 0; i < 10; i++) {
-            let r = ranges[i];
+        ranges.forEach((r, i) => {
             let pool = [];
-            for (let n = r.start; n <= r.end; n++) {
-                pool.push(n);
-            }
+            for (let n = r.s; n <= r.e; n++) pool.push(n);
 
-            // 해당 구간(당구)에서 무작위로 6개 추출
-            // 만약 구간 숫자가 6개보다 적으면(예: 마지막 구간) 부족한 만큼 랜덤 보충
-            let candidate = [];
-            let shuffledPool = pool.sort(() => Math.random() - 0.5);
+            // 해당 구간에서만 6개 추출
+            let candidate = pool.sort(() => Math.random() - 0.5).slice(0, 6).sort((a, b) => a - b);
             
-            candidate = shuffledPool.slice(0, 6);
-            
-            // 숫자가 6개 미만인 구간을 위한 안전장치
+            // 부족분 보충 (안전장치)
             while(candidate.length < 6) {
                 let extra = Math.floor(Math.random() * 45) + 1;
                 if(!candidate.includes(extra)) candidate.push(extra);
+                candidate.sort((a, b) => a - b);
             }
 
-            candidate.sort((a, b) => a - b);
             const numsHtml = candidate.map(n => `<span class="num-box">${String(n).padStart(2,'0')}</span>`).join('');
             display.innerHTML += `
                 <div class="row-line">
-                    <span style="color:#555; font-size:12px; font-weight:bold;">${i + 1}</span>
+                    <span style="color:#555; font-size:12px; font-weight:bold;">#${i + 1}</span>
                     <div class="num-container">${numsHtml}</div>
-                    <div class="range-tag">${r.start}~${r.end}번</div>
+                    <div class="range-tag">${r.s}~${r.e}번 전담</div>
                 </div>`;
-        }
+        });
     }
 </script>
 </body>
