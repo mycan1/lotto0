@@ -3,88 +3,67 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>신 의 손 v15.5 - 순차 전수 분석</title>
+    <title>신 의 손 v15.5 - 순수 전수 배치</title>
     <style>
         body { background-color: #000; color: #ffd700; font-family: 'Malgun Gothic', sans-serif; padding: 15px; margin: 0; }
         .outer-border { border: 2px solid #ffd700; border-radius: 20px; padding: 5px; max-width: 450px; margin: 0 auto; }
         .inner-container { padding: 20px 10px; background: #000; }
         h1 { font-size: 26px; font-weight: 900; margin: 0; color: #ffd700; letter-spacing: 2px; text-align: center; cursor: pointer; }
-        .target-box { color: #00ffcc; font-size: 13px; margin: 15px 0; border: 1px solid #00ffcc; padding: 10px; border-radius: 10px; font-weight: bold; text-align: center; }
-        .btn-main { width: 100%; height: 60px; background: #ffd700; border: none; border-radius: 10px; font-size: 18px; font-weight: 900; cursor: pointer; color: #000; margin-bottom: 20px; box-shadow: 0 0 10px #ffd700; }
-        .row-line { border-bottom: 1px solid #222; padding: 10px 0; font-size: 20px; display: flex; align-items: center; justify-content: space-between; }
+        .target-box { color: #00ffcc; font-size: 14px; margin: 15px 0; border: 1px solid #00ffcc; padding: 10px; border-radius: 10px; font-weight: bold; text-align: center; }
+        .btn-main { width: 100%; height: 60px; background: #ffd700; border: none; border-radius: 10px; font-size: 18px; font-weight: 900; cursor: pointer; color: #000; margin-bottom: 20px; box-shadow: 0 5px 0 #b8860b; }
+        .btn-main:active { transform: translateY(3px); box-shadow: none; }
+        .row-line { border-bottom: 1px solid #222; padding: 12px 0; font-size: 20px; display: flex; align-items: center; justify-content: space-between; }
         .row-idx { font-size: 13px; color: #555; min-width: 25px; }
         .num-container { display: flex; gap: 5px; flex-grow: 1; justify-content: center; }
-        .num-box { font-family: 'Consolas', monospace; font-weight: 900; width: 32px; text-align: center; color: #ffd700; border: 1px solid #333; border-radius: 5px; }
-        .info { font-size: 11px; color: #00ffcc; min-width: 45px; text-align: right; line-height: 1.2; }
+        .num-box { font-family: 'Consolas', monospace; font-weight: 900; width: 34px; text-align: center; color: #ffd700; border-radius: 5px; }
+        .info { font-size: 11px; color: #444; min-width: 45px; text-align: right; }
     </style>
 </head>
 <body>
 <div class="outer-border">
     <div class="inner-container">
         <h1 onclick="location.reload()">신 의 손 v15.5</h1>
-        <div class="target-box">🔍 1~45번 순차 슬라이드 엔진<br>🎯 필터: AC 6~10 / 합계 100~190</div>
-        <button class="btn-main" onclick="process()">순차 분석 10조합 가동</button>
+        <div class="target-box">📏 필터 제거: 순수 순차 배치<br>🎯 1-45 전구간 촘촘한 그물망</div>
+        <button class="btn-main" onclick="process()">순수 전수 10조합 추출</button>
         <div id="console"></div>
     </div>
 </div>
 
 <script>
-    function calculateAC(arr) {
-        let diffs = new Set();
-        for (let i = 0; i < arr.length; i++) {
-            for (let j = i + 1; j < arr.length; j++) {
-                diffs.add(Math.abs(arr[i] - arr[j]));
-            }
-        }
-        return diffs.size - (arr.length - 1);
-    }
-
     function process() {
         const box = document.getElementById('console');
-        box.innerHTML = "<p style='text-align:center; color:#555;'>조합 생성 중...</p>";
+        box.innerHTML = "";
         
-        setTimeout(() => {
-            box.innerHTML = "";
-            let sets = [];
-            let offset = Math.floor(Math.random() * 45); // 시작점만 랜덤
-            let attempts = 0;
+        // 1번부터 45번까지 기본 배열
+        const base = Array.from({length: 45}, (_, i) => i + 1);
+        
+        // 시작점을 랜덤하게 잡아 매번 다른 구간부터 순차적으로 시작하게 함
+        let offset = Math.floor(Math.random() * 45); 
 
-            // 10조합을 찾을 때까지 무한 루프 방지용 safety 장치 강화
-            while (sets.length < 10 && attempts < 20000) {
-                attempts++;
-                let candidate = [];
-                
-                // [수정된 순차 로직] 1~45번 사이에서 6개를 순차적으로 고르되
-                // 필터 통과율을 높이기 위해 간격을 두고 추출
-                for (let i = 0; i < 6; i++) {
-                    let val = ((offset + (i * 7)) % 45) + 1; // 7칸씩 점프하며 순차 추출
-                    candidate.push(val);
-                }
-
-                candidate.sort((a, b) => a - b);
-                let ac = calculateAC(candidate);
-                let sum = candidate.reduce((a, b) => a + b, 0);
-
-                // 사용자 지정 황금 필터
-                if (ac >= 6 && ac <= 10 && sum >= 100 && sum <= 190) {
-                    // 중복 조합 방지
-                    let combo = candidate.join(',');
-                    if(!sets.some(s => s.combo === combo)) {
-                        sets.push({ combo: combo, nums: candidate, ac: ac, sum: sum });
-                        
-                        const numsHtml = candidate.map(n => `<span class="num-box">${String(n).padStart(2,'0')}</span>`).join('');
-                        box.innerHTML += `
-                            <div class="row-line">
-                                <span class="row-idx">${sets.length}</span>
-                                <div class="num-container">${numsHtml}</div>
-                                <span class="info">AC:${ac}<br>합:${sum}</span>
-                            </div>`;
-                    }
-                }
-                offset++; // 다음 조합을 위해 한 칸 이동
+        for (let i = 0; i < 10; i++) {
+            let candidate = [];
+            
+            // 6개씩 순서대로 담기
+            for (let j = 0; j < 6; j++) {
+                // (시작점 + 현재조합번호*간격 + 내부인덱스) % 45
+                // 번호가 겹치지 않게 '간격'을 4씩 둠으로써 촘촘하게 전수 배치
+                let idx = (offset + (i * 4) + j) % 45;
+                candidate.push(base[idx]);
             }
-            if(sets.length === 0) box.innerHTML = "<p style='color:red;'>필터 조건에 맞는 조합을 찾지 못했습니다. 다시 시도해 주세요.</p>";
-        }, 100);
+
+            candidate.sort((a, b) => a - b);
+            
+            // 화면 출력
+            const numsHtml = candidate.map(n => `<span class="num-box">${String(n).padStart(2,'0')}</span>`).join('');
+            const sum = candidate.reduce((a, b) => a + b, 0);
+            
+            box.innerHTML += `
+                <div class="row-line">
+                    <span class="row-idx">${i + 1}</span>
+                    <div class="num-container">${numsHtml}</div>
+                    <span class="info">합:${sum}</span>
+                </div>`;
+        }
     }
 </script>
 </body>
