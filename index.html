@@ -10,7 +10,23 @@
         .outer-border { border: 2px solid var(--gold); border-radius: 20px; padding: 15px; max-width: 480px; margin: 0 auto; }
         .header-box { text-align: center; margin-bottom: 10px; }
         .next-episode { font-size: 22px; font-weight: 900; color: #fff; text-shadow: 0 0 10px rgba(255,215,0,0.5); }
-        .status-info { font-size: 11px; color: var(--accent); line-height: 1.6; min-height: 160px; width: 100%; background: rgba(255,255,255,0.05); border-radius: 12px; padding: 12px; box-sizing: border-box; margin-top: 10px; text-align: left; border: 1px solid #333; }
+        
+        /* ===== 수정: 세로 길이 줄임 ===== */
+        .status-info { 
+            font-size: 11px; 
+            color: var(--accent); 
+            line-height: 1.5; 
+            min-height: 80px;  /* 160px → 80px로 줄임 */
+            width: 100%; 
+            background: rgba(255,255,255,0.05); 
+            border-radius: 12px; 
+            padding: 10px; 
+            box-sizing: border-box; 
+            margin-top: 8px; 
+            text-align: left; 
+            border: 1px solid #333; 
+        }
+        
         .highlight-gold { color: var(--gold); font-weight: bold; }
         .highlight-red { color: var(--danger); font-weight: bold; }
         .highlight-blue { color: #00ccff; font-weight: bold; }
@@ -85,6 +101,14 @@
             margin-left: 5px;
             cursor: pointer;
         }
+        
+        /* ===== 추가: 하단 설명 더 줄임 ===== */
+        .small-note {
+            margin-top: 3px;
+            color: #888;
+            font-size: 9px;
+            text-align: center;
+        }
     </style>
 </head>
 <body>
@@ -105,6 +129,7 @@
     </div>
 
     <div id="console"></div>
+    <div class="small-note">※ 9,10번 조합에 미출수 포함</div>
 </div>
 
 <!-- 팝업 HTML -->
@@ -127,7 +152,6 @@
     let userName = "";
     let savedNumbers = [];
     
-    // 사용자 정보 표시 업데이트
     function updateUserDisplay() {
         const userDisplay = document.getElementById('userDisplay');
         userDisplay.innerHTML = `👤 현재 접속자: ${userName} 
@@ -135,15 +159,12 @@
             <button class="change-name-btn" style="background:#ff4444;" onclick="deleteUser()">삭제</button>`;
     }
     
-    // 이름 변경
     function changeName() {
         const newName = prompt("새로운 이름을 입력하세요:", userName);
         if (newName && newName.trim() !== "") {
-            // 이전 이름으로 저장된 데이터는 그대로 유지
             userName = newName.trim();
             localStorage.setItem('lottoUserName', userName);
             
-            // 새 이름으로 저장소 키 변경 (기존 데이터 로드)
             const storageKey = `lottoSave_${userName}`;
             const localData = localStorage.getItem(storageKey);
             savedNumbers = localData ? JSON.parse(localData) : [];
@@ -154,14 +175,11 @@
         }
     }
     
-    // 사용자 삭제 (이름 + 보관함 기록 모두 삭제)
     function deleteUser() {
         if(confirm(`정말 ${userName}님의 모든 기록을 삭제하시겠습니까?`)) {
-            // 현재 사용자의 보관함 데이터 삭제
             const storageKey = `lottoSave_${userName}`;
             localStorage.removeItem(storageKey);
             
-            // 새 guest 계정 생성
             userName = "guest_" + Math.random().toString(36).substring(2, 6);
             localStorage.setItem('lottoUserName', userName);
             savedNumbers = [];
@@ -173,23 +191,19 @@
     }
 
     function initUser() {
-        // 저장된 이름 확인
         const savedName = localStorage.getItem('lottoUserName');
         
         if (savedName) {
             userName = savedName;
         } else {
-            // 처음 접속: 자동으로 guest 생성
             userName = "guest_" + Math.random().toString(36).substring(2, 6);
             localStorage.setItem('lottoUserName', userName);
         }
         
-        // 사용자별 저장소 키
         const storageKey = `lottoSave_${userName}`;
         const localData = localStorage.getItem(storageKey);
         savedNumbers = localData ? JSON.parse(localData) : [];
         
-        // 사용자 표시 업데이트
         updateUserDisplay();
         document.getElementById('status').innerHTML = `분석 초기화 중...`;
     }
@@ -290,7 +304,6 @@
             <div>압축 후보 16수: ${basket.sort((a,b)=>a-b).join(', ')}</div>
             <div><span class="highlight-blue">📊 다음 회차 기대 합계:</span> ${dynamicAvgSum}</div>
             <div><span class="highlight-blue">⚖️ 필터링 범위:</span> ${dynamicAvgSum-28} ~ ${dynamicAvgSum+28}</div>
-            <div style="margin-top:5px; color:#fff; font-size:10px;">※ 9,10번 조합에 25회 미출수 강제 포함 로직 적용됨</div>
         `;
     }
 
@@ -353,7 +366,7 @@
             if(!used.has(key) && sum >= minSum && sum <= maxSum) {
                 used.add(key);
                 count++;
-                let specialMark = (limit === 10 && (count === 9 || count === 10)) ? '🔥 25회 미출수' : '';
+                let specialMark = (limit === 10 && (count === 9 || count === 10)) ? '🔥' : '';
                 renderRow(finalArr, box, key, specialMark);
             }
         }
