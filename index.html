@@ -108,22 +108,33 @@
     let savedNumbers = [];
     
     function initUser() {
+        // 저장된 이름이 있는지 확인
         const savedName = localStorage.getItem('lottoUserName');
         
         if (savedName) {
+            // 저장된 이름이 있으면 그대로 사용
             userName = savedName;
+            console.log("기존 사용자:", userName);
         } else {
-            // 빈칸으로 수정!
+            // 처음 접속: 무조건 이름 물어봄! (빈칸으로)
             userName = prompt("사용자 이름을 입력하세요:", "");
-            if (!userName) userName = "guest_" + Math.random().toString(36).substring(2, 6);
+            
+            // 이름 안 쓰면 guest_xxxx 자동 생성
+            if (!userName || userName.trim() === "") {
+                userName = "guest_" + Math.random().toString(36).substring(2, 6);
+            }
+            
+            // 이름 저장
             localStorage.setItem('lottoUserName', userName);
             alert(`${userName}님 환영합니다!`);
         }
         
+        // 사용자별 저장소 키
         const storageKey = `lottoSave_${userName}`;
         const localData = localStorage.getItem(storageKey);
         savedNumbers = localData ? JSON.parse(localData) : [];
         
+        // 상태창에 사용자 이름 표시
         document.getElementById('status').innerHTML = `👤 ${userName}님 환영합니다!<br>분석 초기화 중...`;
     }
 
