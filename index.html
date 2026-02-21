@@ -103,38 +103,30 @@
     let basket = [], zeroFreqNums = [], machineFixed = [];
     let dynamicAvgSum = 145;
     
-    // ===== 이름 입력 기능 추가 =====
+    // ===== 이름 입력 기능 =====
     let userName = "";
     let savedNumbers = [];
     
-    // 사용자 이름 불러오기 또는 입력받기
     function initUser() {
-        // localStorage에서 저장된 이름 확인
         const savedName = localStorage.getItem('lottoUserName');
         
         if (savedName) {
             userName = savedName;
-            console.log("기존 사용자:", userName);
         } else {
-            // 처음 접속하면 이름 물어보기
-            userName = prompt("사용자 이름을 입력하세요:", "홍길동");
+            // 빈칸으로 수정!
+            userName = prompt("사용자 이름을 입력하세요:", "");
             if (!userName) userName = "guest_" + Math.random().toString(36).substring(2, 6);
-            
-            // 이름 저장
             localStorage.setItem('lottoUserName', userName);
             alert(`${userName}님 환영합니다!`);
         }
         
-        // 사용자별 저장소 키
         const storageKey = `lottoSave_${userName}`;
         const localData = localStorage.getItem(storageKey);
         savedNumbers = localData ? JSON.parse(localData) : [];
         
-        // 상태창에 사용자 이름 표시
         document.getElementById('status').innerHTML = `👤 ${userName}님 환영합니다!<br>분석 초기화 중...`;
     }
 
-    // 저장 함수 (사용자별로 저장)
     function saveToBox(s) {
         if(!savedNumbers.includes(s)) {
             savedNumbers.push(s);
@@ -146,7 +138,6 @@
         }
     }
 
-    // 개별 삭제 함수
     function deleteSingleItem(index) {
         if(confirm("이 조합을 삭제할까요?")) {
             savedNumbers.splice(index, 1);
@@ -156,13 +147,11 @@
         }
     }
 
-    // 불러오기 함수
     function loadFromStorage(nums) {
         alert(`선택된 번호: ${nums.split(',').join(', ')}`);
         closePopup();
     }
 
-    // 보관함 렌더링 (개별 삭제 + 불러오기 버튼)
     function renderStorage() {
         const st = document.getElementById('storage');
         if(savedNumbers.length === 0) { 
@@ -187,11 +176,9 @@
             `;
         }).join('');
         
-        // 보관함 제목에 사용자 이름 표시
         document.querySelector('.popup-title').innerHTML = `📦 ${userName}의 보관함 (${savedNumbers.length}개)`;
     }
 
-    // 분석 함수 (원본 그대로)
     function analyze() {
         let freq = {};
         for(let i=1; i<=45; i++) freq[i] = 0;
@@ -240,6 +227,7 @@
         `;
     }
 
+    // ===== 수정된 process 함수 (지난번호 최대 2개) =====
     function process(limit) {
         analyze();
         const box = document.getElementById('console');
@@ -252,20 +240,48 @@
             safety++;
             let res = new Set();
             let currentIdx = count + 1;
+            let zeroCount = 0;  // 지난번호 카운터
 
+            // 9,10번 조합 미출수 포함
             if (limit === 10 && (currentIdx === 9 || currentIdx === 10) && zeroFreqNums.length > 0) {
                 let zeroNum = zeroFreqNums[Math.floor(Math.random() * zeroFreqNums.length)];
                 res.add(zeroNum);
-            } else if (Math.random() > 0.8 && zeroFreqNums.length > 0) {
-                res.add(zeroFreqNums[Math.floor(Math.random() * zeroFreqNums.length)]);
+                zeroCount++;
+            } else if (Math.random() > 0.8 && zeroFreqNums.length > 0 && zeroCount < 2) {
+                let zeroNum = zeroFreqNums[Math.floor(Math.random() * zeroFreqNums.length)];
+                res.add(zeroNum);
+                zeroCount++;
             }
 
             if(limit === 5) res.add(machineFixed[Math.floor(Math.random()*3)]);
 
+            // 후보수에서 채우기 (지난번호는 최대 2개)
             let shuffleBasket = [...basket].sort(() => Math.random() - 0.5);
-            for(let n of shuffleBasket) { if(res.size < 6) res.add(n); }
+            for(let n of shuffleBasket) {
+                if(res.size >= 6) break;
+                
+                if(zeroFreqNums.includes(n)) {
+                    if(zeroCount < 2) {
+                        res.add(n);
+                        zeroCount++;
+                    }
+                } else {
+                    res.add(n);
+                }
+            }
 
-            while(res.size < 6) res.add(Math.floor(Math.random()*45)+1);
+            // 부족한 번호 채우기 (지난번호는 최대 2개)
+            while(res.size < 6) {
+                let rand = Math.floor(Math.random()*45)+1;
+                if(zeroFreqNums.includes(rand)) {
+                    if(zeroCount < 2) {
+                        res.add(rand);
+                        zeroCount++;
+                    }
+                } else {
+                    res.add(rand);
+                }
+            }
 
             let finalArr = Array.from(res).sort((a,b)=>a-b);
             let sum = finalArr.reduce((a,b)=>a+b, 0);
@@ -307,9 +323,8 @@
         }
     }
     
-    // 페이지 로드: 이름 먼저 물어보고 분석 실행
     window.onload = function() {
-        initUser();  // 👈 여기서 이름 물어봄!
+        initUser();
         analyze();
     };
 </script>
