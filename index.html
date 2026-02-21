@@ -66,6 +66,25 @@
             text-align: center;
             color: var(--gold);
         }
+        .user-info {
+            background: #333;
+            color: var(--accent);
+            padding: 5px 10px;
+            border-radius: 20px;
+            font-size: 12px;
+            margin-bottom: 10px;
+            text-align: center;
+        }
+        .change-name-btn {
+            background: #00ccff;
+            color: white;
+            border: none;
+            border-radius: 5px;
+            padding: 3px 8px;
+            font-size: 10px;
+            margin-left: 5px;
+            cursor: pointer;
+        }
     </style>
 </head>
 <body>
@@ -73,6 +92,7 @@
 <div class="outer-border">
     <div class="header-box">
         <span class="next-episode">SHIN-UI-SON v24.1</span>
+        <div id="userDisplay" class="user-info"></div>
         <div id="status" class="status-info">엔진 초기화 중...</div>
     </div>
 
@@ -103,26 +123,65 @@
     let basket = [], zeroFreqNums = [], machineFixed = [];
     let dynamicAvgSum = 145;
     
-    // ===== 이름 입력 기능 추가 =====
+    // ===== 이름 관리 기능 =====
     let userName = "";
     let savedNumbers = [];
     
-    // 사용자 이름 불러오기 또는 입력받기
+    // 사용자 정보 표시 업데이트
+    function updateUserDisplay() {
+        const userDisplay = document.getElementById('userDisplay');
+        userDisplay.innerHTML = `👤 현재 접속자: ${userName} 
+            <button class="change-name-btn" onclick="changeName()">이름변경</button>
+            <button class="change-name-btn" style="background:#ff4444;" onclick="deleteUser()">삭제</button>`;
+    }
+    
+    // 이름 변경
+    function changeName() {
+        const newName = prompt("새로운 이름을 입력하세요:", userName);
+        if (newName && newName.trim() !== "") {
+            // 이전 이름으로 저장된 데이터는 그대로 유지
+            userName = newName.trim();
+            localStorage.setItem('lottoUserName', userName);
+            
+            // 새 이름으로 저장소 키 변경 (기존 데이터 로드)
+            const storageKey = `lottoSave_${userName}`;
+            const localData = localStorage.getItem(storageKey);
+            savedNumbers = localData ? JSON.parse(localData) : [];
+            
+            updateUserDisplay();
+            analyze();
+            alert(`이름이 ${userName}(으)로 변경되었습니다.`);
+        }
+    }
+    
+    // 사용자 삭제 (이름 + 보관함 기록 모두 삭제)
+    function deleteUser() {
+        if(confirm(`정말 ${userName}님의 모든 기록을 삭제하시겠습니까?`)) {
+            // 현재 사용자의 보관함 데이터 삭제
+            const storageKey = `lottoSave_${userName}`;
+            localStorage.removeItem(storageKey);
+            
+            // 새 guest 계정 생성
+            userName = "guest_" + Math.random().toString(36).substring(2, 6);
+            localStorage.setItem('lottoUserName', userName);
+            savedNumbers = [];
+            
+            updateUserDisplay();
+            analyze();
+            alert(`새로운 손님 계정(${userName})으로 시작합니다.`);
+        }
+    }
+
     function initUser() {
-        // localStorage에서 저장된 이름 확인
+        // 저장된 이름 확인
         const savedName = localStorage.getItem('lottoUserName');
         
         if (savedName) {
             userName = savedName;
-            console.log("기존 사용자:", userName);
         } else {
-            // 처음 접속하면 이름 물어보기
-            userName = prompt("사용자 이름을 입력하세요:", "홍길동");
-            if (!userName) userName = "guest_" + Math.random().toString(36).substring(2, 6);
-            
-            // 이름 저장
+            // 처음 접속: 자동으로 guest 생성
+            userName = "guest_" + Math.random().toString(36).substring(2, 6);
             localStorage.setItem('lottoUserName', userName);
-            alert(`${userName}님 환영합니다!`);
         }
         
         // 사용자별 저장소 키
@@ -130,11 +189,11 @@
         const localData = localStorage.getItem(storageKey);
         savedNumbers = localData ? JSON.parse(localData) : [];
         
-        // 상태창에 사용자 이름 표시
-        document.getElementById('status').innerHTML = `👤 ${userName}님 환영합니다!<br>분석 초기화 중...`;
+        // 사용자 표시 업데이트
+        updateUserDisplay();
+        document.getElementById('status').innerHTML = `분석 초기화 중...`;
     }
 
-    // 저장 함수 (사용자별로 저장)
     function saveToBox(s) {
         if(!savedNumbers.includes(s)) {
             savedNumbers.push(s);
@@ -146,7 +205,6 @@
         }
     }
 
-    // 개별 삭제 함수
     function deleteSingleItem(index) {
         if(confirm("이 조합을 삭제할까요?")) {
             savedNumbers.splice(index, 1);
@@ -156,13 +214,11 @@
         }
     }
 
-    // 불러오기 함수
     function loadFromStorage(nums) {
         alert(`선택된 번호: ${nums.split(',').join(', ')}`);
         closePopup();
     }
 
-    // 보관함 렌더링 (개별 삭제 + 불러오기 버튼)
     function renderStorage() {
         const st = document.getElementById('storage');
         if(savedNumbers.length === 0) { 
@@ -187,11 +243,9 @@
             `;
         }).join('');
         
-        // 보관함 제목에 사용자 이름 표시
         document.querySelector('.popup-title').innerHTML = `📦 ${userName}의 보관함 (${savedNumbers.length}개)`;
     }
 
-    // 분석 함수 (원본 그대로)
     function analyze() {
         let freq = {};
         for(let i=1; i<=45; i++) freq[i] = 0;
@@ -231,7 +285,7 @@
         machineFixed = [scored[0], scored[1], scored[2]];
 
         document.getElementById('status').innerHTML = `
-            <div><span class="highlight-gold">★ SHIN-UI-SON v24.1 엔진 가동</span> <span style="color:#00ccff;">[${userName}]</span></div>
+            <div><span class="highlight-gold">★ SHIN-UI-SON v24.1 엔진 가동</span></div>
             <div><span class="highlight-red">🎯 미출수(최근 25회 기준):</span> ${zeroFreqNums.length > 0 ? zeroFreqNums.join(', ') : '없음'}</div>
             <div>압축 후보 16수: ${basket.sort((a,b)=>a-b).join(', ')}</div>
             <div><span class="highlight-blue">📊 다음 회차 기대 합계:</span> ${dynamicAvgSum}</div>
@@ -252,20 +306,45 @@
             safety++;
             let res = new Set();
             let currentIdx = count + 1;
+            let zeroCount = 0;
 
             if (limit === 10 && (currentIdx === 9 || currentIdx === 10) && zeroFreqNums.length > 0) {
                 let zeroNum = zeroFreqNums[Math.floor(Math.random() * zeroFreqNums.length)];
                 res.add(zeroNum);
-            } else if (Math.random() > 0.8 && zeroFreqNums.length > 0) {
-                res.add(zeroFreqNums[Math.floor(Math.random() * zeroFreqNums.length)]);
+                zeroCount++;
+            } else if (Math.random() > 0.8 && zeroFreqNums.length > 0 && zeroCount < 2) {
+                let zeroNum = zeroFreqNums[Math.floor(Math.random() * zeroFreqNums.length)];
+                res.add(zeroNum);
+                zeroCount++;
             }
 
             if(limit === 5) res.add(machineFixed[Math.floor(Math.random()*3)]);
 
             let shuffleBasket = [...basket].sort(() => Math.random() - 0.5);
-            for(let n of shuffleBasket) { if(res.size < 6) res.add(n); }
+            for(let n of shuffleBasket) {
+                if(res.size >= 6) break;
+                
+                if(zeroFreqNums.includes(n)) {
+                    if(zeroCount < 2) {
+                        res.add(n);
+                        zeroCount++;
+                    }
+                } else {
+                    res.add(n);
+                }
+            }
 
-            while(res.size < 6) res.add(Math.floor(Math.random()*45)+1);
+            while(res.size < 6) {
+                let rand = Math.floor(Math.random()*45)+1;
+                if(zeroFreqNums.includes(rand)) {
+                    if(zeroCount < 2) {
+                        res.add(rand);
+                        zeroCount++;
+                    }
+                } else {
+                    res.add(rand);
+                }
+            }
 
             let finalArr = Array.from(res).sort((a,b)=>a-b);
             let sum = finalArr.reduce((a,b)=>a+b, 0);
@@ -307,9 +386,8 @@
         }
     }
     
-    // 페이지 로드: 이름 먼저 물어보고 분석 실행
     window.onload = function() {
-        initUser();  // 👈 여기서 이름 물어봄!
+        initUser();
         analyze();
     };
 </script>
