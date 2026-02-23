@@ -3,14 +3,16 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>SHIN-UI-SON v24.1 - 0000 통합 엔진</title>
+    <title>SHIN-UI-SON v24.1 - 0000 정밀 분석형</title>
     <style>
-        /* [디자인 살리기] 사용자님의 금색 테두리와 다크 모드 디자인 100% 유지 */
+        /* 사용자님의 원본 스타일 100% 유지 */
         :root { --gold: #ffd700; --bg: #0b0b0b; --card: #1a1a1a; --accent: #00ffcc; --save: #ff00ff; --danger: #ff4444; }
         body { background-color: var(--bg); color: var(--gold); font-family: 'Malgun Gothic', sans-serif; padding: 10px; margin: 0; }
         .outer-border { border: 2px solid var(--gold); border-radius: 20px; padding: 15px; max-width: 480px; margin: 0 auto; }
         .header-box { text-align: center; margin-bottom: 10px; }
         .next-episode { font-size: 22px; font-weight: 900; color: #fff; text-shadow: 0 0 10px rgba(255,215,0,0.5); }
+        .user-info { background: #333; color: var(--accent); padding: 5px 10px; border-radius: 20px; font-size: 12px; margin-bottom: 10px; text-align: center; }
+        .change-name-btn { background: #00ccff; color: white; border: none; border-radius: 5px; padding: 3px 8px; font-size: 10px; margin-left: 5px; cursor: pointer; }
         .status-info { font-size: 11px; color: var(--accent); line-height: 1.5; min-height: 80px; width: 100%; background: rgba(255,255,255,0.05); border-radius: 12px; padding: 10px; box-sizing: border-box; margin-top: 8px; text-align: left; border: 1px solid #333; }
         .btn-group { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; margin: 15px 0; }
         button { border-radius: 10px; font-weight: bold; cursor: pointer; border: none; height: 50px; transition: 0.2s; }
@@ -18,9 +20,13 @@
         .btn-main { background: linear-gradient(135deg, #ffd700, #b8860b); color: #000; font-size: 16px; }
         .btn-sub { background: #222; color: #fff; border: 1px solid #444; }
         .row-line { background: var(--card); border-radius: 12px; padding: 12px; margin-bottom: 10px; display: flex; align-items: center; justify-content: space-between; border: 1px solid #333; }
-        .num-box { width: 34px; height: 34px; line-height: 34px; text-align: center; font-size: 14px; font-weight: 900; border-radius: 50%; color: #fff; border: 1px solid var(--gold); }
+        .num-box { width: 34px; height: 34px; line-height: 34px; text-align: center; font-size: 14px; font-weight: 900; border-radius: 50%; color: #fff; }
         .fixed { background: linear-gradient(135deg, #00ffcc, #00a884); color: #000; } 
+        .zero { background: linear-gradient(135deg, #ff4444, #b30000); } 
+        .normal { background: #444; border: 1px solid var(--gold); }
         .save-btn { font-size: 11px; background: var(--save); color: white; padding: 6px 10px; border-radius: 6px; cursor: pointer; }
+        .popup-overlay { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.8); display: flex; align-items: center; justify-content: center; z-index: 1000; }
+        .popup-content { background: var(--card); border: 2px solid var(--gold); border-radius: 20px; padding: 20px; max-width: 400px; width: 90%; max-height: 70vh; overflow-y: auto; position: relative; }
     </style>
 </head>
 <body>
@@ -28,85 +34,122 @@
 <div class="outer-border">
     <div class="header-box">
         <span class="next-episode">SHIN-UI-SON v24.1</span>
-        <div id="userDisplay" style="color: #888; font-size: 12px; margin-top: 5px;">👤 현재 접속자: guest_s9kd</div>
-        <div id="status" class="status-info">0000 엔진 대기 중...</div>
+        <div id="userDisplay" class="user-info"></div>
+        <div id="status" class="status-info">0000 엔진 초기화 중...</div>
     </div>
 
     <div class="btn-group">
         <button class="btn-5set" onclick="process(5)">5조합 추출</button>
         <button class="btn-main" onclick="process(10)">10조합 추출</button>
-        <button class="btn-sub">보관함</button>
-        <button class="btn-sub" onclick="location.reload()">초기화</button>
+        <button class="btn-sub" onclick="openPopup()">보관함</button>
+        <button class="btn-sub" onclick="clearStorage()">초기화</button>
+        <button class="btn-sub" style="grid-column: span 2; height: 40px;" onclick="location.reload()">새로고침</button>
     </div>
 
     <div id="console"></div>
 </div>
 
+<div id="popup" class="popup-overlay" style="display:none;">
+    <div class="popup-content">
+        <span onclick="closePopup()" style="position:absolute; top:10px; right:15px; font-size:24px; cursor:pointer;">&times;</span>
+        <div id="storageTitle" style="font-size:18px; font-weight:bold; margin-bottom:15px; text-align:center;">📦 보관함</div>
+        <div id="storage"></div>
+    </div>
+</div>
+
 <script>
-    // [0000 엔진] 기존 데이터 다 지우고 우리 데이터만 주입
-    // 1213회차 타겟 52주 주기 5개 회차 데이터
-    const TARGET_CYCLE = [
-        [4, 5, 12, 16, 22, 35, 34], // 1161회
-        [10, 12, 13, 19, 33, 40, 2], // 1109회
-        [8, 13, 19, 27, 40, 45, 12], // 1057회
-        [8, 13, 18, 24, 27, 29, 17], // 1005회
-        [7, 9, 22, 27, 37, 42, 34]   // 953회
-    ];
+    // [0000 엔진 데이터] 1213회차 주기 데이터 및 이월수 1212회 적용
+    const TARGET_CYCLE = [[4,5,12,16,22,35,34],[10,12,13,19,33,40,2],[8,13,19,27,40,45,12],[8,13,18,24,27,29,17],[7,9,22,27,37,42,34]];
+    const LAST_WIN = [1, 7, 10, 12, 14, 18]; // 1212회 당첨번호
 
-    // 1212회 당첨번호 (이월수 승격용)
-    const LAST_WIN = [1, 7, 10, 12, 14, 18];
+    let userName = "";
+    let savedNumbers = [];
+    let basket = [], zeroNums = [];
 
-    let finalBasket = [];
+    // [기능] 사용자 이름 관리 및 데이터 로드
+    function initUser() {
+        userName = localStorage.getItem('0000UserName') || "guest_" + Math.random().toString(36).substring(2, 6);
+        localStorage.setItem('0000UserName', userName);
+        const data = localStorage.getItem(`0000Save_${userName}`);
+        savedNumbers = data ? JSON.parse(data) : [];
+        updateUserDisplay();
+    }
 
-    // [0000 핵심 로직] 디자인에 정보 뿌리기
+    function updateUserDisplay() {
+        document.getElementById('userDisplay').innerHTML = `👤 접속자: ${userName} 
+            <button class="change-name-btn" onclick="changeName()">변경</button>
+            <button class="change-name-btn" style="background:#ff4444;" onclick="deleteUser()">삭제</button>`;
+    }
+
+    function changeName() {
+        const name = prompt("이름 변경:", userName);
+        if (name) { userName = name; localStorage.setItem('0000UserName', name); initUser(); }
+    }
+
+    function deleteUser() {
+        if(confirm("기록을 삭제할까요?")) { localStorage.removeItem(`0000Save_${userName}`); initUser(); }
+    }
+
+    // [0000 로직] 주기 분석 및 이월수 승격
     function analyze() {
         let pool = [];
-        TARGET_CYCLE.forEach(row => pool.push(...row.slice(0, 6)));
-        let counts = {};
-        pool.forEach(n => counts[n] = (counts[n] || 0) + 1);
-        
-        // 생존자 명단 확보 (보너스 포함)
+        TARGET_CYCLE.forEach(r => pool.push(...r.slice(0, 6)));
+        let counts = {}; pool.forEach(n => counts[n] = (counts[n] || 0) + 1);
         let survivors = [...new Set(pool.concat(TARGET_CYCLE.map(r => r[6])))];
-
-        // 이월수(LAST_WIN)가 있으면 최상단으로 강제 승격
+        
+        // 이월수 가중치 정렬
         survivors.sort((a, b) => {
             let aIn = LAST_WIN.includes(a) ? 1 : 0;
             let bIn = LAST_WIN.includes(b) ? 1 : 0;
-            if (aIn !== bIn) return bIn - aIn; // 이월수 우선
-            return (counts[b] || 0) - (counts[a] || 0); // 그 다음 빈도순
+            if (aIn !== bIn) return bIn - aIn;
+            return (counts[b] || 0) - (counts[a] || 0);
         });
 
-        finalBasket = survivors.slice(0, 17); // 정예 17수 확정
+        basket = survivors.slice(0, 17);
+        zeroNums = [23, 26, 35, 38, 40]; // 예시 미출수 데이터
 
         document.getElementById('status').innerHTML = `
-            <div><span style="color:#ffd700">★ SHIN-UI-SON v24.1 [0000 통합]</span></div>
-            <div><span style="color:#ff4444">🎯 1213회 타겟 정예:</span> ${finalBasket.sort((a,b)=>a-b).join(', ')}</div>
-            <div>분석법: 52주 주기 동기화 + 이월수 승격 로직 적용 완료</div>
+            <div><span class="highlight-gold">★ SHIN-UI-SON v24.1 [1213회 특화]</span></div>
+            <div><span style="color:#ff4444">🎯 1213회 전략 17수 분석 완료</span></div>
+            <div>압축 후보: ${basket.sort((a,b)=>a-b).join(', ')}</div>
         `;
     }
 
-    // [기능] 추출 버튼 클릭 시 작동
     function process(limit) {
-        analyze();
-        const box = document.getElementById('console');
-        box.innerHTML = "";
-        
+        const box = document.getElementById('console'); box.innerHTML = "";
         for(let i=0; i<limit; i++) {
-            // 17수 내에서 랜덤하게 6개 조합 생성
-            let res = [...finalBasket].sort(() => Math.random() - 0.5).slice(0, 6).sort((a,b)=>a-b);
+            let res = [...basket].sort(() => Math.random() - 0.5).slice(0, 6).sort((a,b)=>a-b);
             renderRow(res, box);
         }
     }
 
     function renderRow(arr, target) {
+        const key = arr.join(',');
         const html = arr.map(n => {
-            let isFixed = LAST_WIN.includes(n) ? "fixed" : ""; // 이월수는 디자인상 강조
-            return `<span class="num-box ${isFixed}">${n}</span>`;
+            let cls = LAST_WIN.includes(n) ? "fixed" : (zeroNums.includes(n) ? "zero" : "normal");
+            return `<span class="num-box ${cls}">${n}</span>`;
         }).join('');
-        target.innerHTML += `<div class="row-line"><div style="display:flex; gap:5px; flex-grow:1; justify-content:center;">${html}</div><div class="save-btn">저장</div></div>`;
+        target.innerHTML += `<div class="row-line"><div style="display:flex; gap:5px; flex-grow:1; justify-content:center;">${html}</div><div class="save-btn" onclick="saveToBox('${key}')">저장</div></div>`;
     }
 
-    window.onload = analyze;
+    function saveToBox(key) {
+        if(!savedNumbers.includes(key)) {
+            savedNumbers.push(key);
+            localStorage.setItem(`0000Save_${userName}`, JSON.stringify(savedNumbers));
+            alert("보관함에 저장되었습니다.");
+        }
+    }
+
+    function openPopup() {
+        document.getElementById('popup').style.display = 'flex';
+        const st = document.getElementById('storage');
+        st.innerHTML = savedNumbers.map(n => `<div class="row-line" style="background:#2a2a2a;">${n}</div>`).join('') || "비어있음";
+    }
+
+    function closePopup() { document.getElementById('popup').style.display = 'none'; }
+    function clearStorage() { if(confirm("초기화?")) { savedNumbers = []; localStorage.removeItem(`0000Save_${userName}`); } }
+
+    window.onload = function() { initUser(); analyze(); };
 </script>
 </body>
 </html>
