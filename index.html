@@ -3,46 +3,90 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>SHIN-UI-SON v24.1 - 0000 통합 시스템</title>
+    <title>SHIN-UI-SON v24.1 - Master Edition</title>
     <style>
-        /* [디자인 살리기] 사용자님의 고유 디자인 소스 그대로 유지 */
         :root { --gold: #ffd700; --bg: #0b0b0b; --card: #1a1a1a; --accent: #00ffcc; --save: #ff00ff; --danger: #ff4444; }
         body { background-color: var(--bg); color: var(--gold); font-family: 'Malgun Gothic', sans-serif; padding: 10px; margin: 0; }
-        .outer-border { border: 2px solid var(--gold); border-radius: 20px; padding: 15px; max-width: 480px; margin: 0 auto; }
-        .header-box { text-align: center; margin-bottom: 10px; }
-        .next-episode { font-size: 22px; font-weight: 900; color: #fff; text-shadow: 0 0 10px rgba(255,215,0,0.5); }
-        .user-info { background: #333; color: var(--accent); padding: 5px 10px; border-radius: 20px; font-size: 12px; margin-bottom: 10px; text-align: center; }
-        .change-name-btn { background: #00ccff; color: white; border: none; border-radius: 5px; padding: 3px 8px; font-size: 10px; margin-left: 5px; cursor: pointer; }
-        .status-info { font-size: 11px; color: var(--accent); line-height: 1.5; min-height: 80px; width: 100%; background: rgba(255,255,255,0.05); border-radius: 12px; padding: 10px; box-sizing: border-box; margin-top: 8px; text-align: left; border: 1px solid #333; }
-        .btn-group { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; margin: 15px 0; }
-        button { border-radius: 10px; font-weight: bold; cursor: pointer; border: none; height: 50px; transition: 0.2s; }
-        .btn-5set { background: linear-gradient(135deg, #00ffcc, #00a884); color: #000; font-size: 16px; }
-        .btn-main { background: linear-gradient(135deg, #ffd700, #b8860b); color: #000; font-size: 16px; }
-        .btn-sub { background: #222; color: #fff; border: 1px solid #444; }
-        .row-line { background: var(--card); border-radius: 12px; padding: 12px; margin-bottom: 10px; display: flex; align-items: center; justify-content: space-between; border: 1px solid #333; }
-        .num-box { width: 34px; height: 34px; line-height: 34px; text-align: center; font-size: 14px; font-weight: 900; border-radius: 50%; color: #fff; }
-        .fixed { background: linear-gradient(135deg, #00ffcc, #00a884); color: #000; } 
+        
+        /* 메인 컨테이너 - 금색 테두리 및 그림자 효과 */
+        .outer-border { border: 3px solid var(--gold); border-radius: 25px; padding: 20px; max-width: 500px; margin: 0 auto; box-shadow: 0 0 30px rgba(255,215,0,0.15); }
+        
+        /* 타이틀 섹션 - 글자 크기 대폭 확대 */
+        .header-box { text-align: center; margin-bottom: 20px; }
+        .next-episode { font-size: 42px; font-weight: 900; color: #fff; text-shadow: 0 0 15px rgba(255,215,0,0.8); letter-spacing: -1px; }
+        .sub-title { font-size: 28px; color: var(--gold); font-weight: bold; margin: 10px 0; }
+        
+        /* 관리자 보안 인증 */
+        .admin-lock-bar { display: flex; justify-content: flex-end; align-items: center; gap: 5px; margin-bottom: 10px; }
+        .master-pw { background: #222; color: var(--gold); border: 1px solid #444; border-radius: 5px; padding: 6px; width: 90px; font-size: 13px; }
+        .auth-btn { background: var(--gold); color: #000; border: none; padding: 6px 12px; border-radius: 5px; font-weight: bold; cursor: pointer; font-size: 12px; }
+
+        /* 입력 섹션 (마스터 전용 잠금) */
+        .input-section { background: rgba(255, 215, 0, 0.05); border: 1px dashed var(--gold); border-radius: 15px; padding: 18px; margin-bottom: 15px; text-align: center; transition: 0.3s; }
+        .win-input { width: 45px; height: 45px; background: #333; border: 1px solid var(--gold); color: #fff; text-align: center; font-size: 20px; font-weight: bold; border-radius: 10px; margin: 3px; }
+        .win-input:disabled { border-color: #444; color: #666; cursor: not-allowed; }
+
+        /* 사용자 정보 - 빨간색 버튼 복구 */
+        .user-info { background: #222; color: var(--accent); padding: 10px; border-radius: 25px; font-size: 16px; margin-bottom: 15px; border: 1px solid #333; text-align: center; }
+        .change-name-btn { background: var(--danger); color: white; border: none; border-radius: 8px; padding: 6px 15px; font-size: 13px; margin-left: 10px; cursor: pointer; font-weight: bold; }
+        
+        /* 분석 리포트 창 */
+        .status-info { font-size: 16px; color: var(--accent); line-height: 1.7; min-height: 110px; background: rgba(0, 255, 204, 0.05); border-radius: 18px; padding: 18px; border: 1px solid #004433; margin-bottom: 20px; }
+        
+        /* 버튼 그룹 */
+        .btn-group { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; margin-bottom: 20px; }
+        .main-btn { height: 65px; border-radius: 15px; font-size: 22px; font-weight: bold; border: none; cursor: pointer; transition: 0.2s; }
+        .btn-5 { background: linear-gradient(135deg, #00ffcc, #00a884); color: #000; }
+        .btn-10 { background: linear-gradient(135deg, #ffd700, #b8860b); color: #000; }
+        .btn-side { height: 50px; background: #333; color: #fff; border: 1px solid #555; font-size: 16px; border-radius: 12px; }
+
+        /* 조합 출력 디자인 (십자 배치 스타일 유지) */
+        .row-line { background: var(--card); border-radius: 15px; padding: 15px; margin-bottom: 12px; display: flex; align-items: center; justify-content: space-between; border: 1px solid #333; }
+        .num-box { width: 42px; height: 42px; line-height: 42px; text-align: center; font-size: 19px; font-weight: 900; border-radius: 50%; color: #fff; }
+        .fixed { background: linear-gradient(135deg, #00ffcc, #00a884); color: #000; box-shadow: 0 0 10px #00ffcc; } 
         .normal { background: #444; border: 1px solid var(--gold); }
-        .save-btn { font-size: 11px; background: var(--save); color: white; padding: 6px 10px; border-radius: 6px; cursor: pointer; }
-        .popup-overlay { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.8); display: flex; align-items: center; justify-content: center; z-index: 1000; }
-        .popup-content { background: var(--card); border: 2px solid var(--gold); border-radius: 20px; padding: 20px; max-width: 400px; width: 90%; max-height: 70vh; overflow-y: auto; position: relative; }
+        .save-btn { font-size: 14px; background: var(--save); color: white; padding: 8px 14px; border-radius: 8px; font-weight: bold; cursor: pointer; }
+
+        /* 보관함 팝업 */
+        .popup-overlay { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.95); display: flex; align-items: center; justify-content: center; z-index: 1000; }
+        .popup-content { background: var(--card); border: 2px solid var(--gold); border-radius: 25px; padding: 25px; width: 90%; max-height: 85vh; overflow-y: auto; position: relative; }
     </style>
 </head>
 <body>
 
 <div class="outer-border">
-    <div class="header-box">
-        <span class="next-episode">SHIN-UI-SON v24.1</span>
-        <div id="userDisplay" class="user-info"></div>
-        <div id="status" class="status-info">0000 엔진 시스템 가동 중...</div>
+    <div class="admin-lock-bar">
+        <input type="password" id="masterKey" class="master-pw" placeholder="보안키">
+        <button onclick="unlockMaster()" class="auth-btn">인증</button>
     </div>
 
+    <div class="header-box">
+        <div class="next-episode">SHIN-UI-SON v24.1</div>
+        <div class="sub-title">🎯 1213회차 통합 엔진</div>
+        <div id="userDisplay" class="user-info"></div>
+    </div>
+
+    <div class="input-section" id="lockArea" style="opacity: 0.4; pointer-events: none;">
+        <div style="font-size: 15px; color: #fff; margin-bottom: 10px; font-weight: bold;">[Master] 1212회 당첨번호 업데이트</div>
+        <div id="inputGroup">
+            <input type="number" class="win-input" value="1" disabled>
+            <input type="number" class="win-input" value="7" disabled>
+            <input type="number" class="win-input" value="10" disabled>
+            <input type="number" class="win-input" value="12" disabled>
+            <input type="number" class="win-input" value="14" disabled>
+            <input type="number" class="win-input" value="18" disabled>
+        </div>
+        <div id="authLabel" style="font-size: 12px; color: var(--danger); margin-top: 10px; font-weight: bold;">🔒 다른 사용자는 수정할 수 없습니다.</div>
+    </div>
+
+    <div id="status" class="status-info">데이터 로딩 중...</div>
+
     <div class="btn-group">
-        <button class="btn-5set" onclick="process(5)">5조합 추출</button>
-        <button class="btn-main" onclick="process(10)">10조합 추출</button>
-        <button class="btn-sub" onclick="openPopup()">보관함</button>
-        <button class="btn-sub" onclick="clearStorage()">기록 삭제</button>
-        <button class="btn-sub" style="grid-column: span 2; height: 40px;" onclick="location.reload()">새로고침</button>
+        <button class="main-btn btn-5" onclick="process(5)">5조합 추출</button>
+        <button class="main-btn btn-10" onclick="process(10)">10조합 추출</button>
+        <button class="btn-side" onclick="openPopup()">📂 보관함</button>
+        <button class="btn-side" onclick="clearData()">🧹 기록 삭제</button>
+        <button class="btn-side" style="grid-column: span 2; height: 45px;" onclick="location.reload()">🔄 새로고침</button>
     </div>
 
     <div id="console"></div>
@@ -50,115 +94,116 @@
 
 <div id="popup" class="popup-overlay" style="display:none;">
     <div class="popup-content">
-        <span onclick="closePopup()" style="position:absolute; top:10px; right:15px; font-size:24px; cursor:pointer; color:var(--gold);">&times;</span>
-        <div id="storageTitle" style="font-size:18px; font-weight:bold; margin-bottom:15px; text-align:center;">📦 0000 전용 보관함</div>
-        <div id="storage"></div>
+        <span onclick="closePopup()" style="position:absolute; top:20px; right:25px; font-size:35px; cursor:pointer; color:var(--gold);">&times;</span>
+        <div style="font-size:24px; font-weight:bold; margin-bottom:25px; text-align:center; color:var(--gold);">📦 1213회 저장 리스트</div>
+        <div id="storageContent"></div>
     </div>
 </div>
 
 <script>
-    /* ---------------------------------------------------------
-       [0000 코드로 완전히 대체] 기존의 조잡한 분석 로직 싹 삭제
-       --------------------------------------------------------- */
-    const TARGET_CYCLE = [
-        [4, 5, 12, 16, 22, 35, 34], // 1161회
-        [10, 12, 13, 19, 33, 40, 2], // 1109회
-        [8, 13, 19, 27, 40, 45, 12], // 1057회
-        [8, 13, 18, 24, 27, 29, 17], // 1005회
-        [7, 9, 22, 27, 37, 42, 34]   // 953회
-    ];
-    const LAST_WIN = [1, 7, 10, 12, 14, 18]; // 1212회 데이터 (이월수 승격용)
+    const MASTER_CODE = "0000"; // 사용자님만 아는 비밀번호
+    const TARGET_CYCLE = [[4,5,12,16,22,35,34], [10,12,13,19,33,40,2], [8,13,19,27,40,45,12], [8,13,18,24,27,29,17], [7,9,22,27,37,42,34]];
 
-    let userName = "";
-    let savedNumbers = [];
-    let basket = [];
+    let user = "", saved = [], basket = [], wins = [];
 
-    // [이름 변경 및 관리 기능 - 100% 작동]
-    function initUser() {
-        userName = localStorage.getItem('0000_UserID') || "guest_" + Math.random().toString(36).substring(2, 6);
-        localStorage.setItem('0000_UserID', userName);
-        const localData = localStorage.getItem(`0000_Save_${userName}`);
-        savedNumbers = localData ? JSON.parse(localData) : [];
-        updateUserDisplay();
-        analyze();
-    }
-
-    function updateUserDisplay() {
-        document.getElementById('userDisplay').innerHTML = `👤 사용자: ${userName} 
-            <button class="change-name-btn" onclick="changeName()">이름변경</button>`;
-    }
-
-    function changeName() {
-        const newName = prompt("새로운 이름을 입력하세요:", userName);
-        if (newName) { 
-            userName = newName; 
-            localStorage.setItem('0000_UserID', newName); 
-            initUser(); 
+    // [보안] 마스터 인증 함수
+    function unlockMaster() {
+        const inputKey = document.getElementById('masterKey').value;
+        if (inputKey === MASTER_CODE) {
+            alert("마스터 권한이 승인되었습니다.");
+            const area = document.getElementById('lockArea');
+            area.style.opacity = "1";
+            area.style.pointerEvents = "auto";
+            document.getElementById('authLabel').innerHTML = "🔓 업데이트 권한 활성화됨";
+            document.getElementById('authLabel').style.color = "var(--accent)";
+            document.querySelectorAll('.win-input').forEach(i => i.disabled = false);
+        } else {
+            alert("보안키가 틀렸습니다.");
         }
     }
 
-    // [0000 핵심 분석 - 기존 지저분한 로직 대체]
-    function analyze() {
-        let pool = [];
-        TARGET_CYCLE.forEach(r => pool.push(...r.slice(0, 6)));
-        let counts = {}; pool.forEach(n => counts[n] = (counts[n] || 0) + 1);
-        let survivors = [...new Set(pool.concat(TARGET_CYCLE.map(r => r[6])))];
+    // [시스템 초기화]
+    function init() {
+        user = localStorage.getItem('lotto_user') || "guest_" + Math.random().toString(36).substring(2,6);
+        localStorage.setItem('lotto_user', user);
+        const savedData = localStorage.getItem(`lotto_save_${user}`);
+        saved = savedData ? JSON.parse(savedData) : [];
+        updateUserUI();
+        runAnalysis();
+    }
+
+    function updateUserUI() {
+        document.getElementById('userDisplay').innerHTML = `👤 사용자: <b>${user}</b> 
+            <button class="change-name-btn" onclick="changeUserName()">이름변경</button>`;
+    }
+
+    function changeUserName() {
+        const n = prompt("새 이름을 입력하세요:", user);
+        if(n) { user = n; localStorage.setItem('lotto_user', n); init(); }
+    }
+
+    // [0000 분석 엔진]
+    function runAnalysis() {
+        const inputs = document.querySelectorAll('.win-input');
+        wins = Array.from(inputs).map(i => parseInt(i.value) || 0);
         
-        // 1212회 이월수 강제 승격 정렬
-        survivors.sort((a, b) => {
-            let aIn = LAST_WIN.includes(a) ? 1 : 0;
-            let bIn = LAST_WIN.includes(b) ? 1 : 0;
-            if (aIn !== bIn) return bIn - aIn;
-            return (counts[b] || 0) - (counts[a] || 0);
+        let pool = [];
+        TARGET_CYCLE.forEach(r => pool.push(...r.slice(0,6)));
+        let counts = {}; pool.forEach(n => counts[n] = (counts[n] || 0) + 1);
+        let candidates = [...new Set(pool.concat(TARGET_CYCLE.map(r => r[6])))];
+        
+        candidates.sort((a,b) => {
+            let aW = wins.includes(a) ? 1 : 0;
+            let bW = wins.includes(b) ? 1 : 0;
+            if(aW !== bW) return bW - aW;
+            return (counts[b]||0) - (counts[a]||0);
         });
 
-        basket = survivors.slice(0, 17); // 정예 17수 확정
-
+        basket = candidates.slice(0, 17);
         document.getElementById('status').innerHTML = `
-            <div><span class="highlight-gold">★ SHIN-UI-SON [0000 1213회 특화]</span></div>
-            <div><span style="color:var(--accent)">🎯 분석완료: ${basket.sort((a,b)=>a-b).join(', ')}</span></div>
-            <div>로직: 52주 주기 동기화 + 이월수 최우선 배치 시스템 가동</div>
+            <div style="font-size:19px; color:var(--gold); margin-bottom:8px;"><b>[1213회 특화 분석 데이터]</b></div>
+            <div style="color:#fff;">🎯 이월수 및 52주 주기 동기화 완료</div>
+            <div style="word-break:break-all; font-weight:bold; color:var(--accent); font-size:20px;">${basket.sort((a,b)=>a-b).join(', ')}</div>
         `;
     }
 
-    // [추출 및 보관함 연동 기능]
-    function process(limit) {
-        const box = document.getElementById('console'); box.innerHTML = "";
-        for(let i=0; i<limit; i++) {
-            let res = [...basket].sort(() => Math.random() - 0.5).slice(0, 6).sort((a,b)=>a-b);
+    function process(count) {
+        runAnalysis();
+        const box = document.getElementById('console');
+        box.innerHTML = "";
+        for(let i=0; i<count; i++) {
+            let res = [...basket].sort(()=>Math.random()-0.5).slice(0,6).sort((a,b)=>a-b);
             renderRow(res, box);
         }
     }
 
     function renderRow(arr, target) {
         const key = arr.join(',');
-        const html = arr.map(n => {
-            let cls = LAST_WIN.includes(n) ? "fixed" : "normal";
-            return `<span class="num-box ${cls}">${n}</span>`;
-        }).join('');
-        target.innerHTML += `<div class="row-line"><div style="display:flex; gap:5px; flex-grow:1; justify-content:center;">${html}</div><div class="save-btn" onclick="saveToBox('${key}')">저장</div></div>`;
+        const html = arr.map(n => `<span class="num-box ${wins.includes(n)?'fixed':'normal'}">${n}</span>`).join('');
+        target.innerHTML += `<div class="row-line">
+            <div style="display:flex; gap:8px; flex-grow:1; justify-content:center;">${html}</div>
+            <div class="save-btn" onclick="doSave('${key}')">저장</div>
+        </div>`;
     }
 
-    function saveToBox(key) {
-        if(!savedNumbers.includes(key)) {
-            savedNumbers.push(key);
-            localStorage.setItem(`0000_Save_${userName}`, JSON.stringify(savedNumbers));
-            alert(`${userName}님의 보관함에 저장되었습니다.`);
-        } else {
-            alert("이미 저장된 조합입니다.");
+    function doSave(k) {
+        if(!saved.includes(k)) {
+            saved.push(k);
+            localStorage.setItem(`lotto_save_${user}`, JSON.stringify(saved));
+            alert("저장 성공!");
         }
     }
 
     function openPopup() {
         document.getElementById('popup').style.display = 'flex';
-        const st = document.getElementById('storage');
-        st.innerHTML = savedNumbers.map(n => `<div class="row-line" style="background:#2a2a2a; margin-bottom:5px;">${n}</div>`).join('') || "저장된 내역이 없습니다.";
+        const st = document.getElementById('storageContent');
+        st.innerHTML = saved.map(s => `<div class="row-line" style="background:#222; margin-bottom:10px;">${s}</div>`).join('') || "저장된 조합이 없습니다.";
     }
 
     function closePopup() { document.getElementById('popup').style.display = 'none'; }
-    function clearStorage() { if(confirm("모든 보관 기록을 삭제할까요?")) { savedNumbers = []; localStorage.removeItem(`0000_Save_${userName}`); } }
+    function clearData() { if(confirm("모든 기록을 삭제할까요?")) { saved = []; localStorage.removeItem(`lotto_save_${user}`); openPopup(); } }
 
-    window.onload = initUser;
+    window.onload = init;
 </script>
 </body>
 </html>
