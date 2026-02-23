@@ -2,192 +2,168 @@
 <html lang="ko">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <title>SHIN-UI-SON v24.1</title>
     <style>
+        /* [색감 및 디자인: 사용자님 원본 100% 복구] */
         :root {
-            --gold: #f1c40f;
-            --bg-dark: #1e1e1e;
-            --panel-bg: #2a2a2a;
-            --mint: #32e0c4;
-            --red: #ff5e5e;
-            --blue-btn: #41d3bd;
-            --yellow-btn: #f5d34e;
+            --gold: #ffd700;
+            --bg: #0b0b0b;
+            --card: #1a1a1a;
+            --accent: #00ffcc;
+            --danger: #ff4444;
+            --btn-blue: #3ddbd9;
         }
 
         body {
             background-color: #000;
-            color: #fff;
+            color: var(--gold);
             font-family: 'Malgun Gothic', sans-serif;
             display: flex;
             justify-content: center;
-            padding: 40px 10px;
             margin: 0;
+            padding: 5px 0;
         }
 
-        /* 메인 프레임: 원본의 둥근 금색 테두리 */
-        .main-container {
-            width: 100%;
-            max-width: 440px;
-            background-color: var(--bg-dark);
+        /* [폭 압축] 사용자님이 설정하신 그 여백 그대로 */
+        .container {
+            width: 420px;
+            background-color: var(--bg);
             border: 2px solid var(--gold);
             border-radius: 25px;
-            padding: 25px 15px;
-            position: relative;
-            box-shadow: 0 0 20px rgba(0,0,0,0.8);
+            padding: 15px 20px;
+            box-shadow: 0 0 20px rgba(255, 215, 0, 0.1);
         }
 
-        /* 인증 버튼: 우측 상단 골드 박스 */
-        .auth-top {
-            position: absolute;
-            top: 20px;
-            right: 20px;
-            background: #d4af37;
-            color: #000;
+        .header { text-align: center; margin-bottom: 10px; }
+        .header .v-text { font-size: 18px; font-weight: 900; color: #fff; margin-bottom: -5px; }
+        .header .main-title { font-size: 34px; font-weight: 900; color: var(--gold); }
+
+        /* [접속자 박스] 원본 형태 복구 */
+        .user-box {
+            background-color: var(--card);
+            border-radius: 12px;
             padding: 8px 12px;
-            border-radius: 8px;
-            font-size: 13px;
-            font-weight: bold;
-            cursor: pointer;
-            border: none;
-        }
-
-        .title {
-            text-align: center;
-            font-size: 28px;
-            font-weight: 800;
-            margin-top: 10px;
-            margin-bottom: 5px;
-        }
-
-        /* 접속자 섹션: 사진 속 어두운 캡슐형 박스 */
-        .user-section {
-            background-color: #252525;
-            border: 1.5px solid #444;
-            border-radius: 40px;
-            padding: 12px 20px;
             display: flex;
             justify-content: center;
             align-items: center;
-            gap: 10px;
-            margin-bottom: 25px;
+            gap: 8px;
+            margin-bottom: 15px;
+            border: 1px solid #333;
         }
+        .user-name { color: var(--accent); font-weight: bold; font-size: 14px; }
+        .btn-mini { border: none; border-radius: 6px; padding: 5px 12px; font-weight: bold; cursor: pointer; font-size: 11px; }
+        .btn-change { background-color: var(--btn-blue); }
 
-        .user-id { color: var(--mint); font-weight: bold; }
-        .btn-red { background: var(--red); color: white; border: none; padding: 6px 15px; border-radius: 8px; font-weight: bold; cursor: pointer; }
+        /* [상단 입력창] 원상복구 */
+        .num-group { display: flex; justify-content: center; gap: 4px; margin-bottom: 12px; }
+        .n-input { width: 36px; height: 36px; background: #222; border: 1.5px solid #444; border-radius: 6px; color: #fff; text-align: center; font-weight: bold; font-size: 16px; }
 
-        /* 입력 칸: 사진의 골드 사각형 */
-        .input-row {
-            display: flex;
-            justify-content: center;
-            gap: 5px;
-            margin-bottom: 25px;
-        }
-        .win-input {
-            width: 42px;
-            height: 42px;
-            background: transparent;
-            border: 1.5px solid var(--gold);
-            border-radius: 8px;
-            color: white;
-            text-align: center;
-            font-size: 18px;
-            font-weight: bold;
-        }
-
-        /* 분석창: 사진의 다크 청록 패턴 느낌 */
-        .analysis-panel {
-            background: linear-gradient(to right, #003333, #004d4d);
-            border-radius: 15px;
-            padding: 15px;
+        .info-panel {
+            background: rgba(255,255,255,0.03);
+            border-radius: 12px;
+            padding: 12px;
             font-size: 12px;
-            line-height: 1.7;
-            border: 1px solid #006666;
-            margin-bottom: 20px;
+            line-height: 1.5;
+            margin-bottom: 15px;
+            border: 1px solid #333;
         }
 
-        /* 하단 메인 버튼: 원본의 세로줄 패턴과 입체감 */
-        .btn-grid {
-            display: grid;
-            grid-template-columns: 1fr 1fr;
-            gap: 10px;
-        }
-        .main-btn {
+        /* [버튼 레이아웃] 원본 그리드 복구 */
+        .btn-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; }
+        .btn-large {
             height: 55px;
             border-radius: 12px;
-            border: 1px solid rgba(0,0,0,0.2);
-            font-size: 17px;
-            font-weight: 800;
+            border: none;
+            font-size: 18px;
+            font-weight: 900;
             cursor: pointer;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            background-image: repeating-linear-gradient(90deg, transparent, transparent 2px, rgba(0,0,0,0.05) 2px, rgba(0,0,0,0.05) 4px);
+            box-shadow: inset 0 -4px rgba(0,0,0,0.2);
         }
-        .btn-5 { background-color: var(--blue-btn); color: #000; box-shadow: inset 0 -4px rgba(0,0,0,0.2); }
-        .btn-10 { background-color: var(--yellow-btn); color: #000; box-shadow: inset 0 -4px rgba(0,0,0,0.2); }
+        .btn-5 { background: linear-gradient(to bottom, #41d3bd, #34b09d); color: #000; }
+        .btn-10 { background: linear-gradient(to bottom, #f1c40f, #d4af37); color: #000; }
         
-        .sub-btn {
-            background-color: #2a2a2a;
-            color: #fff;
-            height: 45px;
-            border: 1px solid #444;
-            font-size: 14px;
-            margin-top: 5px;
-        }
+        .btn-mid { background: #2a2a2a; color: #fff; height: 45px; font-size: 14px; border: 1px solid #444; }
+        .btn-full { grid-column: span 2; height: 45px; background: #34495e; color: #fff; border-radius: 10px; border: none; font-weight: bold; margin-top: 5px; }
+
+        .footer { text-align: center; font-size: 10px; color: #555; margin-top: 10px; }
     </style>
 </head>
 <body>
 
-<div class="main-container">
-    <button class="auth-top" onclick="auth()">인증</button>
-    
-    <div class="title">SHIN-UI-SON v24.1</div>
-    
-    <div class="user-section">
-        <span style="font-size: 12px; opacity: 0.8;">👤 접속자: </span>
-        <span id="uName" class="user-id">guest_c4n9</span>
-        <button class="btn-red" onclick="changeName()">이름변경</button>
+<div class="container">
+    <div class="header">
+        <div class="v-text">SHIN-UI-SON v24.1</div>
+        <div class="main-title">예상 1213회차</div>
     </div>
 
-    <div class="input-row" id="inputArea" style="opacity: 0.5; pointer-events: none;">
-        <input type="text" class="win-input" value="1">
-        <input type="text" class="win-input" value="7">
-        <input type="text" class="win-input" value="10">
-        <input type="text" class="win-input" value="12">
-        <input type="text" class="win-input" value="14">
-        <input type="text" class="win-input" value="18">
+    <div class="user-box">
+        <span class="user-name" id="userName">guest_c4n9</span>
+        <button class="btn-mini btn-change" onclick="changeName()">이름변경</button>
+        <button class="btn-mini" style="background:var(--danger); color:#fff;" onclick="resetAll()">삭제</button>
     </div>
 
-    <div class="analysis-panel">
-        <span style="color:var(--gold); font-size:13px; font-weight:bold;">★ 1213회차 0000 마스터 분석</span><br>
-        <span style="color:var(--mint);">추출 정예 17수: 4, 5, 7, 8, 10, 12, 13, 16, 18, 19, 22, 24, 27, 33, 35, 40, 45</span><br>
-        분석방식: 52주 주기 동기화 + 이월수 우선순위 가중치
+    <div class="num-group">
+        <input type="text" class="n-input" value="1">
+        <input type="text" class="n-input" value="7">
+        <input type="text" class="n-input" value="10">
+        <input type="text" class="n-input" value="12">
+        <input type="text" class="n-input" value="14">
+        <input type="text" class="n-input" value="18">
+    </div>
+
+    <div class="info-panel" id="analysisPanel">
+        <b style="color:var(--gold)">★ 1213회차 통합 엔진 [0000]</b><br>
+        🎯 후보 17수: <span style="color:var(--accent)">4, 5, 7, 8, 10, 12, 13, 16, 18, 19, 22, 24, 27, 33, 35, 40, 45</span><br>
+        ⚖ 합계: 134 | 범위: 106~162
     </div>
 
     <div class="btn-grid">
-        <button class="main-btn btn-5" onclick="extract(5)">5조합 추출</button>
-        <button class="main-btn btn-10" onclick="extract(10)">10조합 추출</button>
-        <button class="main-btn sub-btn">📂 보관함</button>
-        <button class="main-btn sub-btn">💾 기록 삭제</button>
+        <button class="btn-large btn-5" onclick="extractNumbers(5)">5조합 추출</button>
+        <button class="btn-large btn-10" onclick="extractNumbers(10)">10조합 추출</button>
+        <button class="btn-large btn-mid" onclick="showSaved()">보관함</button>
+        <button class="btn-large btn-mid" onclick="saveNumbers()">저장하기</button>
+        <button class="btn-full" onclick="location.reload()">새로고침</button>
     </div>
+
+    <div class="footer">※ 🎯 1213회차 예상 데이터 분석 완료</div>
 </div>
 
 <script>
-    const MASTER = "0000";
-    function auth() {
-        if(prompt("보안키?") === MASTER) {
-            alert("마스터 권한 승인");
-            document.getElementById('inputArea').style.opacity = "1";
-            document.getElementById('inputArea').style.pointerEvents = "auto";
-        }
-    }
-    function changeName() {
-        const n = prompt("변경할 이름?");
-        if(n) document.getElementById('uName').innerText = n;
-    }
-    function extract(n) { alert(n + "조합 분석을 시작합니다 (1213회 특화)"); }
-</script>
+    const pool = [4, 5, 7, 8, 10, 12, 13, 16, 18, 19, 22, 24, 27, 33, 35, 40, 45];
+    let currentData = [];
 
-</body>
-</html>
+    // [기능 정상화] 5조합/10조합 추출
+    function extractNumbers(count) {
+        currentData = [];
+        let html = `<b style="color:var(--gold)">[${count}조합 추출 결과]</b><br>`;
+        for(let i=0; i<count; i++) {
+            let res = [...pool].sort(() => 0.5 - Math.random()).slice(0, 6).sort((a,b)=>a-b);
+            currentData.push(res);
+            html += `${i+1}회: ${res.join(', ')}<br>`;
+        }
+        document.getElementById('analysisPanel').innerHTML = html;
+    }
+
+    // [기능 정상화] 보관함 저장
+    function saveNumbers() {
+        if(currentData.length === 0) return alert("추출된 번호가 없습니다.");
+        const name = document.getElementById('userName').innerText;
+        localStorage.setItem('shin_db_' + name, JSON.stringify(currentData));
+        alert("보관함에 안전하게 저장되었습니다.");
+    }
+
+    // [기능 정상화] 보관함 불러오기
+    function showSaved() {
+        const name = document.getElementById('userName').innerText;
+        const saved = localStorage.getItem('shin_db_' + name);
+        if(!saved) return alert("저장된 내역이 없습니다.");
+        let data = JSON.parse(saved);
+        let html = `<b style="color:var(--btn-blue)">[보관함 최근 데이터]</b><br>`;
+        data.forEach((v, i) => html += `${i+1}번: ${v.join(', ')}<br>`);
+        document.getElementById('analysisPanel').innerHTML = html;
+    }
+
+    function changeName() {
+        let n = prompt("변경할 이름을 입력하세요:");
+        if(n) document.getElementById('userName').innerText = n
