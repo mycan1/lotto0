@@ -2,98 +2,111 @@
 <html lang="ko">
 <head>
     <meta charset="UTF-8">
-    <title>0000 CORE SYSTEM v1213</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>SHIN-UI-SON v24.1 - 0000 통합 엔진</title>
     <style>
-        body { background-color: #0d1117; color: #c9d1d9; font-family: 'Segoe UI', sans-serif; display: flex; justify-content: center; padding: 20px; }
-        .container { width: 100%; max-width: 600px; background: #161b22; padding: 30px; border-radius: 10px; border: 1px solid #30363d; }
-        h1 { color: #58a6ff; text-align: center; border-bottom: 1px solid #30363d; padding-bottom: 15px; }
-        .input-group { margin: 20px 0; text-align: center; }
-        input { background: #0d1117; border: 1px solid #30363d; color: white; padding: 10px; width: 80%; text-align: center; font-size: 16px; border-radius: 5px; }
-        button { width: 100%; padding: 15px; background: #238636; color: white; border: none; border-radius: 5px; font-weight: bold; cursor: pointer; font-size: 16px; margin-top: 10px; }
-        button:hover { background: #2ea44f; }
-        .ball-container { display: flex; flex-wrap: wrap; justify-content: center; gap: 10px; margin-top: 30px; min-height: 100px; }
-        .ball { width: 50px; height: 50px; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-weight: bold; color: white; text-shadow: 1px 1px 2px black; box-shadow: inset -3px -3px 5px rgba(0,0,0,0.3); }
-        .history { margin-top: 30px; background: #0d1117; padding: 15px; border-radius: 5px; max-height: 200px; overflow-y: auto; font-size: 14px; color: #8b949e; }
-        /* 번호대별 색상 디자인 */
-        .color1 { background: #f1e05a; color: black; } /* 1-10 */
-        .color2 { background: #58a6ff; } /* 11-20 */
-        .color3 { background: #f85149; } /* 21-30 */
-        .color4 { background: #d29922; } /* 31-40 */
-        .color5 { background: #3fb950; } /* 41-45 */
+        /* [디자인 살리기] 사용자님의 금색 테두리와 다크 모드 디자인 100% 유지 */
+        :root { --gold: #ffd700; --bg: #0b0b0b; --card: #1a1a1a; --accent: #00ffcc; --save: #ff00ff; --danger: #ff4444; }
+        body { background-color: var(--bg); color: var(--gold); font-family: 'Malgun Gothic', sans-serif; padding: 10px; margin: 0; }
+        .outer-border { border: 2px solid var(--gold); border-radius: 20px; padding: 15px; max-width: 480px; margin: 0 auto; }
+        .header-box { text-align: center; margin-bottom: 10px; }
+        .next-episode { font-size: 22px; font-weight: 900; color: #fff; text-shadow: 0 0 10px rgba(255,215,0,0.5); }
+        .status-info { font-size: 11px; color: var(--accent); line-height: 1.5; min-height: 80px; width: 100%; background: rgba(255,255,255,0.05); border-radius: 12px; padding: 10px; box-sizing: border-box; margin-top: 8px; text-align: left; border: 1px solid #333; }
+        .btn-group { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; margin: 15px 0; }
+        button { border-radius: 10px; font-weight: bold; cursor: pointer; border: none; height: 50px; transition: 0.2s; }
+        .btn-5set { background: linear-gradient(135deg, #00ffcc, #00a884); color: #000; font-size: 16px; }
+        .btn-main { background: linear-gradient(135deg, #ffd700, #b8860b); color: #000; font-size: 16px; }
+        .btn-sub { background: #222; color: #fff; border: 1px solid #444; }
+        .row-line { background: var(--card); border-radius: 12px; padding: 12px; margin-bottom: 10px; display: flex; align-items: center; justify-content: space-between; border: 1px solid #333; }
+        .num-box { width: 34px; height: 34px; line-height: 34px; text-align: center; font-size: 14px; font-weight: 900; border-radius: 50%; color: #fff; border: 1px solid var(--gold); }
+        .fixed { background: linear-gradient(135deg, #00ffcc, #00a884); color: #000; } 
+        .save-btn { font-size: 11px; background: var(--save); color: white; padding: 6px 10px; border-radius: 6px; cursor: pointer; }
     </style>
 </head>
 <body>
-    <div class="container">
-        <h1>1213회차 고정밀 분석기</h1>
-        
-        <div class="input-group">
-            <p>1212회 당첨번호 입력 (이월수 추적)</p>
-            <input type="text" id="lastWin" value="1, 7, 10, 12, 14, 18" placeholder="쉼표로 구분">
-        </div>
 
-        <button onclick="run0000Engine()">1213회 전략 17수 분석 실행</button>
-
-        <div id="ballArea" class="ball-container">
-            </div>
-
-        <div class="history" id="storage">
-            [ 전략 보관함 로그 ]<br>
-        </div>
+<div class="outer-border">
+    <div class="header-box">
+        <span class="next-episode">SHIN-UI-SON v24.1</span>
+        <div id="userDisplay" style="color: #888; font-size: 12px; margin-top: 5px;">👤 현재 접속자: guest_s9kd</div>
+        <div id="status" class="status-info">0000 엔진 대기 중...</div>
     </div>
 
-    <script>
-        function run0000Engine() {
-            // [데이터 내장] 1213회차 타겟 52주 주기 데이터 5개 (사용자 요청 반영)
-            const cycleData = [
-                [4, 5, 12, 16, 22, 35, 34], // 1161회
-                [10, 12, 13, 19, 33, 40, 2], // 1109회
-                [8, 13, 19, 27, 40, 45, 12], // 1057회
-                [8, 13, 18, 24, 27, 29, 17], // 1005회
-                [7, 9, 22, 27, 37, 42, 34]   // 953회
-            ];
+    <div class="btn-group">
+        <button class="btn-5set" onclick="process(5)">5조합 추출</button>
+        <button class="btn-main" onclick="process(10)">10조합 추출</button>
+        <button class="btn-sub">보관함</button>
+        <button class="btn-sub" onclick="location.reload()">초기화</button>
+    </div>
 
-            const lastWinInput = document.getElementById('lastWin').value;
-            const lastWinNums = lastWinInput.split(',').map(n => parseInt(n.trim()));
+    <div id="console"></div>
+</div>
 
-            if (lastWinNums.length < 6) {
-                alert("1212회 번호를 정확히 입력하세요.");
-                return;
-            }
+<script>
+    // [0000 엔진] 기존 데이터 다 지우고 우리 데이터만 주입
+    // 1213회차 타겟 52주 주기 5개 회차 데이터
+    const TARGET_CYCLE = [
+        [4, 5, 12, 16, 22, 35, 34], // 1161회
+        [10, 12, 13, 19, 33, 40, 2], // 1109회
+        [8, 13, 19, 27, 40, 45, 12], // 1057회
+        [8, 13, 18, 24, 27, 29, 17], // 1005회
+        [7, 9, 22, 27, 37, 42, 34]   // 953회
+    ];
 
-            // [0000 로직 가동] 빈도 분석 및 생존자 추출
-            let mainPool = [];
-            let allNums = [];
-            cycleData.forEach(row => {
-                mainPool.push(...row.slice(0, 6));
-                allNums.push(...row);
-            });
+    // 1212회 당첨번호 (이월수 승격용)
+    const LAST_WIN = [1, 7, 10, 12, 14, 18];
 
-            let counts = {};
-            mainPool.forEach(n => counts[n] = (counts[n] || 0) + 1);
-            let survivors = [...new Set(allNums)];
+    let finalBasket = [];
 
-            // [이월수 승격 정렬]
-            survivors.sort((a, b) => {
-                let aIn = lastWinNums.includes(a) ? 1 : 0;
-                let bIn = lastWinNums.includes(b) ? 1 : 0;
-                if (aIn !== bIn) return bIn - aIn;
-                return (counts[b] || 0) - (counts[a] || 0);
-            });
+    // [0000 핵심 로직] 디자인에 정보 뿌리기
+    function analyze() {
+        let pool = [];
+        TARGET_CYCLE.forEach(row => pool.push(...row.slice(0, 6)));
+        let counts = {};
+        pool.forEach(n => counts[n] = (counts[n] || 0) + 1);
+        
+        // 생존자 명단 확보 (보너스 포함)
+        let survivors = [...new Set(pool.concat(TARGET_CYCLE.map(r => r[6])))];
 
-            const final17 = survivors.slice(0, 17).sort((a, b) => a - b);
+        // 이월수(LAST_WIN)가 있으면 최상단으로 강제 승격
+        survivors.sort((a, b) => {
+            let aIn = LAST_WIN.includes(a) ? 1 : 0;
+            let bIn = LAST_WIN.includes(b) ? 1 : 0;
+            if (aIn !== bIn) return bIn - aIn; // 이월수 우선
+            return (counts[b] || 0) - (counts[a] || 0); // 그 다음 빈도순
+        });
 
-            // [디자인 반영] 결과 출력
-            const ballArea = document.getElementById('ballArea');
-            ballArea.innerHTML = '';
-            final17.forEach(n => {
-                let colorClass = n <= 10 ? 'color1' : n <= 20 ? 'color2' : n <= 30 ? 'color3' : n <= 40 ? 'color4' : 'color5';
-                ballArea.innerHTML += `<div class="ball ${colorClass}">${n}</div>`;
-            });
+        finalBasket = survivors.slice(0, 17); // 정예 17수 확정
 
-            // 보관함 저장
-            const storage = document.getElementById('storage');
-            storage.innerHTML = `<div>1213회 분석완료: ${final17.join(', ')}</div>` + storage.innerHTML;
+        document.getElementById('status').innerHTML = `
+            <div><span style="color:#ffd700">★ SHIN-UI-SON v24.1 [0000 통합]</span></div>
+            <div><span style="color:#ff4444">🎯 1213회 타겟 정예:</span> ${finalBasket.sort((a,b)=>a-b).join(', ')}</div>
+            <div>분석법: 52주 주기 동기화 + 이월수 승격 로직 적용 완료</div>
+        `;
+    }
+
+    // [기능] 추출 버튼 클릭 시 작동
+    function process(limit) {
+        analyze();
+        const box = document.getElementById('console');
+        box.innerHTML = "";
+        
+        for(let i=0; i<limit; i++) {
+            // 17수 내에서 랜덤하게 6개 조합 생성
+            let res = [...finalBasket].sort(() => Math.random() - 0.5).slice(0, 6).sort((a,b)=>a-b);
+            renderRow(res, box);
         }
-    </script>
+    }
+
+    function renderRow(arr, target) {
+        const html = arr.map(n => {
+            let isFixed = LAST_WIN.includes(n) ? "fixed" : ""; // 이월수는 디자인상 강조
+            return `<span class="num-box ${isFixed}">${n}</span>`;
+        }).join('');
+        target.innerHTML += `<div class="row-line"><div style="display:flex; gap:5px; flex-grow:1; justify-content:center;">${html}</div><div class="save-btn">저장</div></div>`;
+    }
+
+    window.onload = analyze;
+</script>
 </body>
 </html>
