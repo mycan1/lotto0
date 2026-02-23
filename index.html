@@ -2,52 +2,117 @@
 <html lang="ko">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>SHIN-UI-SON v24.1</title>
     <style>
+        /* [원본 코드 색감 100% 반영] */
         :root {
-            --gold: #ffd700; --bg: #0b0b0b; --card: #1a1a1a;
-            --accent: #00ffcc; --danger: #ff4444; --btn-blue: #3ddbd9;
+            --gold: #ffd700;       /* 사용자님 코드의 그 금색 */
+            --bg: #0b0b0b;         /* 사용자님 코드의 깊은 블랙 */
+            --card: #1a1a1a;       /* 사용자님 코드의 카드 배경 */
+            --accent: #00ffcc;     /* 사용자님 코드의 민트색 */
+            --save: #ff00ff;       /* 사용자님 코드의 보관함 핑크 */
+            --danger: #ff4444;     /* 사용자님 코드의 이름변경 레드 */
         }
 
-        body { background-color: #000; color: var(--gold); font-family: 'Malgun Gothic', sans-serif; display: flex; justify-content: center; margin: 0; padding: 0; }
+        body {
+            background-color: #000;
+            color: var(--gold);
+            font-family: 'Malgun Gothic', sans-serif;
+            display: flex;
+            justify-content: center;
+            padding: 20px 0;
+            margin: 0;
+        }
 
-        /* [보존] 사용자님이 원하신 상단 폭 압축 컨테이너 */
+        /* 사진 속 둥근 금색 테두리 컨테이너 (사용자님 색감 적용) */
         .container {
-            width: 420px; background-color: var(--bg); border: 2.5px solid var(--gold);
-            border-radius: 25px; padding: 10px 20px; 
-            display: flex; flex-direction: column; position: relative;
+            width: 430px;
+            background-color: var(--bg);
+            border: 2px solid var(--gold);
+            border-radius: 30px;
+            padding: 30px 20px;
+            box-shadow: 0 0 20px rgba(255, 215, 0, 0.1);
         }
 
-        /* [보존] 헤더와 타이틀 밀착 레이아웃 */
-        .header { text-align: center; margin-bottom: 5px; }
-        .header .v-text { font-size: 15px; font-weight: 900; color: #fff; margin-bottom: -4px; }
-        .header .main-title { font-size: 32px; font-weight: 900; color: var(--gold); }
+        /* 상단 타이틀 (사진 레이아웃) */
+        .header { text-align: center; margin-bottom: 20px; }
+        .header .v-text { font-size: 24px; font-weight: 900; color: #fff; display: block; }
+        .header .main-title { font-size: 40px; font-weight: 900; color: var(--gold); text-shadow: 0 0 10px rgba(255,215,0,0.3); }
 
-        /* [보존] 분석 정보 패널 */
+        /* 현재 접속자 영역 (사용자님 코드 버튼 색상) */
+        .user-box {
+            background-color: var(--card);
+            border-radius: 15px;
+            padding: 12px;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            gap: 10px;
+            margin-bottom: 25px;
+            border: 1px solid #333;
+        }
+        .user-name { color: var(--accent); font-weight: bold; }
+        .btn-mini { border: none; border-radius: 8px; padding: 8px 15px; font-weight: bold; cursor: pointer; font-size: 12px; }
+        .btn-change { background-color: var(--accent); color: #000; }
+        .btn-del { background-color: var(--danger); color: #fff; }
+
+        /* 번호 입력창 (사용자님 코드 스타일) */
+        .num-input-group {
+            display: flex;
+            justify-content: center;
+            gap: 5px;
+            margin-bottom: 20px;
+        }
+        .n-input {
+            width: 38px; height: 38px;
+            background: #222;
+            border: 1px solid var(--gold);
+            border-radius: 6px;
+            color: #fff;
+            text-align: center;
+            font-weight: bold;
+            font-size: 18px;
+        }
+
+        /* 분석 정보창 (사용자님 코드 텍스트 색상) */
         .info-panel {
-            background: rgba(255,255,255,0.03); border-radius: 12px; padding: 12px;
-            font-size: 13px; line-height: 1.5; margin-bottom: 12px; border: 1px solid #333; color: #ddd;
+            background: rgba(255,255,255,0.03);
+            border-radius: 12px;
+            padding: 15px;
+            font-size: 12px;
+            line-height: 1.8;
+            margin-bottom: 20px;
+            border: 1px solid #333;
+            color: #ddd;
         }
+        .info-panel b { color: var(--gold); }
+        .info-panel .highlight { color: var(--accent); font-weight: bold; }
 
-        /* [보존] 버튼 레이아웃 - 최상단 밀착 */
-        .btn-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; }
-        .btn-large { height: 55px; border-radius: 12px; border: none; font-size: 19px; font-weight: 900; cursor: pointer; }
-        .btn-5 { background: linear-gradient(to bottom, #41d3bd, #34b09d); color: #000; }
-        .btn-10 { background: linear-gradient(to bottom, #f1c40f, #d4af37); color: #000; }
+        /* 하단 메인 버튼 세트 (사용자님 코드의 그라데이션 적용) */
+        .btn-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
+        .btn-large {
+            height: 60px;
+            border-radius: 12px;
+            border: none;
+            font-size: 18px;
+            font-weight: 900;
+            cursor: pointer;
+        }
+        /* [원본 코드의 그라데이션 값 적용] */
+        .btn-5 { background: linear-gradient(135deg, #00ffcc, #00a884); color: #000; }
+        .btn-10 { background: linear-gradient(135deg, #ffd700, #b8860b); color: #000; }
         
-        .result-box { 
-            grid-column: span 2; background: #111; border: 1.5px dashed #444; 
-            border-radius: 10px; padding: 12px; display: flex; justify-content: center; gap: 8px; margin: 5px 0;
-        }
-        .n { color: #fff; font-size: 17px; font-weight: 800; }
-
-        .btn-mid { background: #222; color: #fff; height: 45px; font-size: 15px; border: 1px solid #444; }
-        .btn-full { grid-column: span 2; height: 45px; background: #34495e; color: #fff; border-radius: 10px; border: none; font-weight: bold; margin-top: 5px; }
-
-        /* [은밀하게 추가] 기존 디자인을 해치지 않는 숨겨진 게임 버튼 (우측 하단 끝) */
-        .hidden-game-btn {
-            position: absolute; bottom: 5px; right: 20px; font-size: 8px; color: #333; cursor: pointer; border: none; background: none;
+        .btn-mid { background: #222; color: #fff; border: 1px solid #444; font-size: 14px; }
+        .btn-full {
+            grid-column: span 2;
+            height: 45px;
+            background: #2c3e50;
+            color: #fff;
+            border-radius: 10px;
+            font-weight: bold;
+            border: none;
+            margin-top: 5px;
         }
     </style>
 </head>
@@ -55,31 +120,44 @@
 
 <div class="container">
     <div class="header">
-        <div class="v-text">SHIN-UI-SON v24.1</div>
-        <div class="main-title">1213회차 분석</div>
+        <span class="v-text">SHIN-UI-SON v24.1</span>
+        <span class="main-title">예상 1213회차</span>
+    </div>
+
+    <div class="user-box">
+        <span style="font-size:12px;">👤 접속자:</span>
+        <span class="user-name">guest_c4n9</span>
+        <button class="btn-mini btn-change">이름변경</button>
+        <button class="btn-mini btn-del">삭제</button>
+    </div>
+
+    <div class="num-input-group">
+        <input type="text" class="n-input" value="1">
+        <input type="text" class="n-input" value="7">
+        <input type="text" class="n-input" value="10">
+        <input type="text" class="n-input" value="12">
+        <input type="text" class="n-input" value="14">
+        <input type="text" class="n-input" value="18">
     </div>
 
     <div class="info-panel">
-        <b>★ 1213회 통합 엔진 가동</b><br>
-        🎯 후보 17수: <span style="color:#eee">4, 5, 7, 8, 10, 12, 13, 16, 18, 19, 22, 24, 27, 33, 35, 40, 45</span>
+        <b>★ SHIN-UI-SON v24.1 통합 엔진 [1213회]</b><br>
+        🎯 미출수(최근 22회 기준): <span class="highlight">없음</span><br>
+        압축 후보 17수: <span class="highlight">4, 5, 7, 8, 10, 12, 13, 16, 18, 19, 22, 24, 27, 33, 35, 40, 45</span><br>
+        📊 다음 회차 기대 합계: 134 | ⚖ 필터링: 106~162
     </div>
 
     <div class="btn-grid">
         <button class="btn-large btn-5">5조합 추출</button>
         <button class="btn-large btn-10">10조합 추출</button>
-        
-        <div class="result-box">
-            <span class="n">--</span> <span class="n">--</span> <span class="n">--</span>
-            <span class="n">--</span> <span class="n">--</span> <span class="n">--</span>
-        </div>
-
         <button class="btn-large btn-mid">보관함</button>
         <button class="btn-large btn-mid">초기화</button>
-        
-        <button class="btn-full">새로고침 (F5)</button>
+        <button class="btn-full">새로고침</button>
     </div>
 
-    <button class="hidden-game-btn" onclick="alert('0000 비밀 모드')">G</button>
+    <div style="text-align:center; font-size:10px; color:#555; margin-top:15px;">
+        ※ 0000 마스터 전용 시스템 | 🎯 1213회차 분석 완료
+    </div>
 </div>
 
 </body>
