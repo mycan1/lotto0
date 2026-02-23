@@ -5,118 +5,78 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <title>SHIN-UI-SON v24.1</title>
     <style>
-        /* [색감: 사용자님 원본 코드 100%] */
         :root {
-            --gold: #ffd700;
-            --bg: #0b0b0b;
-            --card: #1a1a1a;
-            --accent: #00ffcc;
-            --danger: #ff4444;
-            --btn-blue: #3ddbd9;
+            --gold: #ffd700; --bg: #0b0b0b; --card: #1a1a1a;
+            --accent: #00ffcc; --danger: #ff4444; --btn-blue: #3ddbd9;
         }
 
-        body {
-            background-color: #000;
-            color: var(--gold);
-            font-family: 'Malgun Gothic', sans-serif;
-            display: flex;
-            justify-content: center;
-            margin: 0;
-            padding: 5px 0; /* 전체 상하 여백 최소화 */
-        }
+        body { background-color: #000; color: var(--gold); font-family: 'Malgun Gothic', sans-serif; display: flex; justify-content: center; margin: 0; padding: 5px 0; }
 
-        /* [폭 압축] 컨테이너 높이와 내부 여백을 대폭 줄임 */
+        /* [폭 압축] 상단 여백을 극단적으로 줄임 */
         .container {
-            width: 420px;
-            background-color: var(--bg);
-            border: 2px solid var(--gold);
-            border-radius: 25px;
-            padding: 15px 20px; /* 내부 패딩을 35px -> 15px로 축소 */
-            box-shadow: 0 0 20px rgba(255, 215, 0, 0.1);
+            width: 420px; background-color: var(--bg); border: 2px solid var(--gold);
+            border-radius: 25px; padding: 10px 20px; box-shadow: 0 0 20px rgba(255, 215, 0, 0.1);
         }
 
-        /* [타이틀 압축] 간격 최소화 */
-        .header { text-align: center; margin-bottom: 10px; }
-        .header .v-text { font-size: 18px; font-weight: 900; color: #fff; margin-bottom: -5px; }
-        .header .main-title { font-size: 34px; font-weight: 900; color: var(--gold); }
+        /* 헤더 높이 축소 */
+        .header { text-align: center; margin-bottom: 5px; position: relative; }
+        .header .v-text { font-size: 16px; font-weight: 900; color: #fff; }
+        .header .main-title { font-size: 30px; font-weight: 900; color: var(--gold); margin-top: -5px; }
 
-        /* [접속자 박스 슬림화] */
+        /* 입력창 열기 버튼 (조그맣게 배치) */
+        .open-input-btn {
+            position: absolute; top: 0; right: 0; background: #333; color: var(--gold);
+            border: 1px solid var(--gold); padding: 3px 8px; border-radius: 5px; font-size: 10px; cursor: pointer;
+        }
+
+        /* 접속자 박스 슬림화 */
         .user-box {
-            background-color: var(--card);
-            border-radius: 12px;
-            padding: 8px 12px;
-            display: flex;
-            justify-content: center;
-            align-items: center;
-            gap: 8px;
-            margin-bottom: 15px; /* 하단 여백 축소 */
-            border: 1px solid #333;
+            background-color: var(--card); border-radius: 10px; padding: 6px 12px;
+            display: flex; justify-content: center; align-items: center; gap: 8px; margin-bottom: 10px; border: 1px solid #333;
         }
-        .user-name { color: var(--accent); font-weight: bold; font-size: 14px; }
-        .btn-mini { border: none; border-radius: 6px; padding: 5px 12px; font-weight: bold; cursor: pointer; font-size: 11px; }
-        .btn-change { background-color: var(--btn-blue); }
-
-        /* [입력창 & 분석창 밀착] */
-        .num-group { display: flex; justify-content: center; gap: 4px; margin-bottom: 12px; }
-        .n-input { width: 36px; height: 36px; background: #222; border: 1.5px solid #444; border-radius: 6px; color: #fff; text-align: center; font-weight: bold; font-size: 16px; }
-
+        .user-name { color: var(--accent); font-weight: bold; font-size: 13px; }
+        
+        /* 분석 패널 밀착 */
         .info-panel {
-            background: rgba(255,255,255,0.03);
-            border-radius: 12px;
-            padding: 12px;
-            font-size: 12px;
-            line-height: 1.5;
-            margin-bottom: 15px; /* 버튼이 위로 올라오도록 여백 줄임 */
-            border: 1px solid #333;
+            background: rgba(255,255,255,0.03); border-radius: 10px; padding: 10px;
+            font-size: 12px; line-height: 1.4; margin-bottom: 10px; border: 1px solid #333;
         }
 
-        /* [버튼 레이아웃] 폭을 줄여 위로 끌어올림 */
+        /* 버튼 그룹 (위로 바짝 올라감) */
         .btn-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; }
-        .btn-large {
-            height: 55px; /* 버튼 높이 살짝 조정 */
-            border-radius: 12px;
-            border: none;
-            font-size: 18px;
-            font-weight: 900;
-            cursor: pointer;
-            box-shadow: inset 0 -4px rgba(0,0,0,0.2);
-        }
+        .btn-large { height: 50px; border-radius: 10px; border: none; font-size: 18px; font-weight: 900; cursor: pointer; }
         .btn-5 { background: linear-gradient(to bottom, #41d3bd, #34b09d); color: #000; }
         .btn-10 { background: linear-gradient(to bottom, #f1c40f, #d4af37); color: #000; }
         
-        .btn-mid { background: #2a2a2a; color: #fff; height: 45px; font-size: 14px; border: 1px solid #444; }
-        .btn-full { grid-column: span 2; height: 45px; background: #34495e; color: #fff; border-radius: 10px; border: none; font-weight: bold; margin-top: 5px; }
+        .btn-mid { background: #2a2a2a; color: #fff; height: 40px; font-size: 14px; border: 1px solid #444; }
+        .btn-full { grid-column: span 2; height: 40px; background: #34495e; color: #fff; border-radius: 8px; border: none; font-weight: bold; margin-top: 3px; }
 
-        .footer { text-align: center; font-size: 10px; color: #555; margin-top: 10px; }
+        /* [입력창 팝업 레이어] */
+        .modal {
+            display: none; position: fixed; top: 50%; left: 50%; transform: translate(-50%, -50%);
+            background: var(--card); border: 2px solid var(--gold); padding: 20px; border-radius: 15px; z-index: 1000; text-align: center;
+        }
+        .modal-overlay { display: none; position: fixed; top:0; left:0; width:100%; height:100%; background:rgba(0,0,0,0.8); z-index:999; }
+        .n-input { width: 35px; height: 35px; background: #000; border: 1px solid var(--gold); color: #fff; text-align: center; margin: 2px; border-radius: 5px; }
     </style>
 </head>
 <body>
 
 <div class="container">
     <div class="header">
+        <button class="open-input-btn" onclick="toggleModal(true)">번호입력</button>
         <div class="v-text">SHIN-UI-SON v24.1</div>
         <div class="main-title">예상 1213회차</div>
     </div>
 
     <div class="user-box">
         <span class="user-name">guest_c4n9</span>
-        <button class="btn-mini btn-change">이름변경</button>
-        <button class="btn-mini" style="background:var(--danger); color:#fff;">삭제</button>
-    </div>
-
-    <div class="num-group">
-        <input type="text" class="n-input" value="1">
-        <input type="text" class="n-input" value="7">
-        <input type="text" class="n-input" value="10">
-        <input type="text" class="n-input" value="12">
-        <input type="text" class="n-input" value="14">
-        <input type="text" class="n-input" value="18">
+        <button onclick="alert('이름변경')" style="background:var(--btn-blue); border:none; border-radius:4px; padding:3px 8px; font-size:10px; font-weight:bold;">이름변경</button>
     </div>
 
     <div class="info-panel">
-        <b style="color:var(--gold)">★ 1213회차 통합 엔진 [0000]</b><br>
-        🎯 후보 17수: <span style="color:var(--accent)">4, 5, 7, 8, 10, 12, 13, 16, 18, 19, 22, 24, 27, 33, 35, 40, 45</span><br>
-        ⚖ 합계: 134 | 범위: 106~162
+        <b style="color:var(--gold)">★ 1213회 통합 엔진 [0000]</b><br>
+        🎯 <span style="color:var(--accent)">4, 5, 7, 8, 10, 12, 13, 16, 18, 19, 22, 24, 27, 33, 35, 40, 45</span>
     </div>
 
     <div class="btn-grid">
@@ -126,9 +86,27 @@
         <button class="btn-large btn-mid">초기화</button>
         <button class="btn-full">새로고침</button>
     </div>
-
-    <div class="footer">※ 🎯 1213회차 예상 데이터 분석 완료</div>
 </div>
+
+<div id="overlay" class="modal-overlay" onclick="toggleModal(false)"></div>
+<div id="modal" class="modal">
+    <div style="color:var(--gold); margin-bottom:10px; font-weight:bold;">1212회 당첨번호 설정</div>
+    <input type="text" class="n-input" value="1">
+    <input type="text" class="n-input" value="7">
+    <input type="text" class="n-input" value="10">
+    <input type="text" class="n-input" value="12">
+    <input type="text" class="n-input" value="14">
+    <input type="text" class="n-input" value="18">
+    <br><br>
+    <button onclick="toggleModal(false)" style="background:var(--gold); border:none; padding:5px 15px; border-radius:5px; font-weight:bold;">저장 및 닫기</button>
+</div>
+
+<script>
+    function toggleModal(show) {
+        document.getElementById('modal').style.display = show ? 'block' : 'none';
+        document.getElementById('overlay').style.display = show ? 'block' : 'none';
+    }
+</script>
 
 </body>
 </html>
