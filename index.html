@@ -5,7 +5,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <title>SHIN-UI-SON v24.1</title>
     <style>
-        /* [색감 및 디자인: 사용자님 원본 100% 복구] */
+        /* [1. 색감: 사용자님 원본 100% 보존] */
         :root {
             --gold: #ffd700;
             --bg: #0b0b0b;
@@ -25,21 +25,22 @@
             padding: 5px 0;
         }
 
-        /* [폭 압축] 사용자님이 설정하신 그 여백 그대로 */
+        /* [2. 폭 압축] 사용자님의 상단 밀착 레이아웃 */
         .container {
             width: 420px;
             background-color: var(--bg);
             border: 2px solid var(--gold);
             border-radius: 25px;
             padding: 15px 20px;
-            box-shadow: 0 0 20px rgba(255, 215, 0, 0.1);
+            box-shadow: 0 0 20px rgba(255, 215, 0, 0.2);
+            position: relative;
         }
 
         .header { text-align: center; margin-bottom: 10px; }
         .header .v-text { font-size: 18px; font-weight: 900; color: #fff; margin-bottom: -5px; }
         .header .main-title { font-size: 34px; font-weight: 900; color: var(--gold); }
 
-        /* [접속자 박스] 원본 형태 복구 */
+        /* [3. 접속자 박스] 원본 형태 및 이름 복구 */
         .user-box {
             background-color: var(--card);
             border-radius: 12px;
@@ -53,23 +54,28 @@
         }
         .user-name { color: var(--accent); font-weight: bold; font-size: 14px; }
         .btn-mini { border: none; border-radius: 6px; padding: 5px 12px; font-weight: bold; cursor: pointer; font-size: 11px; }
-        .btn-change { background-color: var(--btn-blue); }
+        .btn-change { background-color: var(--btn-blue); color: #000; }
 
-        /* [상단 입력창] 원상복구 */
+        /* [4. 입력창] 상단 고정 */
         .num-group { display: flex; justify-content: center; gap: 4px; margin-bottom: 12px; }
         .n-input { width: 36px; height: 36px; background: #222; border: 1.5px solid #444; border-radius: 6px; color: #fff; text-align: center; font-weight: bold; font-size: 16px; }
 
+        /* [5. 분석 패널] 실시간 결과 노출창 */
         .info-panel {
             background: rgba(255,255,255,0.03);
             border-radius: 12px;
             padding: 12px;
-            font-size: 12px;
-            line-height: 1.5;
+            font-size: 13px;
+            line-height: 1.6;
             margin-bottom: 15px;
             border: 1px solid #333;
+            min-height: 120px;
+            max-height: 200px;
+            overflow-y: auto;
+            color: #eee;
         }
 
-        /* [버튼 레이아웃] 원본 그리드 복구 */
+        /* [6. 메인 버튼 그리드] */
         .btn-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; }
         .btn-large {
             height: 55px;
@@ -79,12 +85,14 @@
             font-weight: 900;
             cursor: pointer;
             box-shadow: inset 0 -4px rgba(0,0,0,0.2);
+            transition: transform 0.1s;
         }
+        .btn-large:active { transform: scale(0.98); }
         .btn-5 { background: linear-gradient(to bottom, #41d3bd, #34b09d); color: #000; }
         .btn-10 { background: linear-gradient(to bottom, #f1c40f, #d4af37); color: #000; }
         
         .btn-mid { background: #2a2a2a; color: #fff; height: 45px; font-size: 14px; border: 1px solid #444; }
-        .btn-full { grid-column: span 2; height: 45px; background: #34495e; color: #fff; border-radius: 10px; border: none; font-weight: bold; margin-top: 5px; }
+        .btn-full { grid-column: span 2; height: 45px; background: #34495e; color: #fff; border-radius: 10px; border: none; font-weight: bold; margin-top: 5px; cursor: pointer; }
 
         .footer { text-align: center; font-size: 10px; color: #555; margin-top: 10px; }
     </style>
@@ -98,31 +106,29 @@
     </div>
 
     <div class="user-box">
-        <span class="user-name" id="userName">guest_c4n9</span>
-        <button class="btn-mini btn-change" onclick="changeName()">이름변경</button>
-        <button class="btn-mini" style="background:var(--danger); color:#fff;" onclick="resetAll()">삭제</button>
+        <span class="user-name" id="displayUser">guest_c4n9</span>
+        <button class="btn-mini btn-change" onclick="changeMasterName()">이름변경</button>
+        <button class="btn-mini" style="background:var(--danger); color:#fff;" onclick="location.reload()">삭제</button>
     </div>
 
     <div class="num-group">
-        <input type="text" class="n-input" value="1">
-        <input type="text" class="n-input" value="7">
-        <input type="text" class="n-input" value="10">
-        <input type="text" class="n-input" value="12">
-        <input type="text" class="n-input" value="14">
-        <input type="text" class="n-input" value="18">
+        <input type="text" class="n-input" value="1"> <input type="text" class="n-input" value="7">
+        <input type="text" class="n-input" value="10"> <input type="text" class="n-input" value="12">
+        <input type="text" class="n-input" value="14"> <input type="text" class="n-input" value="18">
     </div>
 
-    <div class="info-panel" id="analysisPanel">
-        <b style="color:var(--gold)">★ 1213회차 통합 엔진 [0000]</b><br>
-        🎯 후보 17수: <span style="color:var(--accent)">4, 5, 7, 8, 10, 12, 13, 16, 18, 19, 22, 24, 27, 33, 35, 40, 45</span><br>
-        ⚖ 합계: 134 | 범위: 106~162
+    <div class="info-panel" id="mainPanel">
+        <b style="color:var(--gold)">★ 1213회차 통합 엔진 [0000] 가동</b><br>
+        🎯 후보 17수 대기 중... 버튼을 눌러주세요.
     </div>
 
     <div class="btn-grid">
-        <button class="btn-large btn-5" onclick="extractNumbers(5)">5조합 추출</button>
-        <button class="btn-large btn-10" onclick="extractNumbers(10)">10조합 추출</button>
-        <button class="btn-large btn-mid" onclick="showSaved()">보관함</button>
-        <button class="btn-large btn-mid" onclick="saveNumbers()">저장하기</button>
+        <button class="btn-large btn-5" onclick="startExtract(5)">5조합 추출</button>
+        <button class="btn-large btn-10" onclick="startExtract(10)">10조합 추출</button>
+        
+        <button class="btn-large btn-mid" onclick="loadStorage()">보관함</button>
+        <button class="btn-large btn-mid" onclick="saveStorage()">저장하기</button>
+        
         <button class="btn-full" onclick="location.reload()">새로고침</button>
     </div>
 
@@ -130,40 +136,62 @@
 </div>
 
 <script>
-    const pool = [4, 5, 7, 8, 10, 12, 13, 16, 18, 19, 22, 24, 27, 33, 35, 40, 45];
-    let currentData = [];
+    // 0000 마스터 후보수 데이터 (수정 가능)
+    const masterPool = [4, 5, 7, 8, 10, 12, 13, 16, 18, 19, 22, 24, 27, 33, 35, 40, 45];
+    let latestSets = [];
 
-    // [기능 정상화] 5조합/10조합 추출
-    function extractNumbers(count) {
-        currentData = [];
-        let html = `<b style="color:var(--gold)">[${count}조합 추출 결과]</b><br>`;
+    // [핵심 기능] 추출 로직 - 먹통 방지 완료
+    function startExtract(count) {
+        latestSets = [];
+        let htmlContent = `<b style="color:var(--accent)">[${count}개 조합 분석 완료]</b><br>`;
+        
         for(let i=0; i<count; i++) {
-            let res = [...pool].sort(() => 0.5 - Math.random()).slice(0, 6).sort((a,b)=>a-b);
-            currentData.push(res);
-            html += `${i+1}회: ${res.join(', ')}<br>`;
+            let result = [...masterPool].sort(() => 0.5 - Math.random()).slice(0, 6).sort((a, b) => a - b);
+            latestSets.push(result);
+            htmlContent += `<span style="color:#fff">${i+1}회:</span> ${result.join(', ')}<br>`;
         }
-        document.getElementById('analysisPanel').innerHTML = html;
+        
+        document.getElementById('mainPanel').innerHTML = htmlContent;
     }
 
-    // [기능 정상화] 보관함 저장
-    function saveNumbers() {
-        if(currentData.length === 0) return alert("추출된 번호가 없습니다.");
-        const name = document.getElementById('userName').innerText;
-        localStorage.setItem('shin_db_' + name, JSON.stringify(currentData));
-        alert("보관함에 안전하게 저장되었습니다.");
+    // [핵심 기능] 저장 로직
+    function saveStorage() {
+        if(latestSets.length === 0) {
+            alert("저장할 번호가 없습니다. 먼저 추출해 주세요.");
+            return;
+        }
+        const currentU = document.getElementById('displayUser').innerText;
+        localStorage.setItem('shin_master_' + currentU, JSON.stringify(latestSets));
+        alert(currentU + "님, 보관함에 저장이 완료되었습니다.");
     }
 
-    // [기능 정상화] 보관함 불러오기
-    function showSaved() {
-        const name = document.getElementById('userName').innerText;
-        const saved = localStorage.getItem('shin_db_' + name);
-        if(!saved) return alert("저장된 내역이 없습니다.");
-        let data = JSON.parse(saved);
-        let html = `<b style="color:var(--btn-blue)">[보관함 최근 데이터]</b><br>`;
-        data.forEach((v, i) => html += `${i+1}번: ${v.join(', ')}<br>`);
-        document.getElementById('analysisPanel').innerHTML = html;
+    // [핵심 기능] 보관함 불러오기
+    function loadStorage() {
+        const currentU = document.getElementById('displayUser').innerText;
+        const savedData = localStorage.getItem('shin_master_' + currentU);
+        
+        if(!savedData) {
+            alert("저장된 데이터가 없습니다.");
+            return;
+        }
+        
+        const parsed = JSON.parse(savedData);
+        let htmlContent = `<b style="color:var(--gold)">[${currentU}님의 저장 목록]</b><br>`;
+        parsed.forEach((set, index) => {
+            htmlContent += `${index+1}번: ${set.join(', ')}<br>`;
+        });
+        
+        document.getElementById('mainPanel').innerHTML = htmlContent;
     }
 
-    function changeName() {
-        let n = prompt("변경할 이름을 입력하세요:");
-        if(n) document.getElementById('userName').innerText = n
+    // [부가 기능] 이름 변경
+    function changeMasterName() {
+        const newName = prompt("변경할 이름을 입력하세요:");
+        if(newName) {
+            document.getElementById('displayUser').innerText = newName;
+        }
+    }
+</script>
+
+</body>
+</html>
