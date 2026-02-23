@@ -7,110 +7,105 @@
     <style>
         :root {
             --gold: #ffd700; --bg: #0b0b0b; --card: #1a1a1a;
-            --accent: #eee; --danger: #ff4444; --btn-blue: #3ddbd9;
+            --accent: #00ffcc; --danger: #ff4444; --btn-blue: #3ddbd9;
         }
 
-        body { background-color: #000; color: var(--gold); font-family: 'Malgun Gothic', sans-serif; display: flex; justify-content: center; margin: 0; padding: 0; overflow: hidden; }
+        body { background-color: #000; color: var(--gold); font-family: 'Malgun Gothic', sans-serif; display: flex; justify-content: center; margin: 0; padding: 5px 0; }
 
+        /* [폭 압축] 상단 여백을 극단적으로 줄임 */
         .container {
-            width: 420px; height: 100vh; background-color: var(--bg); border: 2px solid var(--gold);
-            border-radius: 25px; padding: 10px 20px; box-shadow: 0 0 15px rgba(255, 215, 0, 0.1);
-            display: flex; flex-direction: column; position: relative;
+            width: 420px; background-color: var(--bg); border: 2px solid var(--gold);
+            border-radius: 25px; padding: 10px 20px; box-shadow: 0 0 20px rgba(255, 215, 0, 0.1);
         }
 
-        /* [폭 압축] 헤더와 타이틀 바짝 밀착 */
+        /* 헤더 높이 축소 */
         .header { text-align: center; margin-bottom: 5px; position: relative; }
-        .header .v-text { font-size: 14px; font-weight: 900; color: #fff; }
-        .header .main-title { font-size: 28px; font-weight: 900; color: var(--gold); margin-top: -5px; }
+        .header .v-text { font-size: 16px; font-weight: 900; color: #fff; }
+        .header .main-title { font-size: 30px; font-weight: 900; color: var(--gold); margin-top: -5px; }
 
-        /* [보안 위장 스위치] 좌측 상단 아주 작은 점으로 배치 */
-        .stealth-btn {
-            position: absolute; top: 0; left: 0; width: 15px; height: 15px;
-            background: transparent; border: none; cursor: pointer; z-index: 1001;
-        }
-
-        /* [번호 입력] 우측 상단 최소화 */
+        /* 입력창 열기 버튼 (조그맣게 배치) */
         .open-input-btn {
-            position: absolute; top: 0; right: 0; background: #222; color: #555;
-            border: 1px solid #333; padding: 2px 6px; border-radius: 4px; font-size: 9px; cursor: pointer;
+            position: absolute; top: 0; right: 0; background: #333; color: var(--gold);
+            border: 1px solid var(--gold); padding: 3px 8px; border-radius: 5px; font-size: 10px; cursor: pointer;
         }
 
-        /* [실시간 알림 Ticker] 분석창 위에 얇게 배치 */
-        .ticker {
-            font-size: 10px; color: #444; text-align: center; height: 15px; overflow: hidden; margin-bottom: 5px;
+        /* 접속자 박스 슬림화 */
+        .user-box {
+            background-color: var(--card); border-radius: 10px; padding: 6px 12px;
+            display: flex; justify-content: center; align-items: center; gap: 8px; margin-bottom: 10px; border: 1px solid #333;
         }
-
+        .user-name { color: var(--accent); font-weight: bold; font-size: 13px; }
+        
+        /* 분석 패널 밀착 */
         .info-panel {
-            background: rgba(255,255,255,0.02); border-radius: 10px; padding: 8px;
-            font-size: 12px; line-height: 1.4; margin-bottom: 10px; border: 1px solid #333; color: #888;
+            background: rgba(255,255,255,0.03); border-radius: 10px; padding: 10px;
+            font-size: 12px; line-height: 1.4; margin-bottom: 10px; border: 1px solid #333;
         }
 
-        /* 버튼 레이아웃 - 최상단 배치 */
+        /* 버튼 그룹 (위로 바짝 올라감) */
         .btn-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; }
-        .btn-large { height: 50px; border-radius: 10px; border: none; font-size: 17px; font-weight: 900; cursor: pointer; }
+        .btn-large { height: 50px; border-radius: 10px; border: none; font-size: 18px; font-weight: 900; cursor: pointer; }
         .btn-5 { background: linear-gradient(to bottom, #41d3bd, #34b09d); color: #000; }
         .btn-10 { background: linear-gradient(to bottom, #f1c40f, #d4af37); color: #000; }
         
-        .result-area { 
-            grid-column: span 2; background: #111; border: 1px dashed #333; 
-            border-radius: 8px; padding: 10px; display: flex; justify-content: center; gap: 6px; margin: 5px 0;
-        }
-        .num { color: #fff; font-size: 16px; font-weight: bold; }
+        .btn-mid { background: #2a2a2a; color: #fff; height: 40px; font-size: 14px; border: 1px solid #444; }
+        .btn-full { grid-column: span 2; height: 40px; background: #34495e; color: #fff; border-radius: 8px; border: none; font-weight: bold; margin-top: 3px; }
 
-        /* [위장 화면] 갑자기 누군가 볼 때 표시됨 */
-        #fake-screen {
-            display: none; position: fixed; top:0; left:0; width:100%; height:100%;
-            background: white; color: black; z-index: 9999; padding: 20px; font-family: sans-serif;
+        /* [입력창 팝업 레이어] */
+        .modal {
+            display: none; position: fixed; top: 50%; left: 50%; transform: translate(-50%, -50%);
+            background: var(--card); border: 2px solid var(--gold); padding: 20px; border-radius: 15px; z-index: 1000; text-align: center;
         }
+        .modal-overlay { display: none; position: fixed; top:0; left:0; width:100%; height:100%; background:rgba(0,0,0,0.8); z-index:999; }
+        .n-input { width: 35px; height: 35px; background: #000; border: 1px solid var(--gold); color: #fff; text-align: center; margin: 2px; border-radius: 5px; }
     </style>
 </head>
 <body>
 
-<div id="fake-screen" onclick="hideFake()">
-    <h3>오늘의 날씨 정보</h3>
-    <p>현재 기온 12°C, 맑음. 오후부터 구름이 많아지겠습니다...</p>
-</div>
-
 <div class="container">
-    <button class="stealth-btn" onclick="showFake()"></button> <div class="header">
-        <button class="open-input-btn">번호입력</button>
+    <div class="header">
+        <button class="open-input-btn" onclick="toggleModal(true)">번호입력</button>
         <div class="v-text">SHIN-UI-SON v24.1</div>
-        <div class="main-title">1213회 분석</div>
+        <div class="main-title">예상 1213회차</div>
     </div>
 
-    <div class="ticker" id="ticker-text">엔진 가동 중... 주기 데이터 로딩 완료...</div>
+    <div class="user-box">
+        <span class="user-name">guest_c4n9</span>
+        <button onclick="alert('이름변경')" style="background:var(--btn-blue); border:none; border-radius:4px; padding:3px 8px; font-size:10px; font-weight:bold;">이름변경</button>
+    </div>
 
     <div class="info-panel">
-        <span style="font-size:10px;">[MASTER ANALYSIS]</span><br>
-        4, 5, 7, 8, 10, 12, 13, 16, 18, 19, 22, 24, 27, 33, 35, 40, 45
+        <b style="color:var(--gold)">★ 1213회 통합 엔진 [0000]</b><br>
+        🎯 <span style="color:var(--accent)">4, 5, 7, 8, 10, 12, 13, 16, 18, 19, 22, 24, 27, 33, 35, 40, 45</span>
     </div>
 
     <div class="btn-grid">
         <button class="btn-large btn-5">5조합 추출</button>
         <button class="btn-large btn-10">10조합 추출</button>
-        
-        <div class="result-area">
-            <span class="num">--</span> <span class="num">--</span> <span class="num">--</span>
-            <span class="num">--</span> <span class="num">--</span> <span class="num">--</span>
-        </div>
-
-        <button class="btn-large btn-mid" style="background:#222; color:#fff; height:40px; font-size:14px; border:1px solid #444;">보관함</button>
-        <button class="btn-large btn-mid" style="background:#222; color:#fff; height:40px; font-size:14px; border:1px solid #444;">초기화</button>
-        <button class="btn-large" style="grid-column: span 2; height:40px; background:#34495e; color:#fff; font-size:14px; border:none; margin-top:5px;">새로고침</button>
+        <button class="btn-large btn-mid">보관함</button>
+        <button class="btn-large btn-mid">초기화</button>
+        <button class="btn-full">새로고침</button>
     </div>
 </div>
 
+<div id="overlay" class="modal-overlay" onclick="toggleModal(false)"></div>
+<div id="modal" class="modal">
+    <div style="color:var(--gold); margin-bottom:10px; font-weight:bold;">1212회 당첨번호 설정</div>
+    <input type="text" class="n-input" value="1">
+    <input type="text" class="n-input" value="7">
+    <input type="text" class="n-input" value="10">
+    <input type="text" class="n-input" value="12">
+    <input type="text" class="n-input" value="14">
+    <input type="text" class="n-input" value="18">
+    <br><br>
+    <button onclick="toggleModal(false)" style="background:var(--gold); border:none; padding:5px 15px; border-radius:5px; font-weight:bold;">저장 및 닫기</button>
+</div>
+
 <script>
-    function showFake() { document.getElementById('fake-screen').style.display = 'block'; }
-    function hideFake() { document.getElementById('fake-screen').style.display = 'none'; }
-    
-    // 티커 애니메이션 효과 (작지만 생동감 있게)
-    const messages = ["동기화율 99%...", "이월 가중치 적용 중...", "52주 주기 분석 완료...", "0000 마스터 승인..."];
-    let i = 0;
-    setInterval(() => {
-        document.getElementById('ticker-text').innerText = messages[i % messages.length];
-        i++;
-    }, 3000);
+    function toggleModal(show) {
+        document.getElementById('modal').style.display = show ? 'block' : 'none';
+        document.getElementById('overlay').style.display = show ? 'block' : 'none';
+    }
 </script>
 
 </body>
