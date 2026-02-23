@@ -3,195 +3,526 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>SHIN-UI-SON v24.1</title>
+    <title>SHIN-UI-SON v24.1 - 1212회차 집중 분석형 (1번코드 적용)</title>
     <style>
-        /* [1. 색감: 사용자님 원본 100% 보존] */
-        :root {
-            --gold: #ffd700;
-            --bg: #0b0b0b;
-            --card: #1a1a1a;
-            --accent: #00ffcc;
-            --danger: #ff4444;
-            --btn-blue: #3ddbd9;
+        :root { --gold: #ffd700; --bg: #0b0b0b; --card: #1a1a1a; --accent: #00ffcc; --save: #ff00ff; --danger: #ff4444; }
+        body { background-color: var(--bg); color: var(--gold); font-family: 'Malgun Gothic', sans-serif; padding: 10px; margin: 0; }
+        .outer-border { border: 2px solid var(--gold); border-radius: 20px; padding: 15px; max-width: 480px; margin: 0 auto; }
+        .header-box { text-align: center; margin-bottom: 10px; }
+        
+        .next-episode { 
+            font-size: 22px; 
+            font-weight: 900; 
+            color: #fff; 
+            text-shadow: 0 0 10px rgba(255,215,0,0.5);
         }
-
-        body {
-            background-color: #000;
-            color: var(--gold);
-            font-family: 'Malgun Gothic', sans-serif;
+        
+        .round-text {
+            font-size: 32px;
+            font-weight: 900;
+            color: #ffd700;
+            text-shadow: 0 0 15px #ffd700;
+            margin: 0 0 5px 0;
+        }
+        
+        .status-info { 
+            font-size: 11px; 
+            color: var(--accent); 
+            line-height: 1.5; 
+            min-height: 80px;
+            width: 100%; 
+            background: rgba(255,255,255,0.05); 
+            border-radius: 12px; 
+            padding: 10px; 
+            box-sizing: border-box; 
+            margin-top: 8px; 
+            text-align: left; 
+            border: 1px solid #333; 
+        }
+        
+        .highlight-gold { color: var(--gold); font-weight: bold; }
+        .highlight-red { color: var(--danger); font-weight: bold; }
+        .highlight-blue { color: #00ccff; font-weight: bold; }
+        
+        .btn-group { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; margin: 15px 0; }
+        button { border-radius: 10px; font-weight: bold; cursor: pointer; border: none; height: 50px; transition: 0.2s; }
+        .btn-5set { background: linear-gradient(135deg, #00ffcc, #00a884); color: #000; font-size: 16px; }
+        .btn-main { background: linear-gradient(135deg, #ffd700, #b8860b); color: #000; font-size: 16px; }
+        .btn-sub { background: #222; color: #fff; border: 1px solid #444; }
+        .btn-reset { grid-column: span 2; background: #333; color: #aaa; height: 40px; margin-top: 5px; }
+        
+        .row-line { background: var(--card); border-radius: 12px; padding: 12px; margin-bottom: 10px; display: flex; align-items: center; justify-content: space-between; border: 1px solid #333; }
+        .num-container { display: flex; gap: 5px; flex-grow: 1; justify-content: center; }
+        .num-box { width: 34px; height: 34px; line-height: 34px; text-align: center; font-size: 14px; font-weight: 900; border-radius: 50%; color: #fff; }
+        .fixed { background: linear-gradient(135deg, #00ffcc, #00a884); color: #000; } 
+        .zero { background: linear-gradient(135deg, #ff4444, #b30000); } 
+        .normal { background: #444; border: 1px solid var(--gold); }
+        .save-btn { font-size: 11px; background: var(--save); color: white; padding: 6px 10px; border-radius: 6px; cursor: pointer; }
+        .badge { font-size: 10px; background: #333; padding: 2px 6px; border-radius: 10px; margin-left: 5px; color: #aaa; }
+        
+        .popup-overlay {
+            position: fixed;
+            top: 0; left: 0; width: 100%; height: 100%;
+            background: rgba(0,0,0,0.8);
             display: flex;
+            align-items: center;
             justify-content: center;
-            margin: 0;
-            padding: 5px 0;
+            z-index: 1000;
         }
-
-        /* [2. 폭 압축] 사용자님의 상단 밀착 레이아웃 */
-        .container {
-            width: 420px;
-            background-color: var(--bg);
+        .popup-content {
+            background: var(--card);
             border: 2px solid var(--gold);
-            border-radius: 25px;
-            padding: 15px 20px;
-            box-shadow: 0 0 20px rgba(255, 215, 0, 0.2);
+            border-radius: 20px;
+            padding: 20px;
+            max-width: 400px;
+            width: 90%;
+            max-height: 70vh;
+            overflow-y: auto;
             position: relative;
         }
-
-        .header { text-align: center; margin-bottom: 10px; }
-        .header .v-text { font-size: 18px; font-weight: 900; color: #fff; margin-bottom: -5px; }
-        .header .main-title { font-size: 34px; font-weight: 900; color: var(--gold); }
-
-        /* [3. 접속자 박스] 원본 형태 및 이름 복구 */
-        .user-box {
-            background-color: var(--card);
-            border-radius: 12px;
-            padding: 8px 12px;
-            display: flex;
-            justify-content: center;
-            align-items: center;
-            gap: 8px;
-            margin-bottom: 15px;
-            border: 1px solid #333;
-        }
-        .user-name { color: var(--accent); font-weight: bold; font-size: 14px; }
-        .btn-mini { border: none; border-radius: 6px; padding: 5px 12px; font-weight: bold; cursor: pointer; font-size: 11px; }
-        .btn-change { background-color: var(--btn-blue); color: #000; }
-
-        /* [4. 입력창] 상단 고정 */
-        .num-group { display: flex; justify-content: center; gap: 4px; margin-bottom: 12px; }
-        .n-input { width: 36px; height: 36px; background: #222; border: 1.5px solid #444; border-radius: 6px; color: #fff; text-align: center; font-weight: bold; font-size: 16px; }
-
-        /* [5. 분석 패널] 실시간 결과 노출창 */
-        .info-panel {
-            background: rgba(255,255,255,0.03);
-            border-radius: 12px;
-            padding: 12px;
-            font-size: 13px;
-            line-height: 1.6;
-            margin-bottom: 15px;
-            border: 1px solid #333;
-            min-height: 120px;
-            max-height: 200px;
-            overflow-y: auto;
-            color: #eee;
-        }
-
-        /* [6. 메인 버튼 그리드] */
-        .btn-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; }
-        .btn-large {
-            height: 55px;
-            border-radius: 12px;
-            border: none;
-            font-size: 18px;
-            font-weight: 900;
+        .popup-close {
+            position: absolute;
+            top: 10px; right: 15px;
+            font-size: 24px;
             cursor: pointer;
-            box-shadow: inset 0 -4px rgba(0,0,0,0.2);
-            transition: transform 0.1s;
+            color: var(--gold);
         }
-        .btn-large:active { transform: scale(0.98); }
-        .btn-5 { background: linear-gradient(to bottom, #41d3bd, #34b09d); color: #000; }
-        .btn-10 { background: linear-gradient(to bottom, #f1c40f, #d4af37); color: #000; }
+        .popup-title {
+            font-size: 18px;
+            font-weight: bold;
+            margin-bottom: 15px;
+            text-align: center;
+            color: var(--gold);
+        }
+        .user-info {
+            background: #333;
+            color: var(--accent);
+            padding: 5px 10px;
+            border-radius: 20px;
+            font-size: 12px;
+            margin-bottom: 10px;
+            text-align: center;
+        }
+        .change-name-btn {
+            background: #00ccff;
+            color: white;
+            border: none;
+            border-radius: 5px;
+            padding: 3px 8px;
+            font-size: 10px;
+            margin-left: 5px;
+            cursor: pointer;
+        }
         
-        .btn-mid { background: #2a2a2a; color: #fff; height: 45px; font-size: 14px; border: 1px solid #444; }
-        .btn-full { grid-column: span 2; height: 45px; background: #34495e; color: #fff; border-radius: 10px; border: none; font-weight: bold; margin-top: 5px; cursor: pointer; }
-
-        .footer { text-align: center; font-size: 10px; color: #555; margin-top: 10px; }
+        .small-note {
+            margin-top: 3px;
+            color: #888;
+            font-size: 9px;
+            text-align: center;
+        }
     </style>
 </head>
 <body>
 
-<div class="container">
-    <div class="header">
-        <div class="v-text">SHIN-UI-SON v24.1</div>
-        <div class="main-title">예상 1213회차</div>
+<div class="outer-border">
+    <div class="header-box">
+        <div class="next-episode">SHIN-UI-SON v24.1 + 1번코드</div>
+        <div class="round-text">예상 1212회차</div>
+        <div id="userDisplay" class="user-info"></div>
+        <div id="status" class="status-info">엔진 초기화 중...</div>
     </div>
 
-    <div class="user-box">
-        <span class="user-name" id="displayUser">guest_c4n9</span>
-        <button class="btn-mini btn-change" onclick="changeMasterName()">이름변경</button>
-        <button class="btn-mini" style="background:var(--danger); color:#fff;" onclick="location.reload()">삭제</button>
+    <div class="btn-group">
+        <button class="btn-5set" onclick="process(5)">5조합 추출</button>
+        <button class="btn-main" onclick="process(10)">10조합 추출</button>
+        <button class="btn-sub" onclick="openPopup()">보관함</button>
+        <button class="btn-sub" onclick="clearStorage()">초기화</button>
+        <button class="btn-sub btn-reset" onclick="location.reload()">새로고침</button>
     </div>
 
-    <div class="num-group">
-        <input type="text" class="n-input" value="1"> <input type="text" class="n-input" value="7">
-        <input type="text" class="n-input" value="10"> <input type="text" class="n-input" value="12">
-        <input type="text" class="n-input" value="14"> <input type="text" class="n-input" value="18">
-    </div>
+    <div id="console"></div>
+    <div class="small-note">※ 9,10번 조합에 미출수 포함 (최대 4개) | 🎯 1212회차 예상</div>
+</div>
 
-    <div class="info-panel" id="mainPanel">
-        <b style="color:var(--gold)">★ 1213회차 통합 엔진 [0000] 가동</b><br>
-        🎯 후보 17수 대기 중... 버튼을 눌러주세요.
+<div id="popup" class="popup-overlay" style="display:none;">
+    <div class="popup-content">
+        <span class="popup-close" onclick="closePopup()">&times;</span>
+        <div class="popup-title">📦 보관함</div>
+        <div id="storage"></div>
     </div>
-
-    <div class="btn-grid">
-        <button class="btn-large btn-5" onclick="startExtract(5)">5조합 추출</button>
-        <button class="btn-large btn-10" onclick="startExtract(10)">10조합 추출</button>
-        
-        <button class="btn-large btn-mid" onclick="loadStorage()">보관함</button>
-        <button class="btn-large btn-mid" onclick="saveStorage()">저장하기</button>
-        
-        <button class="btn-full" onclick="location.reload()">새로고침</button>
-    </div>
-
-    <div class="footer">※ 🎯 1213회차 예상 데이터 분석 완료</div>
 </div>
 
 <script>
-    // 0000 마스터 후보수 데이터 (수정 가능)
-    const masterPool = [4, 5, 7, 8, 10, 12, 13, 16, 18, 19, 22, 24, 27, 33, 35, 40, 45];
-    let latestSets = [];
+    const FULL_DATA = [[1211,23,26,27,35,38,40,10],[1210,1,7,9,17,27,38,31],[1209,2,17,20,35,37,39,24],[1208,6,27,30,36,38,42,25],[1207,10,22,24,27,38,45,11],[1206,1,3,17,26,27,42,23],[1205,1,4,16,23,31,41,2],[1204,8,16,28,30,31,44,27],[1203,3,6,18,29,35,39,24],[1202,5,12,21,33,37,40,7],[1201,7,9,24,27,35,36,37],[1200,1,2,4,16,20,32,45],[1199,16,24,25,30,31,32,7],[1198,26,30,33,38,39,41,21],[1197,1,5,7,26,28,43,30],[1196,8,12,15,29,40,45,14],[1195,3,15,27,33,34,36,37],[1194,3,13,15,24,33,37,2],[1193,6,9,16,19,24,28,17],[1192,10,16,23,36,39,40,11],[1191,1,4,11,12,20,41,2],[1190,7,9,19,23,26,45,33],[1189,9,19,29,35,37,38,31],[1188,3,4,12,19,22,27,9],[1187,5,13,26,29,37,40,42],[1186,2,8,13,16,23,28,35],[1185,6,17,22,28,29,32,38],[1184,14,16,23,25,31,37,42],[1183,4,15,17,23,27,36,31],[1182,1,13,21,25,28,31,22],[1181,8,10,14,20,33,41,28],[1180,6,12,18,37,40,41,3],[1179,3,16,18,24,40,44,21],[1178,5,6,11,27,43,44,17],[1177,3,7,15,16,19,43,21],[1176,7,9,11,21,30,35,29],[1175,3,4,6,8,32,42,31],[1174,8,11,14,17,36,39,22],[1173,1,5,18,20,30,35,3],[1172,7,9,24,40,42,44,45],[1171,3,6,7,11,12,17,19],[1170,3,13,28,34,38,42,25],[1169,5,12,24,26,39,42,20],[1168,9,21,24,30,33,37,29],[1167,8,23,31,35,39,40,24],[1166,14,23,25,27,29,42,16],[1165,6,7,27,29,38,45,17],[1164,17,18,23,25,38,39,22],[1163,2,13,15,16,33,43,4],[1162,20,21,22,25,28,29,6],[1161,2,12,20,24,34,42,37],[1160,7,13,18,36,39,45,19],[1159,3,9,27,28,38,39,7],[1158,21,25,27,32,37,38,20],[1157,5,7,12,20,25,26,28],[1156,30,31,34,39,41,45,7],[1155,10,16,19,27,37,38,13],[1154,4,8,22,26,32,38,27],[1153,1,9,10,13,35,44,5],[1152,30,31,32,35,36,37,5],[1151,2,3,9,15,27,29,8],[1150,8,9,18,35,39,45,25],[1149,8,15,19,21,32,36,38],[1148,3,6,13,15,16,22,32],[1147,7,11,24,26,27,37,32],[1146,6,11,17,19,40,43,28],[1145,2,11,31,33,37,44,32],[1144,3,4,12,15,26,34,6],[1143,10,16,17,27,28,36,6],[1142,2,8,28,30,37,41,22],[1141,7,11,12,21,26,35,20],[1140,7,10,22,29,31,38,15],[1139,5,12,15,30,37,40,18],[1138,14,16,19,20,29,34,35],[1137,4,9,12,15,33,45,26],[1136,21,33,35,38,42,44,1],[1135,1,6,13,19,21,33,4],[1134,3,7,9,13,19,24,23],[1133,13,14,20,28,29,34,23],[1132,6,7,19,28,34,41,5],[1131,1,2,6,14,27,38,33],[1130,15,19,21,25,27,28,40],[1129,5,10,11,17,28,34,22],[1128,1,5,8,16,28,33,45],[1127,10,15,24,30,31,37,32],[1126,4,5,9,11,37,40,7],[1125,6,14,25,33,40,44,30],[1124,3,8,17,30,33,34,28],[1123,13,19,21,24,34,35,26],[1122,3,6,21,30,34,35,22],[1121,6,24,31,32,38,44,8],[1120,2,19,26,31,38,41,34],[1119,1,9,12,13,20,45,3],[1118,11,13,14,15,16,45,3],[1117,3,4,9,30,33,36,7],[1116,15,16,17,25,30,31,32],[1115,7,12,23,32,34,36,8],[1114,10,16,19,32,33,38,3],[1113,11,13,20,21,32,44,8],[1112,16,20,26,36,42,44,24]];
 
-    // [핵심 기능] 추출 로직 - 먹통 방지 완료
-    function startExtract(count) {
-        latestSets = [];
-        let htmlContent = `<b style="color:var(--accent)">[${count}개 조합 분석 완료]</b><br>`;
-        
-        for(let i=0; i<count; i++) {
-            let result = [...masterPool].sort(() => 0.5 - Math.random()).slice(0, 6).sort((a, b) => a - b);
-            latestSets.push(result);
-            htmlContent += `<span style="color:#fff">${i+1}회:</span> ${result.join(', ')}<br>`;
+    let basket = [], zeroFreqNums = [], machineFixed = [];
+    let dynamicAvgSum = 145;
+    
+    // ===== 이름 관리 기능 =====
+    let userName = "";
+    let savedNumbers = [];
+    
+    function updateUserDisplay() {
+        const userDisplay = document.getElementById('userDisplay');
+        userDisplay.innerHTML = `👤 현재 접속자: ${userName} 
+            <button class="change-name-btn" onclick="changeName()">이름변경</button>
+            <button class="change-name-btn" style="background:#ff4444;" onclick="deleteUser()">삭제</button>`;
+    }
+    
+    function changeName() {
+        const newName = prompt("새로운 이름을 입력하세요:", userName);
+        if (newName && newName.trim() !== "") {
+            userName = newName.trim();
+            localStorage.setItem('lottoUserName', userName);
+            
+            const storageKey = `lottoSave_${userName}`;
+            const localData = localStorage.getItem(storageKey);
+            savedNumbers = localData ? JSON.parse(localData) : [];
+            
+            updateUserDisplay();
+            analyze();
+            alert(`이름이 ${userName}(으)로 변경되었습니다.`);
         }
-        
-        document.getElementById('mainPanel').innerHTML = htmlContent;
+    }
+    
+    function deleteUser() {
+        if(confirm(`정말 ${userName}님의 모든 기록을 삭제하시겠습니까?`)) {
+            const storageKey = `lottoSave_${userName}`;
+            localStorage.removeItem(storageKey);
+            
+            userName = "guest_" + Math.random().toString(36).substring(2, 6);
+            localStorage.setItem('lottoUserName', userName);
+            savedNumbers = [];
+            
+            updateUserDisplay();
+            analyze();
+            alert(`새로운 손님 계정(${userName})으로 시작합니다.`);
+        }
     }
 
-    // [핵심 기능] 저장 로직
-    function saveStorage() {
-        if(latestSets.length === 0) {
-            alert("저장할 번호가 없습니다. 먼저 추출해 주세요.");
-            return;
+    function initUser() {
+        const savedName = localStorage.getItem('lottoUserName');
+        
+        if (savedName) {
+            userName = savedName;
+        } else {
+            userName = "guest_" + Math.random().toString(36).substring(2, 6);
+            localStorage.setItem('lottoUserName', userName);
         }
-        const currentU = document.getElementById('displayUser').innerText;
-        localStorage.setItem('shin_master_' + currentU, JSON.stringify(latestSets));
-        alert(currentU + "님, 보관함에 저장이 완료되었습니다.");
+        
+        const storageKey = `lottoSave_${userName}`;
+        const localData = localStorage.getItem(storageKey);
+        savedNumbers = localData ? JSON.parse(localData) : [];
+        
+        updateUserDisplay();
+        document.getElementById('status').innerHTML = `분석 초기화 중...`;
     }
 
-    // [핵심 기능] 보관함 불러오기
-    function loadStorage() {
-        const currentU = document.getElementById('displayUser').innerText;
-        const savedData = localStorage.getItem('shin_master_' + currentU);
-        
-        if(!savedData) {
-            alert("저장된 데이터가 없습니다.");
-            return;
+    function saveToBox(s) {
+        if(!savedNumbers.includes(s)) {
+            savedNumbers.push(s);
+            const storageKey = `lottoSave_${userName}`;
+            localStorage.setItem(storageKey, JSON.stringify(savedNumbers));
+            alert(`${userName}님의 보관함에 저장되었습니다.`);
+        } else {
+            alert("이미 저장된 번호입니다.");
+        }
+    }
+
+    function deleteSingleItem(index) {
+        if(confirm("이 조합을 삭제할까요?")) {
+            savedNumbers.splice(index, 1);
+            const storageKey = `lottoSave_${userName}`;
+            localStorage.setItem(storageKey, JSON.stringify(savedNumbers));
+            renderStorage();
+        }
+    }
+
+    function loadFromStorage(nums) {
+        alert(`선택된 번호: ${nums.split(',').join(', ')}`);
+        closePopup();
+    }
+
+    function renderStorage() {
+        const st = document.getElementById('storage');
+        if(savedNumbers.length === 0) { 
+            st.innerHTML = "<div style='text-align:center; padding:20px; opacity:0.5;'>저장된 조합이 없습니다.</div>"; 
+            return; 
         }
         
-        const parsed = JSON.parse(savedData);
-        let htmlContent = `<b style="color:var(--gold)">[${currentU}님의 저장 목록]</b><br>`;
-        parsed.forEach((set, index) => {
-            htmlContent += `${index+1}번: ${set.join(', ')}<br>`;
+        st.innerHTML = savedNumbers.map((n, index) => {
+            const numbers = n.split(',');
+            return `
+                <div class="row-line" style="margin-bottom:10px; background:#2a2a2a;">
+                    <div class="num-container">
+                        ${numbers.map(v=>`<span class="num-box normal" style="background:#444; font-size:12px;">${v}</span>`).join('')}
+                    </div>
+                    <div style="display:flex; gap:5px;">
+                        <button onclick="loadFromStorage('${n}')" 
+                                style="background:#00ccff; color:white; border:none; border-radius:5px; padding:5px 8px; font-size:11px; cursor:pointer;">불러오기</button>
+                        <button onclick="deleteSingleItem(${index})" 
+                                style="background:#ff4444; color:white; border:none; border-radius:5px; padding:5px 8px; font-size:11px; cursor:pointer;">삭제</button>
+                    </div>
+                </div>
+            `;
+        }).join('');
+        
+        document.querySelector('.popup-title').innerHTML = `📦 ${userName}의 보관함 (${savedNumbers.length}개)`;
+    }
+
+    // ===== 1번코드: lotto_system_0000_1212_Final (JavaScript 변환) =====
+    function lottoSystem00001212Final(allData, targetRound, lastWinning) {
+        // 데이터 맵 구성
+        let dataMap = {};
+        allData.forEach(row => {
+            if (!isNaN(parseInt(row[0]))) {
+                dataMap[parseInt(row[0])] = row.map(x => parseInt(x));
+            }
         });
-        
-        document.getElementById('mainPanel').innerHTML = htmlContent;
+
+        // 52주 간격 5회차 추출
+        let cycleRounds = [];
+        for (let i = 1; i <= 5; i++) {
+            cycleRounds.push(targetRound - 52 * i);
+        }
+
+        let mainPool = [];
+        let bonusPool = [];
+        cycleRounds.forEach(r => {
+            if (dataMap[r]) {
+                // main numbers: indices 1~6 (첫 번째 번호부터 여섯 번째 번호)
+                // bonus: index 7
+                // ※ Python 코드는 [2:8]이었으나, HTML 데이터 구조에 맞게 수정 (1:7이 정상)
+                let mainNums = dataMap[r].slice(1, 7);  // 6개 본번호
+                let bonusNum = dataMap[r][7];          // 보너스 번호
+                mainPool.push(...mainNums);
+                bonusPool.push(bonusNum);
+            }
+        });
+
+        // 생존자(25수 내외)
+        let survivorsSet = new Set([...mainPool, ...bonusPool]);
+        let survivors = Array.from(survivorsSet);
+
+        // 빈도 계산
+        let mainFreq = {};
+        mainPool.forEach(n => mainFreq[n] = (mainFreq[n] || 0) + 1);
+        let bonusFreq = {};
+        bonusPool.forEach(n => bonusFreq[n] = (bonusFreq[n] || 0) + 1);
+
+        // 생존자 정렬: 이월수 최우선, 본빈도 높은 순, 낮은 번호 순
+        let rankedAll = survivors.sort((a, b) => {
+            let aInLast = lastWinning.includes(a);
+            let bInLast = lastWinning.includes(b);
+            if (aInLast && !bInLast) return -1;
+            if (!aInLast && bInLast) return 1;
+            let aFreq = mainFreq[a] || 0;
+            let bFreq = mainFreq[b] || 0;
+            if (aFreq > bFreq) return -1;
+            if (aFreq < bFreq) return 1;
+            return a - b; // 낮은 번호 우선
+        });
+
+        // 철밥통 13수
+        let final17 = rankedAll.slice(0, 13);
+        let remaining = rankedAll.slice(13);
+
+        // 반란군 4수 (보너스 빈도 높은 순, 낮은 번호 순)
+        let rebels = remaining.sort((a, b) => {
+            let aFreq = bonusFreq[a] || 0;
+            let bFreq = bonusFreq[b] || 0;
+            if (aFreq > bFreq) return -1;
+            if (aFreq < bFreq) return 1;
+            return a - b;
+        }).slice(0, 4);
+
+        final17.push(...rebels);
+
+        // 구간 구멍 메우기 (1~10, 11~20, 21~30, 31~40, 41~45)
+        let sections = [
+            [1, 10], [11, 20], [21, 30], [31, 40], [41, 45]
+        ];
+        sections.forEach(([start, end]) => {
+            let hasNum = final17.some(n => n >= start && n <= end);
+            if (!hasNum) {
+                let candidates = survivors.filter(n => n >= start && n <= end && !final17.includes(n));
+                if (candidates.length > 0) {
+                    candidates.sort((a, b) => {
+                        let aFreq = bonusFreq[a] || 0;
+                        let bFreq = bonusFreq[b] || 0;
+                        if (aFreq > bFreq) return -1;
+                        if (aFreq < bFreq) return 1;
+                        return a - b;
+                    });
+                    let joker = candidates[0];
+                    final17.pop(); // 마지막 번호 제거
+                    final17.push(joker);
+                }
+            }
+        });
+
+        // 중복 제거 및 정렬 후 반환
+        return Array.from(new Set(final17)).sort((a, b) => a - b);
     }
 
-    // [부가 기능] 이름 변경
-    function changeMasterName() {
-        const newName = prompt("변경할 이름을 입력하세요:");
-        if(newName) {
-            document.getElementById('displayUser').innerText = newName;
+    // ===== 통합 분석 함수 (1번코드 기반) =====
+    function analyze() {
+        // 미출수 분석 (최근 22회) - 기존 UI 표시용
+        const zeroRange = 22;
+        const data22 = FULL_DATA.slice(0, zeroRange);
+        let freq22 = {};
+        for(let i=1; i<=45; i++) freq22[i] = 0;
+        data22.forEach(row => { for(let j=1; j<=7; j++) { if(row[j]) freq22[row[j]]++; } });
+        zeroFreqNums = Object.keys(freq22).filter(n => freq22[n] === 0).map(Number).sort((a,b)=>a-b);
+
+        // 1번코드 실행: 1212회차, 마지막 당첨번호(1211회) = [23,26,27,35,38,40]
+        const lastWinning = FULL_DATA[0].slice(1, 7); // [23,26,27,35,38,40]
+        const targetRound = 1212;
+        basket = lottoSystem00001212Final(FULL_DATA, targetRound, lastWinning);
+
+        // 고정번호(machineFixed)는 basket의 첫 3수로 지정 (UI 시각효과용)
+        machineFixed = basket.slice(0, 3);
+
+        // 평균 합계 계산 (기존 로직 유지 - 다음 회차 기대 합계)
+        let nextSums = [];
+        const targetRange = 30;
+        for(let i=1; i < targetRange; i++) {
+            let currentNums = FULL_DATA[i].slice(1, 7);
+            let top22Freq = []; // 예전 로직에서 필요했던 부분, 간소화
+            // 실제 dynamicAvgSum 계산을 위해 과거 데이터 단순 합산
+            if (i+1 < FULL_DATA.length) {
+                let sum = FULL_DATA[i+1].slice(1, 7).reduce((a,b)=>a+b, 0);
+                nextSums.push(sum);
+            }
+        }
+        if (nextSums.length > 0) {
+            dynamicAvgSum = Math.round(nextSums.reduce((a,b)=>a+b, 0) / nextSums.length);
+        }
+
+        // 월 표시
+        const today = new Date();
+        const currentMonth = today.getMonth() + 1;
+        const monthNames = ['','1월','2월','3월','4월','5월','6월','7월','8월','9월','10월','11월','12월'];
+        
+        document.getElementById('status').innerHTML = `
+            <div><span class="highlight-gold">★ 1번코드 통합 엔진 [${monthNames[currentMonth]}]</span></div>
+            <div><span class="highlight-red">🎯 미출수(최근 22회 기준):</span> ${zeroFreqNums.length > 0 ? zeroFreqNums.join(', ') : '없음'}</div>
+            <div>압축 후보 17수: ${basket.join(', ')}</div>
+            <div><span class="highlight-blue">📊 다음 회차 기대 합계:</span> ${dynamicAvgSum}</div>
+            <div><span class="highlight-blue">⚖️ 필터링 범위:</span> ${dynamicAvgSum-28} ~ ${dynamicAvgSum+28}</div>
+        `;
+    }
+
+    // ===== 조합 생성 함수 (기존 로직 유지, basket만 1번코드 결과로 대체) =====
+    function process(limit) {
+        analyze(); // 매번 새로 분석 (basket 업데이트)
+        const box = document.getElementById('console');
+        box.innerHTML = "";
+        let count = 0, used = new Set(), safety = 0;
+        let minSum = dynamicAvgSum - 28;
+        let maxSum = dynamicAvgSum + 28;
+
+        while(count < limit && safety < 10000) {
+            safety++;
+            let res = new Set();
+            let currentIdx = count + 1;
+            let zeroCount = 0;
+
+            // 9,10번 조합 미출수 강제 포함 (UI 디자인 유지)
+            if (limit === 10 && (currentIdx === 9 || currentIdx === 10) && zeroFreqNums.length > 0) {
+                let availableZeros = [...zeroFreqNums];
+                let maxPossible = Math.min(4, availableZeros.length);
+                let selectCount = Math.floor(Math.random() * maxPossible) + 1;
+                
+                for(let i = 0; i < selectCount; i++) {
+                    if(availableZeros.length === 0) break;
+                    let randomIndex = Math.floor(Math.random() * availableZeros.length);
+                    let selectedNum = availableZeros[randomIndex];
+                    res.add(selectedNum);
+                    zeroCount++;
+                    availableZeros.splice(randomIndex, 1);
+                }
+            } else if (Math.random() > 0.8 && zeroFreqNums.length > 0 && zeroCount < 2) {
+                let zeroNum = zeroFreqNums[Math.floor(Math.random() * zeroFreqNums.length)];
+                res.add(zeroNum);
+                zeroCount++;
+            }
+
+            // 5조합일 때 고정번호 1개 포함 (기존 로직)
+            if(limit === 5) res.add(machineFixed[Math.floor(Math.random()*3)]);
+
+            // basket에서 랜덤하게 추가
+            let shuffleBasket = [...basket].sort(() => Math.random() - 0.5);
+            for(let n of shuffleBasket) {
+                if(res.size >= 6) break;
+                
+                if(zeroFreqNums.includes(n)) {
+                    if(zeroCount < 2) {
+                        res.add(n);
+                        zeroCount++;
+                    }
+                } else {
+                    res.add(n);
+                }
+            }
+
+            // 부족분 랜덤 채움
+            while(res.size < 6) {
+                let rand = Math.floor(Math.random()*45)+1;
+                if(zeroFreqNums.includes(rand)) {
+                    if(zeroCount < 2) {
+                        res.add(rand);
+                        zeroCount++;
+                    }
+                } else {
+                    res.add(rand);
+                }
+            }
+
+            let finalArr = Array.from(res).sort((a,b)=>a-b);
+            let sum = finalArr.reduce((a,b)=>a+b, 0);
+            let key = finalArr.join(',');
+
+            if(!used.has(key) && sum >= minSum && sum <= maxSum) {
+                used.add(key);
+                count++;
+                let specialMark = (limit === 10 && (count === 9 || count === 10)) ? '🔥' : '';
+                renderRow(finalArr, box, key, specialMark);
+            }
         }
     }
-</script>
 
+    function renderRow(arr, target, key, specialMark = '') {
+        const html = arr.map(n => {
+            let cls = machineFixed.includes(n) ? "fixed" : (zeroFreqNums.includes(n) ? "zero" : "normal");
+            return `<span class="num-box ${cls}">${n}</span>`;
+        }).join('');
+        let specialHtml = specialMark ? `<span class="badge">${specialMark}</span>` : '';
+        target.innerHTML += `<div class="row-line"><div class="num-container">${html}</div><div style="display: flex; align-items: center;">${specialHtml}<div class="save-btn" onclick="saveToBox('${key}')">저장</div></div></div>`;
+    }
+
+    function openPopup() {
+        document.getElementById('popup').style.display = 'flex';
+        renderStorage();
+    }
+
+    function closePopup() {
+        document.getElementById('popup').style.display = 'none';
+    }
+
+    function clearStorage() {
+        if(confirm("보관함을 초기화할까요?")) {
+            savedNumbers = [];
+            const storageKey = `lottoSave_${userName}`;
+            localStorage.removeItem(storageKey);
+            renderStorage();
+        }
+    }
+    
+    window.onload = function() {
+        initUser();
+        analyze();
+    };
+</script>
 </body>
 </html>
