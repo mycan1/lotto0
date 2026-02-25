@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>SHIN-UI-SON - 16수 + 생존자 표시</title>
+    <title>SHIN-UI-SON - 16수 (51주 간격)</title>
     <style>
         :root { --gold: #ffd700; --bg: #0b0b0b; --card: #1a1a1a; --accent: #00ffcc; --save: #ff00ff; --danger: #ff4444; }
         body { background-color: var(--bg); color: var(--gold); font-family: 'Malgun Gothic', sans-serif; padding: 10px; margin: 0; }
@@ -91,7 +91,7 @@
     <div class="header-box">
         <div class="prev-win-label" id="prevWinLabel">📌 기준 이전회차 당첨번호</div>
         <div class="base-info" id="baseRoundInfo"></div>
-        <div class="next-episode">SHIN-UI-SON + 16수</div>
+        <div class="next-episode">SHIN-UI-SON + 16수 (51주)</div>
         <div class="round-text" id="roundDisplay">예상 회차</div>
         <div id="userDisplay" class="user-info"></div>
         <div id="status" class="status-info">엔진 초기화 중...</div>
@@ -297,7 +297,7 @@
         document.querySelector('.popup-title').innerHTML = `📦 ${userName}의 보관함 (${savedNumbers.length}개)`;
     }
 
-    // ===== 16수 생성 알고리즘 (철밥통 13 + 반란군 3, 이월수 1개 최우선) =====
+    // ===== 16수 생성 알고리즘 (철밥통 13 + 반란군 3, 이월수 1개 최우선) - 51주 간격 =====
     function lottoSystem00001212Final(allData, lastWinning) {
         let dataMap = {};
         allData.forEach(row => dataMap[row[0]] = row);
@@ -305,7 +305,7 @@
         const targetRound = currentBaseRound;
         const targetRounds = [];
         for (let i = 1; i <= 5; i++) {
-            targetRounds.push(targetRound - 52 * i);
+            targetRounds.push(targetRound - 51 * i);  // 52 → 51로 변경
         }
 
         let mainPool = [], bonusPool = [];
@@ -393,7 +393,7 @@
         
         const targetRounds = [];
         for (let i = 1; i <= 5; i++) {
-            targetRounds.push(targetRound - 52 * i);
+            targetRounds.push(targetRound - 51 * i);  // 52 → 51로 변경
         }
         
         let mainPool = [], bonusPool = [];
@@ -406,7 +406,7 @@
         });
         
         if (mainPool.length === 0) {
-            alert('52주 전 회차 데이터가 충분하지 않습니다.');
+            alert('51주 전 회차 데이터가 충분하지 않습니다.');
             return;
         }
         
@@ -443,7 +443,7 @@
         document.getElementById('roundDisplay').innerHTML = `예상 ${targetRound}회차`;
         document.getElementById('targetRound').innerText = targetRound;
         document.getElementById('status').innerHTML = `
-            <div><span class="highlight-gold">★ 16수 엔진 (이월수 1개 우선)</span></div>
+            <div><span class="highlight-gold">★ 16수 엔진 (51주 간격)</span></div>
             <div>생존자 ${survivors.length}수: ${survivors.join(', ')}</div>
             <div>AI 추천 16수: ${basket.join(', ')}</div>
             <div><span class="highlight-blue">📊 기준 합계 (5회차 평균):</span> ${dynamicAvgSum} (${dynamicAvgSum-25}~${dynamicAvgSum+25})</div>
