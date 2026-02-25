@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>SHIN-UI-SON - 12수 (4회차, 상위6+하위6, AC 6~10, 10조합 B bag)</title>
+    <title>SHIN-UI-SON - 12수 (4회차, 상위6+하위6, AC 4~10, 10조합 B bag)</title>
     <style>
         :root { --gold: #ffd700; --bg: #0b0b0b; --card: #1a1a1a; --accent: #00ffcc; --save: #ff00ff; --danger: #ff4444; }
         body { background-color: var(--bg); color: var(--gold); font-family: 'Malgun Gothic', sans-serif; padding: 8px; margin: 0; }
@@ -104,7 +104,7 @@
     <div class="header-box">
         <div class="prev-win-label" id="prevWinLabel">📌 기준 이전회차 당첨번호</div>
         <div class="base-info" id="baseRoundInfo"></div>
-        <div class="next-episode">SHIN-UI-SON + 12수 (4회차, 상위6+하위6, AC 6~10, 10조합 B bag)</div>
+        <div class="next-episode">SHIN-UI-SON + 12수 (4회차, 상위6+하위6, AC 4~10, 10조합 B bag)</div>
         <div class="round-text" id="roundDisplay">예상 회차</div>
         <div id="userDisplay" class="user-info"></div>
         <div id="status" class="status-info">엔진 초기화 중...</div>
@@ -131,7 +131,7 @@
     </div>
 
     <div id="console"></div>
-    <div class="small-note">※ 10조합 각각 B bag 1개 포함, AC 6~10 조건 | 🎯 <span id="targetRound">1213</span>회차 예상</div>
+    <div class="small-note">※ 10조합 각각 B bag 1개 포함, AC 4~10 조건 (생성 안 될 시 범위 자동 확장) | 🎯 <span id="targetRound">1213</span>회차 예상</div>
 </div>
 
 <!-- 토스트 메시지 -->
@@ -560,7 +560,7 @@
         analyze();
     }
 
-    // ===== 조합 생성 (AC 6~10, 10조합 B bag 1개씩 포함) =====
+    // ===== 조합 생성 (AC 4~10, 10조합 B bag 1개씩 포함) =====
     function process(limit) {
         analyze();
         generatedCombos = [];
@@ -577,15 +577,15 @@
             return new Set(gaps).size;
         }
 
-        // 유효성 검사 (합계 + AC)
+        // 유효성 검사 (합계 + AC) - AC 범위를 4~10으로 완화
         function isValidCombo(arr) {
             let sum = arr.reduce((a,b)=>a+b, 0);
             if (sum < minSum || sum > maxSum) return false;
             let ac = getAC(arr);
-            return ac >= 6 && ac <= 10;   // AC 6~10
+            return ac >= 4 && ac <= 10;   // AC 4~10
         }
 
-        while(count < limit && safety < 20000) { // safety 증가
+        while(count < limit && safety < 30000) { // safety 증가
             safety++;
             let res = new Set();
 
@@ -602,7 +602,7 @@
             let availableBasket = [...basket].filter(n => !res.has(n));
             // 가중치 섞기 (weighted random)
             let weightedItems = availableBasket.map(n => ({ num: n, weight: weightedScore[n] || 1 }));
-            // 무작위로 섞은 후 가중치 순으로 정렬 대신, 매번 가중치 랜덤 선택
+            // 무작위로 섞은 후 가중치 랜덤 선택
             while (res.size < 6 && weightedItems.length > 0) {
                 let total = weightedItems.reduce((sum, item) => sum + item.weight, 0);
                 let rand = Math.random() * total;
@@ -645,7 +645,7 @@
             }
         }
         if (generatedCombos.length === 0) {
-            alert('조합을 생성할 수 없습니다. 조건을 완화하거나 다른 회차를 선택해보세요.');
+            alert('조합을 생성할 수 없습니다. AC 범위를 더 넓히거나 합계 범위를 조정해보세요.');
         }
         showComboList();
     }
