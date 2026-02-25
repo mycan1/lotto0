@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>SHIN-UI-SON - 13수 (5회차 + 미출수 가중치)</title>
+    <title>SHIN-UI-SON - 13수 (상위5+하위8, 5회차, 미출수 가중치)</title>
     <style>
         :root { --gold: #ffd700; --bg: #0b0b0b; --card: #1a1a1a; --accent: #00ffcc; --save: #ff00ff; --danger: #ff4444; }
         body { background-color: var(--bg); color: var(--gold); font-family: 'Malgun Gothic', sans-serif; padding: 8px; margin: 0; }
@@ -104,7 +104,7 @@
     <div class="header-box">
         <div class="prev-win-label" id="prevWinLabel">📌 기준 이전회차 당첨번호</div>
         <div class="base-info" id="baseRoundInfo"></div>
-        <div class="next-episode">SHIN-UI-SON + 13수 (5회차 + 미출수)</div>
+        <div class="next-episode">SHIN-UI-SON + 13수 (상위5+하위8)</div>
         <div class="round-text" id="roundDisplay">예상 회차</div>
         <div id="userDisplay" class="user-info"></div>
         <div id="status" class="status-info">엔진 초기화 중...</div>
@@ -376,7 +376,7 @@
         document.querySelector('.popup-title').innerHTML = `📦 ${userName}의 보관함 (${savedNumbers.length}개)`;
     }
 
-    // ===== 13수 생성 알고리즘 (5회차 51주간격, 상위6+하위7, 보너스/미출수 가중치) =====
+    // ===== 13수 생성 알고리즘 (5회차 51주간격, 상위5+하위8, 보너스/미출수 가중치) =====
     function lottoSystem00001212Final(allData, lastWinning) {
         const targetRound = currentBaseRound;
         // 5개 회차 (51주 간격)
@@ -434,10 +434,10 @@
             return a - b;
         });
 
-        // 상위 6개 + 하위 7개
-        let top6 = rankedMain.slice(0, 6);
-        let bottom7 = rankedMain.slice(-7);
-        let basketSet = new Set([...top6, ...bottom7]);
+        // 상위 5개 + 하위 8개
+        let top5 = rankedMain.slice(0, 5);
+        let bottom8 = rankedMain.slice(-8);
+        let basketSet = new Set([...top5, ...bottom8]);
         let basket = Array.from(basketSet).sort((a, b) => a - b);
 
         // 중간에 빠진 번호 (B bag) - 전체 후보에서 basket에 없는 것
@@ -529,7 +529,7 @@
         
         // 상태창 표시 (13수, B bag 한 줄)
         document.getElementById('status').innerHTML = `
-            <div><span class="highlight-gold">★ 13수 엔진 (5회차 51주간격, 상위6하위7)</span></div>
+            <div><span class="highlight-gold">★ 13수 엔진 (5회차 51주간격, 상위5+하위8)</span></div>
             <div>생존자 ${survivors.length}수: ${survivors.join(', ')}</div>
             <div>AI 추천 13수: ${basket.join(', ')}</div>
             <div><span class="highlight-blue">📊 기준 합계 (5회차 평균):</span> ${dynamicAvgSum} (${dynamicAvgSum-25}~${dynamicAvgSum+25})</div>
