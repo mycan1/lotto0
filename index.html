@@ -1,4 +1,4 @@
-<!DOCTYPE html>
+\<!DOCTYPE html>
 <html lang="ko">
 <head>
     <meta charset="UTF-8">
@@ -225,10 +225,15 @@
     </div>
 </div>
 
+<!-- 조합 목록 팝업 (모두 저장 버튼 추가) -->
 <div id="comboListPopup" class="popup-overlay" style="display:none;">
     <div class="popup-content">
         <button class="popup-close" onclick="closeComboListPopup()">&times;</button>
         <div class="popup-title">📋 생성된 조합</div>
+        <!-- 모두 저장 버튼 -->
+        <div style="text-align: right; margin-bottom: 8px;">
+            <button class="combo-save-btn" onclick="saveAllCombos()" style="background:#00ccff; color:#000; font-size:10px; padding:4px 8px;">📥 모두 저장</button>
+        </div>
         <div id="comboListContent" class="combo-list"></div>
     </div>
 </div>
@@ -307,6 +312,27 @@
             showToast('✅ 저장되었습니다');
         } else {
             showToast('⚠️ 이미 저장된 조합입니다');
+        }
+    }
+
+    // 모든 조합 한 번에 저장
+    function saveAllCombos() {
+        if (generatedCombos.length === 0) {
+            showToast('저장할 조합이 없습니다');
+            return;
+        }
+        let savedCount = 0;
+        generatedCombos.forEach(combo => {
+            if (!savedNumbers.includes(combo.key)) {
+                savedNumbers.push(combo.key);
+                savedCount++;
+            }
+        });
+        if (savedCount > 0) {
+            localStorage.setItem(`lottoSave_${userName}`, JSON.stringify(savedNumbers));
+            showToast(`📦 ${savedCount}개 조합 저장됨`);
+        } else {
+            showToast('모두 이미 저장된 조합입니다');
         }
     }
 
