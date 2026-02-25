@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>SHIN-UI-SON - 16수 (5회차 반반 + 조건부 조합)</title>
+    <title>SHIN-UI-SON - 16수 (5회차 반반 + 탈락수 강조)</title>
     <style>
         :root { --gold: #ffd700; --bg: #0b0b0b; --card: #1a1a1a; --accent: #00ffcc; --save: #ff00ff; --danger: #ff4444; }
         body { background-color: var(--bg); color: var(--gold); font-family: 'Malgun Gothic', sans-serif; padding: 8px; margin: 0; }
@@ -43,6 +43,7 @@
         .num-container { display: flex; gap: 4px; flex-grow: 1; justify-content: center; }
         
         .num-box { width: 28px; height: 28px; line-height: 28px; text-align: center; font-size: 11px; font-weight: 900; border-radius: 50%; background: #000000 !important; color: var(--gold) !important; border: 1px solid var(--gold) !important; }
+        .num-box.eliminated { border-color: #ff8888 !important; color: #ff8888 !important; }
         
         .combo-label { font-size: 13px; font-weight: bold; color: var(--accent); margin-right: 6px; min-width: 40px; }
         .save-btn { font-size: 10px; background: var(--save); color: white; padding: 4px 6px; border-radius: 5px; cursor: pointer; margin-left: 6px; }
@@ -542,7 +543,7 @@
         analyze();
     }
 
-    // ===== 조합 생성 (끝수 다양성 + 연속번호 제한 추가) =====
+    // ===== 조합 생성 (끝수 다양성 + 연속번호 제한 + 탈락수 표시 준비) =====
     function process(limit) {
         analyze();
         generatedCombos = [];
@@ -636,7 +637,10 @@
             if (!used.has(key) && sum >= minSum && sum <= maxSum && isValidCombo(finalArr)) {
                 used.add(key);
                 count++;
-                let specialMark = (limit === 10 && (count === 9 || count === 10)) ? '🔥' : '';
+                // 특수 조합 마크
+                let specialMark = '';
+                if (limit === 10 && (count === 9 || count === 10)) specialMark = '🔥';
+                if (limit === 5 && count === 5) specialMark = '⚡';
                 generatedCombos.push({
                     numbers: finalArr,
                     key: key,
@@ -652,21 +656,26 @@
         const content = document.getElementById('comboListContent');
         if (generatedCombos.length === 0) {
             content.innerHTML = '<div style="text-align:center; padding:12px;">생성된 조합이 없습니다.</div>';
-        } else {
-            let html = '';
-            generatedCombos.forEach(combo => {
-                html += `<div class="combo-item-row">
-                    <div class="combo-nums">
-                        ${combo.numbers.map(n => `<span class="num-box" style="width:24px; height:24px; line-height:24px; font-size:10px;">${n}</span>`).join('')}
-                    </div>
-                    <div>
-                        ${combo.mark ? `<span class="badge" style="margin-right:3px;">${combo.mark}</span>` : ''}
-                        <button class="combo-save-btn" onclick="saveComboFromList('${combo.key}')">저장</button>
-                    </div>
-                </div>`;
-            });
-            content.innerHTML = html;
+            document.getElementById('comboListPopup').style.display = 'flex';
+            return;
         }
+        let html = '';
+        generatedCombos.forEach(combo => {
+            // 각 번호가 탈락수(생존자이지만 16수에 없음)인지 확인
+            const numberSpans = combo.numbers.map(n => {
+                const isEliminated = survivors.includes(n) && !basket.includes(n);
+                const className = isEliminated ? 'num-box eliminated' : 'num-box';
+                return `<span class="${className}" style="width:24px; height:24px; line-height:24px; font-size:10px;">${n}</span>`;
+            }).join('');
+            html += `<div class="combo-item-row">
+                <div class="combo-nums">${numberSpans}</div>
+                <div>
+                    ${combo.mark ? `<span class="badge" style="margin-right:3px;">${combo.mark}</span>` : ''}
+                    <button class="combo-save-btn" onclick="saveComboFromList('${combo.key}')">저장</button>
+                </div>
+            </div>`;
+        });
+        content.innerHTML = html;
         document.getElementById('comboListPopup').style.display = 'flex';
     }
 
@@ -945,7 +954,6 @@
             document.getElementById('bonus').value = winData[7];
         } else {
             winningDisplay.innerHTML = `📌 ${targetRound}회 데이터가 없습니다.`;
-            // 입력 필드 비우기
             for (let i = 1; i <= 6; i++) {
                 document.getElementById(`win${i}`).value = '';
             }
