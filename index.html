@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>SHIN-UI-SON - 15수 + 복기 표시</title>
+    <title>SHIN-UI-SON - 15수 + 조합 상세 팝업</title>
     <style>
         :root { --gold: #ffd700; --bg: #0b0b0b; --card: #1a1a1a; --accent: #00ffcc; --save: #ff00ff; --danger: #ff4444; }
         body { background-color: var(--bg); color: var(--gold); font-family: 'Malgun Gothic', sans-serif; padding: 10px; margin: 0; }
@@ -37,13 +37,15 @@
         .base-round-input button { background: var(--accent); color: #000; border: none; border-radius: 8px; padding: 0 15px; height: 40px; font-weight: bold; font-size: 15px; cursor: pointer; box-shadow: 0 0 8px rgba(0,255,204,0.3); }
         .round-desc { font-size: 10px; color: #888; margin-top: 3px; }
         
-        .row-line { background: var(--card); border-radius: 12px; padding: 12px; margin-bottom: 10px; display: flex; align-items: center; justify-content: space-between; border: 1px solid #333; }
+        .row-line { background: var(--card); border-radius: 12px; padding: 12px; margin-bottom: 10px; display: flex; align-items: center; justify-content: space-between; border: 1px solid #333; cursor: pointer; transition: 0.2s; }
+        .row-line:hover { border-color: var(--accent); }
         .num-container { display: flex; gap: 5px; flex-grow: 1; justify-content: center; }
         
         .num-box { width: 34px; height: 34px; line-height: 34px; text-align: center; font-size: 14px; font-weight: 900; border-radius: 50%; background: #000000 !important; color: var(--gold) !important; border: 1px solid var(--gold) !important; }
         .num-box.fixed, .num-box.zero, .num-box.normal { background: #000000 !important; color: var(--gold) !important; border: 1px solid var(--gold) !important; }
         
-        .save-btn { font-size: 11px; background: var(--save); color: white; padding: 6px 10px; border-radius: 6px; cursor: pointer; }
+        .combo-label { font-size: 14px; font-weight: bold; color: var(--accent); margin-right: 10px; min-width: 50px; }
+        .save-btn { font-size: 11px; background: var(--save); color: white; padding: 6px 10px; border-radius: 6px; cursor: pointer; margin-left: 10px; }
         .badge { font-size: 10px; background: #333; padding: 2px 6px; border-radius: 10px; margin-left: 5px; color: #aaa; }
         
         .popup-overlay { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.8); display: flex; align-items: center; justify-content: center; z-index: 1000; }
@@ -78,6 +80,10 @@
         .match-count { font-size: 18px; color: var(--gold); }
         .combo-item { display: flex; justify-content: space-between; padding: 5px; border-bottom: 1px solid #333; }
         .winning-display { font-size: 14px; color: #ffd700; margin-bottom: 10px; text-align: center; }
+        
+        .section-row { display: flex; align-items: center; margin: 5px 0; padding: 5px; background: #1a1a1a; border-radius: 5px; }
+        .section-label { width: 60px; color: var(--accent); }
+        .section-nums { display: flex; gap: 5px; flex-wrap: wrap; }
     </style>
 </head>
 <body>
@@ -110,11 +116,12 @@
         <button class="btn-review" onclick="openReviewPopup()">📊 복기</button>
     </div>
 
+    <!-- 콘솔 영역: 여기에 조합들이 표시됨 -->
     <div id="console"></div>
     <div class="small-note">※ 9,10번 조합에 미출수 포함 (최대 4개) | 🎯 <span id="targetRound">1213</span>회차 예상</div>
 </div>
 
-<!-- 팝업들 -->
+<!-- 보관함 팝업 -->
 <div id="popup" class="popup-overlay" style="display:none;">
     <div class="popup-content">
         <button class="popup-close" onclick="closePopup()">&times;</button>
@@ -123,6 +130,7 @@
     </div>
 </div>
 
+<!-- 게임 팝업 (기존과 동일) -->
 <div id="gamePopup" class="popup-overlay" style="display:none;">
     <div class="popup-content" style="max-width: 450px;">
         <button class="popup-close" onclick="closeGamePopup()" ontouchstart="event.stopPropagation(); closeGamePopup();">&times;</button>
@@ -154,6 +162,7 @@
     </div>
 </div>
 
+<!-- 복기 팝업 -->
 <div id="reviewPopup" class="popup-overlay" style="display:none;">
     <div class="popup-content">
         <button class="popup-close" onclick="closeReviewPopup()">&times;</button>
@@ -182,6 +191,15 @@
             <div style="margin-top: 10px;">보관함 조합 비교:</div>
             <div id="savedMatch" style="max-height: 200px; overflow-y: auto;"></div>
         </div>
+    </div>
+</div>
+
+<!-- 조합 상세 팝업 (숫자대별 분포) -->
+<div id="comboDetailPopup" class="popup-overlay" style="display:none;">
+    <div class="popup-content">
+        <button class="popup-close" onclick="closeComboDetailPopup()">&times;</button>
+        <div class="popup-title" id="comboDetailTitle">조합 상세</div>
+        <div id="comboDetailContent"></div>
     </div>
 </div>
 
@@ -439,6 +457,7 @@
         analyze();
     }
 
+    // ===== 조합 생성 (수정됨: 번호 라벨 추가, 클릭 시 상세 팝업) =====
     function process(limit) {
         analyze();
         const box = document.getElementById('console');
@@ -451,6 +470,8 @@
             let res = new Set();
             let currentIdx = count + 1;
             let zeroCount = 0;
+
+            // 9,10번 조합에 미출수 포함 (기존 로직)
             if (limit === 10 && (currentIdx === 9 || currentIdx === 10) && zeroFreqNums.length > 0) {
                 let availableZeros = [...zeroFreqNums];
                 let maxPossible = Math.min(4, availableZeros.length);
@@ -468,7 +489,9 @@
                 res.add(zeroNum);
                 zeroCount++;
             }
+
             if(limit === 5) res.add(machineFixed[Math.floor(Math.random()*3)]);
+
             let shuffleBasket = [...basket].sort(() => Math.random() - 0.5);
             for(let n of shuffleBasket) {
                 if(res.size >= 6) break;
@@ -481,6 +504,7 @@
                     res.add(n);
                 }
             }
+
             while(res.size < 6) {
                 let rand = Math.floor(Math.random()*45)+1;
                 if(zeroFreqNums.includes(rand)) {
@@ -492,23 +516,105 @@
                     res.add(rand);
                 }
             }
+
             let finalArr = Array.from(res).sort((a,b)=>a-b);
             let sum = finalArr.reduce((a,b)=>a+b, 0);
             let key = finalArr.join(',');
+
             if(!used.has(key) && sum >= minSum && sum <= maxSum) {
                 used.add(key);
                 count++;
                 let specialMark = (limit === 10 && (count === 9 || count === 10)) ? '🔥' : '';
-                renderRow(finalArr, box, key, specialMark);
+                renderRow(finalArr, box, key, specialMark, count);
             }
         }
     }
-    function renderRow(arr, target, key, specialMark = '') {
-        const html = arr.map(n => `<span class="num-box">${n}</span>`).join('');
-        let specialHtml = specialMark ? `<span class="badge">${specialMark}</span>` : '';
-        target.innerHTML += `<div class="row-line"><div class="num-container">${html}</div><div style="display: flex; align-items: center;">${specialHtml}<div class="save-btn" onclick="saveToBox('${key}')">저장</div></div></div>`;
+
+    // renderRow 수정: 조합 번호 라벨 추가, 클릭 이벤트 추가
+    function renderRow(arr, target, key, specialMark = '', comboNumber) {
+        const rowDiv = document.createElement('div');
+        rowDiv.className = 'row-line';
+        // 클릭 시 상세 팝업 열기
+        rowDiv.onclick = () => showComboDetail(arr, comboNumber);
+        
+        // 번호 라벨
+        const labelSpan = document.createElement('span');
+        labelSpan.className = 'combo-label';
+        labelSpan.innerText = `${comboNumber}조합`;
+        
+        // 번호 컨테이너
+        const numContainer = document.createElement('div');
+        numContainer.className = 'num-container';
+        arr.forEach(n => {
+            const span = document.createElement('span');
+            span.className = 'num-box';
+            span.innerText = n;
+            numContainer.appendChild(span);
+        });
+        
+        // 저장 버튼 (클릭 이벤트 전파 방지)
+        const saveBtn = document.createElement('div');
+        saveBtn.className = 'save-btn';
+        saveBtn.innerText = '저장';
+        saveBtn.onclick = (e) => {
+            e.stopPropagation(); // 부모 클릭(상세 팝업) 방지
+            saveToBox(key);
+        };
+        
+        // 특수 마크 (🔥)
+        const rightDiv = document.createElement('div');
+        rightDiv.style.display = 'flex';
+        rightDiv.style.alignItems = 'center';
+        if (specialMark) {
+            const badge = document.createElement('span');
+            badge.className = 'badge';
+            badge.innerText = specialMark;
+            rightDiv.appendChild(badge);
+        }
+        rightDiv.appendChild(saveBtn);
+        
+        rowDiv.appendChild(labelSpan);
+        rowDiv.appendChild(numContainer);
+        rowDiv.appendChild(rightDiv);
+        
+        target.appendChild(rowDiv);
     }
 
+    // 조합 상세 팝업 표시 함수
+    function showComboDetail(arr, comboNumber) {
+        const title = document.getElementById('comboDetailTitle');
+        title.innerText = `${comboNumber}조합 상세 (${arr.join(', ')})`;
+        
+        const content = document.getElementById('comboDetailContent');
+        // 구간별 카운트
+        const sections = [
+            { name: '1-10', range: [1,10] },
+            { name: '11-20', range: [11,20] },
+            { name: '21-30', range: [21,30] },
+            { name: '31-40', range: [31,40] },
+            { name: '41-45', range: [41,45] }
+        ];
+        
+        let html = '';
+        sections.forEach(sec => {
+            const numsInSection = arr.filter(n => n >= sec.range[0] && n <= sec.range[1]);
+            html += `<div class="section-row">
+                <span class="section-label">${sec.name}</span>
+                <div class="section-nums">
+                    ${numsInSection.length ? numsInSection.map(n => `<span class="num-box" style="width:28px; height:28px; line-height:28px; font-size:12px;">${n}</span>`).join('') : '없음'}
+                </div>
+            </div>`;
+        });
+        content.innerHTML = html;
+        
+        document.getElementById('comboDetailPopup').style.display = 'flex';
+    }
+
+    function closeComboDetailPopup() {
+        document.getElementById('comboDetailPopup').style.display = 'none';
+    }
+
+    // ===== 팝업 함수 =====
     function openPopup() {
         document.getElementById('popup').style.display = 'flex';
         renderStorage();
@@ -524,15 +630,20 @@
         }
     }
 
-    // ===== 게임 관련 함수 (간략히, 실제 사용시 추가 필요) =====
+    // ===== 게임 관련 함수 (간략, 기존과 동일) =====
     let touchGame = null, touchInterval = null, touchSelected = [];
     let reactionSelected = [], reactionState = 'idle', reactionTimer = null, reactionStartTime = 0;
     function openGamePopup() { analyze(); document.getElementById('gamePopup').style.display = 'flex'; switchGame('touch'); }
     function closeGamePopup() { document.getElementById('gamePopup').style.display = 'none'; if (touchInterval) cancelAnimationFrame(touchInterval); clearTimeout(reactionTimer); }
-    function switchGame(game) { /* 실제 게임 로직 필요, 여기선 생략 */ }
+    function switchGame(game) { /* 게임 로직 생략 */ }
     function startTouchGame() {}
     function updateTouchGame() {}
-    // ... 필요한 게임 함수들 추가 가능 (생략)
+    // 반응속도 게임 함수들 (생략)
+    function startReaction() {}
+    function handleReactionClick() {}
+    function resetReactionGame() {}
+    function saveReactionCombo() {}
+    function updateReactionSelectedDisplay() {}
 
     // ===== 복기 팝업 함수 (당첨번호 표시 + 자동 입력) =====
     function openReviewPopup() {
