@@ -586,7 +586,7 @@
         analyze();
     }
 
-    // ===== 조합 생성 (AC 4~10, B bag 미포함) =====
+    // ===== 조합 생성 (AC 4~10, 10조합 중 하나에만 B bag 4개 포함) =====
     function process(limit) {
         analyze();
         generatedCombos = [];
@@ -611,36 +611,93 @@
             return ac >= 4 && ac <= 10;
         }
 
+        // 10조합이고 B bag이 4개 이상일 때만 특별 조합 준비
+        let specialBbag = [];
+        if (limit === 10 && middle.length >= 4) {
+            let sortedMiddle = [...middle].sort((a,b)=>a-b);
+            let midIndex = Math.floor(sortedMiddle.length / 2);
+            let leftHalf = sortedMiddle.slice(0, midIndex);
+            let rightHalf = sortedMiddle.slice(midIndex);
+            if (leftHalf.length >= 2 && rightHalf.length >= 2) {
+                // 왼쪽 절반에서 2개 무작위 선택
+                let leftCopy = [...leftHalf];
+                for (let i=0; i<2; i++) {
+                    let randIdx = Math.floor(Math.random() * leftCopy.length);
+                    specialBbag.push(leftCopy[randIdx]);
+                    leftCopy.splice(randIdx, 1);
+                }
+                // 오른쪽 절반에서 2개 무작위 선택
+                let rightCopy = [...rightHalf];
+                for (let i=0; i<2; i++) {
+                    let randIdx = Math.floor(Math.random() * rightCopy.length);
+                    specialBbag.push(rightCopy[randIdx]);
+                    rightCopy.splice(randIdx, 1);
+                }
+                specialBbag.sort((a,b)=>a-b);
+            }
+        }
+
+        let firstComboDone = false; // 첫 번째 특별 조합 생성 여부
+
         while(count < limit && safety < 30000) {
             safety++;
             let res = new Set();
 
-            // B bag 강제 포함 제거: 모든 조합은 basket에서만 선택됨
-            let availableBasket = [...basket];
-            let weightedItems = availableBasket.map(n => ({ num: n, weight: weightedScore[n] || 1 }));
-            
-            // 가중치 기반으로 6개 선택
-            while (res.size < 6 && weightedItems.length > 0) {
-                let total = weightedItems.reduce((sum, item) => sum + item.weight, 0);
-                let rand = Math.random() * total;
-                let cum = 0;
-                for (let i = 0; i < weightedItems.length; i++) {
-                    cum += weightedItems[i].weight;
-                    if (rand < cum) {
-                        res.add(weightedItems[i].num);
-                        weightedItems.splice(i, 1);
-                        break;
+            if (!firstComboDone && specialBbag.length === 4) {
+                // 첫 번째 조합: specialBbag 4개를 포함
+                specialBbag.forEach(n => res.add(n));
+                // 나머지 2개를 basket에서 가중치 기반으로 선택 (중복 방지)
+                let availableBasket = [...basket].filter(n => !res.has(n));
+                let weightedItems = availableBasket.map(n => ({ num: n, weight: weightedScore[n] || 1 }));
+                // 2개 선택
+                while (res.size < 6 && weightedItems.length > 0) {
+                    let total = weightedItems.reduce((sum, item) => sum + item.weight, 0);
+                    let rand = Math.random() * total;
+                    let cum = 0;
+                    for (let i = 0; i < weightedItems.length; i++) {
+                        cum += weightedItems[i].weight;
+                        if (rand < cum) {
+                            res.add(weightedItems[i].num);
+                            weightedItems.splice(i, 1);
+                            break;
+                        }
                     }
                 }
-            }
-
-            // 혹시 모를 부족분은 남은 basket에서 랜덤 채움
-            if (res.size < 6) {
-                let remaining = [...basket].filter(n => !res.has(n));
-                while (res.size < 6 && remaining.length > 0) {
-                    let randIndex = Math.floor(Math.random() * remaining.length);
-                    res.add(remaining[randIndex]);
-                    remaining.splice(randIndex, 1);
+                // 혹시 부족하면 나머지에서 랜덤
+                if (res.size < 6) {
+                    let remaining = [...basket].filter(n => !res.has(n));
+                    while (res.size < 6 && remaining.length > 0) {
+                        let randIndex = Math.floor(Math.random() * remaining.length);
+                        res.add(remaining[randIndex]);
+                        remaining.splice(randIndex, 1);
+                    }
+                }
+                firstComboDone = true;
+            } else {
+                // 나머지 조합: B bag 미포함, basket에서만 6개 선택
+                let availableBasket = [...basket];
+                let weightedItems = availableBasket.map(n => ({ num: n, weight: weightedScore[n] || 1 }));
+                while (res.size < 6 && weightedItems.length > 0) {
+                    let total = weightedItems.reduce((sum, item) => sum + item.weight, 0);
+                    let rand = Math.random() * total;
+                    let cum = 0;
+                    for (let i = 0; i < weightedItems.length; i++) {
+                        cum += weightedItems[i].weight;
+                        if (rand < cum) {
+                            res.add(weightedItems[i].num);
+                            weightedItems.splice(i, 1);
+                            break;
+                        }
+                    }
+                }
+                // 부족분 랜덤 채움
+                if (res.size < 6) {
+                    let remaining = [...basket].filter(n => !res.has(n));
+                    while (res.size < 6 && remaining.length > 0) {
+                        let randIndex = Math.floor(Math.random() * remaining.length);
+                        res.add(remaining[randIndex]);
+                        remaining.splice(randIndex, 1);
+                    }
                 }
             }
 
@@ -655,7 +712,7 @@
                 generatedCombos.push({
                     numbers: finalArr,
                     key: key,
-                    mark: '',
+                    mark: (count === 1 && specialBbag.length === 4) ? ' (B bag 4개 포함)' : '',
                     comboNumber: count
                 });
             }
@@ -684,6 +741,7 @@
                 <div class="combo-nums">${numberSpans}</div>
                 <div>
                     <button class="combo-save-btn" onclick="saveComboFromList('${combo.key}')">저장</button>
+                    ${combo.mark ? `<span style="color:var(--accent); font-size:8px; margin-left:4px;">${combo.mark}</span>` : ''}
                 </div>
             </div>`;
         });
