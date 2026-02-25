@@ -577,14 +577,15 @@
             let currentIdx = count + 1;
             let zeroCount = 0;
 
-            // 특수 규칙: 5조합 5번째, 10조합 9,10번째에 생존자(탈락수) 포함
+            // 특수 규칙: 5조합 5번째에 생존자(탈락수) 2개 포함
             if (limit === 5 && currentIdx === 5 && survivorsNotInBasket.length >= 2) {
                 let shuffled = [...survivorsNotInBasket].sort(() => Math.random() - 0.5);
                 for (let i = 0; i < 2; i++) res.add(shuffled[i]);
             }
-            if (limit === 10 && (currentIdx === 9 || currentIdx === 10) && survivorsNotInBasket.length >= 3) {
+            // 10조합 9,10번째에 생존자(탈락수) 2개씩 포함 (변경: 3→2)
+            if (limit === 10 && (currentIdx === 9 || currentIdx === 10) && survivorsNotInBasket.length >= 2) {
                 let shuffled = [...survivorsNotInBasket].sort(() => Math.random() - 0.5);
-                for (let i = 0; i < 3; i++) res.add(shuffled[i]);
+                for (let i = 0; i < 2; i++) res.add(shuffled[i]);
             }
 
             // 미출수 포함 (10조합 9,10번째에만)
