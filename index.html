@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>SHIN-UI-SON - 16수 (6회차 가중치)</title>
+    <title>SHIN-UI-SON - 16수 (4회차 반반 + B bag)</title>
     <style>
         :root { --gold: #ffd700; --bg: #0b0b0b; --card: #1a1a1a; --accent: #00ffcc; --save: #ff00ff; --danger: #ff4444; }
         body { background-color: var(--bg); color: var(--gold); font-family: 'Malgun Gothic', sans-serif; padding: 10px; margin: 0; }
@@ -98,7 +98,7 @@
     <div class="header-box">
         <div class="prev-win-label" id="prevWinLabel">📌 기준 이전회차 당첨번호</div>
         <div class="base-info" id="baseRoundInfo"></div>
-        <div class="next-episode">SHIN-UI-SON + 16수 (6회차 가중치)</div>
+        <div class="next-episode">SHIN-UI-SON + 16수 (4회차 반반)</div>
         <div class="round-text" id="roundDisplay">예상 회차</div>
         <div id="userDisplay" class="user-info"></div>
         <div id="status" class="status-info">엔진 초기화 중...</div>
@@ -316,20 +316,20 @@
         document.querySelector('.popup-title').innerHTML = `📦 ${userName}의 보관함 (${savedNumbers.length}개)`;
     }
 
-    // ===== 16수 생성 알고리즘 (6개 회차, 회차별 가중치) =====
+    // ===== 16수 생성 알고리즘 (4회차, 반반, B bag) =====
     function lottoSystem00001212Final(allData, lastWinning) {
         let dataMap = {};
         allData.forEach(row => dataMap[row[0]] = row);
 
         const targetRound = currentBaseRound;
-        // 6개 회차 (51주 간격)
+        // 4개 회차 (51주 간격)
         const targetRounds = [];
-        for (let i = 1; i <= 6; i++) {
+        for (let i = 1; i <= 4; i++) {
             targetRounds.push(targetRound - 51 * i);
         }
 
-        // 회차별 가중치 (최신순: 1.6, 1.5, 1.4, 1.3, 1.2, 1.1)
-        const weights = [1.6, 1.5, 1.4, 1.3, 1.2, 1.1];
+        // 회차별 가중치 (최신순: 1.6, 1.5, 1.4, 1.3)
+        const weights = [1.6, 1.5, 1.4, 1.3];
 
         let mainPool = [];
         let bonusPool = [];
@@ -354,14 +354,6 @@
         let mainSet = new Set(mainPool);
         let mainNumbers = Array.from(mainSet);
 
-        // 본빈도 (일반 카운트)
-        let mainFreq = {};
-        mainPool.forEach(n => mainFreq[n] = (mainFreq[n] || 0) + 1);
-
-        // 보너스빈도 (일반 카운트)
-        let bonusFreq = {};
-        bonusPool.forEach(n => bonusFreq[n] = (bonusFreq[n] || 0) + 1);
-
         // 가중치 점수 계산 (각 등장마다 해당 회차 가중치를 더함)
         let weightedScore = {};
         mainWithRound.forEach(item => {
@@ -369,7 +361,7 @@
             weightedScore[n] = (weightedScore[n] || 0) + item.weight;
         });
 
-        // 본번호 후보들을 가중치 점수로 정렬
+        // 본번호 후보들을 가중치 점수로 정렬 (내림차순)
         let rankedMain = mainNumbers.sort((a, b) => {
             let aScore = weightedScore[a] || 0;
             let bScore = weightedScore[b] || 0;
@@ -378,23 +370,44 @@
             return a - b;
         });
 
-        // 상위 16수 선택
-        let final16 = rankedMain.slice(0, 16);
+        // 반반: 상위 8개 + 하위 8개
+        let top8 = rankedMain.slice(0, 8);
+        let bottom8 = rankedMain.slice(-8);
+        let basketSet = new Set([...top8, ...bottom8]);
+        let basket = Array.from(basketSet).sort((a, b) => a - b);
 
-        // 구간별 최소 1개 보장 (가중치 점수 기준)
+        // 중간에 빠진 번호 (B bag)
+        let middleBag = rankedMain.filter(num => !basketSet.has(num));
+
+        // 구간별 최소 1개 보장 (basket에 적용, 기존 로직 유지)
         let sections = [[1,10], [11,20], [21,30], [31,40], [41,45]];
         sections.forEach(([start, end]) => {
-            if (!final16.some(n => n >= start && n <= end)) {
-                let candidates = mainNumbers.filter(n => n >= start && n <= end && !final16.includes(n));
+            if (!basket.some(n => n >= start && n <= end)) {
+                let candidates = mainNumbers.filter(n => n >= start && n <= end && !basket.includes(n));
                 if (candidates.length) {
                     candidates.sort((a, b) => {
                         let aScore = weightedScore[a] || 0;
                         let bScore = weightedScore[b] || 0;
                         return (bScore - aScore) || (a - b);
                     });
-                    final16.pop();
-                    final16.push(candidates[0]);
-                    final16.sort((a,b)=>a-b);
+                    // 가장 점수 높은 후보를 basket에 추가하고, 가장 낮은 점수의 basket 번호 제거
+                    // (간단히 구현: 첫 번째 후보를 넣고, 기존 basket에서 가장 점수 낮은 번호 제거)
+                    let newNum = candidates[0];
+                    // basket에서 점수 가장 낮은 번호 찾기
+                    let lowestScore = Infinity;
+                    let lowestNum = null;
+                    basket.forEach(num => {
+                        let score = weightedScore[num] || 0;
+                        if (score < lowestScore) {
+                            lowestScore = score;
+                            lowestNum = num;
+                        }
+                    });
+                    if (lowestNum !== null) {
+                        basket = basket.filter(n => n !== lowestNum);
+                        basket.push(newNum);
+                    }
+                    basket.sort((a, b) => a - b);
                 }
             }
         });
@@ -403,9 +416,14 @@
         let survivorsSet = new Set([...mainPool, ...bonusPool]);
         let survivors = Array.from(survivorsSet).sort((a,b)=>a-b);
 
+        // 보너스 번호 목록 (중복 제거)
+        let bonusNumbers = Array.from(new Set(bonusPool)).sort((a, b) => a - b);
+
         return {
             survivors: survivors,
-            basket: Array.from(new Set(final16)).sort((a, b) => a - b)
+            basket: basket,
+            middleBag: middleBag,
+            bonusNumbers: bonusNumbers
         };
     }
 
@@ -422,7 +440,7 @@
         const lastWinning = prevData.slice(1, 7);
         
         const targetRounds = [];
-        for (let i = 1; i <= 6; i++) {
+        for (let i = 1; i <= 4; i++) {
             targetRounds.push(targetRound - 51 * i);
         }
         
@@ -452,6 +470,8 @@
         const result = lottoSystem00001212Final(FULL_DATA, lastWinning);
         survivors = result.survivors;
         basket = result.basket;
+        const middle = result.middleBag || [];
+        const bonusNums = result.bonusNumbers || [];
         machineFixed = basket.slice(0, 3);
         
         let sums = [];
@@ -472,11 +492,18 @@
         
         document.getElementById('roundDisplay').innerHTML = `예상 ${targetRound}회차`;
         document.getElementById('targetRound').innerText = targetRound;
+        
+        // 상태창 표시 (B bag 및 보너스 정보 추가)
         document.getElementById('status').innerHTML = `
-            <div><span class="highlight-gold">★ 16수 엔진 (6회차 가중치)</span></div>
+            <div><span class="highlight-gold">★ 16수 엔진 (4회차, 반반)</span></div>
             <div>생존자 ${survivors.length}수: ${survivors.join(', ')}</div>
             <div>AI 추천 16수: ${basket.join(', ')}</div>
-            <div><span class="highlight-blue">📊 기준 합계 (6회차 평균):</span> ${dynamicAvgSum} (${dynamicAvgSum-25}~${dynamicAvgSum+25})</div>
+            <div><span class="highlight-blue">📊 기준 합계 (4회차 평균):</span> ${dynamicAvgSum} (${dynamicAvgSum-25}~${dynamicAvgSum+25})</div>
+            <div style="margin-top:8px; border-top:1px solid #333; padding-top:5px;">
+                <span class="highlight-blue">📦 B bag (중간 번호 ${middle.length}개):</span> ${middle.join(', ') || '없음'}<br>
+                <span class="highlight-blue">🎯 보너스 번호들:</span> ${bonusNums.join(', ')}<br>
+                <span class="highlight-blue">👉 B bag 속 보너스 번호:</span> ${middle.filter(n => bonusNums.includes(n)).join(', ') || '없음'}
+            </div>
         `;
         
         document.getElementById('reviewTitle').innerHTML = `📊 ${targetRound}회 복기`;
