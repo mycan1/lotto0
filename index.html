@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>SHIN-UI-SON - 13수 (5회차 51주간격 + 상위6하위7)</title>
+    <title>SHIN-UI-SON - 13수 (5회차 + 미출수 가중치)</title>
     <style>
         :root { --gold: #ffd700; --bg: #0b0b0b; --card: #1a1a1a; --accent: #00ffcc; --save: #ff00ff; --danger: #ff4444; }
         body { background-color: var(--bg); color: var(--gold); font-family: 'Malgun Gothic', sans-serif; padding: 8px; margin: 0; }
@@ -104,7 +104,7 @@
     <div class="header-box">
         <div class="prev-win-label" id="prevWinLabel">📌 기준 이전회차 당첨번호</div>
         <div class="base-info" id="baseRoundInfo"></div>
-        <div class="next-episode">SHIN-UI-SON + 13수 (5회차 51주간격)</div>
+        <div class="next-episode">SHIN-UI-SON + 13수 (5회차 + 미출수)</div>
         <div class="round-text" id="roundDisplay">예상 회차</div>
         <div id="userDisplay" class="user-info"></div>
         <div id="status" class="status-info">엔진 초기화 중...</div>
@@ -189,7 +189,7 @@
         
         <!-- 현재 AI 13수 및 생존자 정보 표시 영역 (동적으로 업데이트됨) -->
         <div class="ai-info-box" id="reviewAIInfo">
-            <!-- analyze()에서 채움 -->
+            <!-- analyze()에서 채움 (비교하기 누르면 업데이트) -->
         </div>
 
         <div style="text-align: center; margin-bottom: 8px;" id="reviewDesc">당첨번호 6개 + 보너스를 입력하세요</div>
@@ -541,13 +541,15 @@
         document.getElementById('reviewTitle').innerHTML = `📊 ${targetRound}회 복기`;
         document.getElementById('reviewDesc').innerHTML = `${targetRound}회 당첨번호 6개 + 보너스 번호를 입력하세요`;
         
-        // 복기 팝업 내 AI 정보 업데이트
+        // 복기 팝업 내 AI 정보 초기화 (analyze 시점에서는 아직 당첨번호 미입력 상태)
         const reviewAIInfo = document.getElementById('reviewAIInfo');
         if (reviewAIInfo) {
+            // 당첨번호 입력 전에는 그냥 숫자만 표시 (강조 없음)
             reviewAIInfo.innerHTML = `
-                <div><span class="highlight-gold">현재 AI 13수:</span> ${basket.join(', ')}</div>
                 <div><span class="highlight-blue">생존자 ${survivors.length}수:</span> ${survivors.join(', ')}</div>
-                <div><span class="highlight-blue">B bag ${middle.length}개 | 보너스 ${bonusNums.length}개 | 교집합 ${middle.filter(n => bonusNums.includes(n)).length}개</span></div>
+                <div><span class="highlight-gold">AI 추천 13수:</span> ${basket.join(', ')}</div>
+                <div><span class="highlight-blue">📦 B bag ${middle.length}개:</span> ${middle.join(', ') || '없음'}</div>
+                <div><span class="highlight-blue">🎯 보너스 번호 ${bonusNums.length}개:</span> ${bonusNums.join(', ') || '없음'}</div>
             `;
         }
     }
@@ -967,7 +969,7 @@
         }
     }
 
-    // ===== 복기 함수 (자동 채움 포함, 생존자 강조 추가) =====
+    // ===== 복기 함수 (자동 채움 포함, 생존자 강조) =====
     function openReviewPopup() {
         analyze();
 
@@ -1048,20 +1050,23 @@
             savedDiv.innerHTML = html;
         }
 
-        // 복기 팝업 내 AI 정보 영역 업데이트 (당첨번호 강조)
+        // 복기 팝업 상단 정보 영역 업데이트 (생존자 → 13수 → B bag → 보너스)
         const reviewAIInfo = document.getElementById('reviewAIInfo');
         if (reviewAIInfo) {
-            // AI 13수에서 당첨번호와 일치하는 번호 강조
-            const basketHtml = basket.map(n => winSet.has(n) ? `<span class="matched">${n}</span>` : n).join(', ');
-            // 생존자 목록에서 당첨번호와 일치하는 번호 강조
+            // 생존자 목록 (본번호 당첨 시 강조)
             const survivorsHtml = survivors.map(n => winSet.has(n) ? `<span class="matched">${n}</span>` : n).join(', ');
-            // B bag 및 보너스 정보
-            const intersectionCount = middle.filter(n => bonusNums.includes(n)).length;
+            // AI 13수 목록 (본번호 당첨 시 강조)
+            const basketHtml = basket.map(n => winSet.has(n) ? `<span class="matched">${n}</span>` : n).join(', ');
+            // B bag 목록 (본번호 당첨 시 강조)
+            const middleHtml = middle.map(n => winSet.has(n) ? `<span class="matched">${n}</span>` : n).join(', ') || '없음';
+            // 보너스 번호 목록 (보너스 당첨 시 강조)
+            const bonusNumsHtml = bonusNums.map(n => n === bonus ? `<span class="matched">${n}</span>` : n).join(', ') || '없음';
 
             reviewAIInfo.innerHTML = `
-                <div><span class="highlight-gold">현재 AI 13수:</span> ${basketHtml}</div>
                 <div><span class="highlight-blue">생존자 ${survivors.length}수:</span> ${survivorsHtml}</div>
-                <div><span class="highlight-blue">B bag ${middle.length}개 | 보너스 ${bonusNums.length}개 | 교집합 ${intersectionCount}개</span></div>
+                <div><span class="highlight-gold">AI 추천 13수:</span> ${basketHtml}</div>
+                <div><span class="highlight-blue">📦 B bag ${middle.length}개:</span> ${middleHtml}</div>
+                <div><span class="highlight-blue">🎯 보너스 번호 ${bonusNums.length}개:</span> ${bonusNumsHtml}</div>
             `;
         }
     }
