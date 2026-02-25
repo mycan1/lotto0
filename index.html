@@ -1,9 +1,9 @@
-\<!DOCTYPE html>
+<!DOCTYPE html>
 <html lang="ko">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>SHIN-UI-SON - 13수 (최근10회차 + 상위6하위7)</title>
+    <title>SHIN-UI-SON - 13수 (2주간격 10회차 + 상위6하위7)</title>
     <style>
         :root { --gold: #ffd700; --bg: #0b0b0b; --card: #1a1a1a; --accent: #00ffcc; --save: #ff00ff; --danger: #ff4444; }
         body { background-color: var(--bg); color: var(--gold); font-family: 'Malgun Gothic', sans-serif; padding: 8px; margin: 0; }
@@ -95,6 +95,8 @@
         /* 복기 팝업 내 AI 정보 영역 */
         .ai-info-box { background: #1a1a1a; border-radius: 6px; padding: 6px; margin: 8px 0; font-size: 11px; border: 1px solid #444; }
         .ai-info-box div { margin: 2px 0; }
+        /* 일치하는 번호 강조 스타일 */
+        .matched { color: #00ff00 !important; font-weight: bold; }
     </style>
 </head>
 <body>
@@ -102,7 +104,7 @@
     <div class="header-box">
         <div class="prev-win-label" id="prevWinLabel">📌 기준 이전회차 당첨번호</div>
         <div class="base-info" id="baseRoundInfo"></div>
-        <div class="next-episode">SHIN-UI-SON + 13수 (최근10회차)</div>
+        <div class="next-episode">SHIN-UI-SON + 13수 (2주간격)</div>
         <div class="round-text" id="roundDisplay">예상 회차</div>
         <div id="userDisplay" class="user-info"></div>
         <div id="status" class="status-info">엔진 초기화 중...</div>
@@ -185,9 +187,9 @@
         <div class="popup-title" id="reviewTitle">📊 1213회 복기</div>
         <div class="winning-display" id="winningDisplay"></div>
         
-        <!-- 현재 AI 13수 및 생존자 정보 표시 영역 -->
+        <!-- 현재 AI 13수 및 생존자 정보 표시 영역 (동적으로 업데이트됨) -->
         <div class="ai-info-box" id="reviewAIInfo">
-            <!-- analyze()에서 동적으로 채움 -->
+            <!-- analyze()에서 채움 -->
         </div>
 
         <div style="text-align: center; margin-bottom: 8px;" id="reviewDesc">당첨번호 6개 + 보너스를 입력하세요</div>
@@ -225,12 +227,11 @@
     </div>
 </div>
 
-<!-- 조합 목록 팝업 (모두 저장 버튼 추가) -->
+<!-- 조합 목록 팝업 (모두 저장 버튼 포함) -->
 <div id="comboListPopup" class="popup-overlay" style="display:none;">
     <div class="popup-content">
         <button class="popup-close" onclick="closeComboListPopup()">&times;</button>
         <div class="popup-title">📋 생성된 조합</div>
-        <!-- 모두 저장 버튼 -->
         <div style="text-align: right; margin-bottom: 8px;">
             <button class="combo-save-btn" onclick="saveAllCombos()" style="background:#00ccff; color:#000; font-size:10px; padding:4px 8px;">📥 모두 저장</button>
         </div>
@@ -252,6 +253,8 @@
     let currentBaseRound = 1213;
     let generatedCombos = []; // 생성된 조합 목록 (임시 저장)
     let weightedScore = {}; // 가중치 점수 (조합 생성 시 사용)
+    let middle = []; // B bag
+    let bonusNums = []; // 보너스 번호 목록
 
     // ===== 사용자 관리 =====
     function updateUserDisplay() {
@@ -373,13 +376,13 @@
         document.querySelector('.popup-title').innerHTML = `📦 ${userName}의 보관함 (${savedNumbers.length}개)`;
     }
 
-    // ===== 13수 생성 알고리즘 (최근 10회차, 상위6+하위7, 보너스/미출수 가중치) =====
+    // ===== 13수 생성 알고리즘 (2주 간격 10회차, 상위6+하위7, 보너스/미출수 가중치) =====
     function lottoSystem00001212Final(allData, lastWinning) {
         const targetRound = currentBaseRound;
-        // 최근 10개 회차 (연속)
+        // 2주 간격 10개 회차 (가장 최근부터)
         const targetRounds = [];
-        for (let i = 1; i <= 10; i++) {
-            targetRounds.push(targetRound - i);
+        for (let i = 0; i < 10; i++) {
+            targetRounds.push(targetRound - 1 - 2 * i);
         }
 
         // 가중치: 최신순 1.6 ~ 0.7 (0.1 간격)
@@ -440,32 +443,7 @@
         // 중간에 빠진 번호 (B bag) - 전체 후보에서 basket에 없는 것
         let middleBag = rankedMain.filter(num => !basketSet.has(num));
 
-        // 구간별 최소 1개 보장 (basket에 적용)
-        let sections = [[1,10], [11,20], [21,30], [31,40], [41,45]];
-        sections.forEach(([start, end]) => {
-            if (!basket.some(n => n >= start && n <= end)) {
-                let candidates = mainNumbers.filter(n => n >= start && n <= end && !basket.includes(n));
-                if (candidates.length) {
-                    candidates.sort((a, b) => (wScore[b]||0) - (wScore[a]||0) || a - b);
-                    let newNum = candidates[0];
-                    // basket에서 가장 점수 낮은 번호 제거
-                    let lowestScore = Infinity;
-                    let lowestNum = null;
-                    basket.forEach(num => {
-                        let score = wScore[num] || 0;
-                        if (score < lowestScore) {
-                            lowestScore = score;
-                            lowestNum = num;
-                        }
-                    });
-                    if (lowestNum !== null) {
-                        basket = basket.filter(n => n !== lowestNum);
-                        basket.push(newNum);
-                    }
-                    basket.sort((a, b) => a - b);
-                }
-            }
-        });
+        // 구간별 최소 1개 보장 로직 완전 제거됨
 
         let survivorsSet = new Set([...mainPool, ...bonusPool]);
         let survivors = Array.from(survivorsSet).sort((a,b)=>a-b);
@@ -492,10 +470,10 @@
         }
         const lastWinning = prevData.slice(1, 7);
         
-        // 합계 계산용 10개 회차
+        // 합계 계산용 2주 간격 10개 회차
         const targetRounds = [];
-        for (let i = 1; i <= 10; i++) {
-            targetRounds.push(targetRound - i);
+        for (let i = 0; i < 10; i++) {
+            targetRounds.push(targetRound - 1 - 2 * i);
         }
         
         let mainPool = [], bonusPool = [];
@@ -508,7 +486,7 @@
         });
         
         if (mainPool.length === 0) {
-            alert('최근 10회차 데이터가 충분하지 않습니다.');
+            alert('2주 간격 10회차 데이터가 충분하지 않습니다.');
             return;
         }
         
@@ -524,12 +502,12 @@
         const result = lottoSystem00001212Final(FULL_DATA, lastWinning);
         survivors = result.survivors;
         basket = result.basket;
-        const middle = result.middleBag || [];
-        const bonusNums = result.bonusNumbers || [];
+        middle = result.middleBag || [];
+        bonusNums = result.bonusNumbers || [];
         weightedScore = result.weightedScore || {};
         machineFixed = basket.slice(0, 3);
         
-        // 합계 계산 (10회차 평균)
+        // 합계 계산 (2주 간격 10회차 평균)
         let sums = [];
         targetRounds.forEach(r => {
             let row = FULL_DATA.find(x => x[0] === r);
@@ -551,7 +529,7 @@
         
         // 상태창 표시 (13수, B bag 한 줄)
         document.getElementById('status').innerHTML = `
-            <div><span class="highlight-gold">★ 13수 엔진 (최근10회차, 상위6하위7)</span></div>
+            <div><span class="highlight-gold">★ 13수 엔진 (2주간격, 상위6하위7)</span></div>
             <div>생존자 ${survivors.length}수: ${survivors.join(', ')}</div>
             <div>AI 추천 13수: ${basket.join(', ')}</div>
             <div><span class="highlight-blue">📊 기준 합계 (10회차 평균):</span> ${dynamicAvgSum} (${dynamicAvgSum-25}~${dynamicAvgSum+25})</div>
@@ -989,7 +967,7 @@
         }
     }
 
-    // ===== 복기 함수 (자동 채움 포함) =====
+    // ===== 복기 함수 (자동 채움 포함, 생존자 강조 추가) =====
     function openReviewPopup() {
         analyze();
 
@@ -1048,6 +1026,7 @@
         document.getElementById('aiMatchedList').innerHTML = aiMatched.length ? `일치 번호: ${aiMatched.join(', ')}` : '';
         document.getElementById('aiBonus').innerHTML = aiBonusMatch ? '(보너스 번호 포함)' : '';
 
+        // 보관함 조합 비교
         const savedDiv = document.getElementById('savedMatch');
         if (savedNumbers.length === 0) {
             savedDiv.innerHTML = '저장된 조합이 없습니다.';
@@ -1067,6 +1046,23 @@
                 html += `<div class="combo-item"><span>${combo}</span><span>${matchCount}개 ${rankInfo}</span></div>`;
             });
             savedDiv.innerHTML = html;
+        }
+
+        // 복기 팝업 내 AI 정보 영역 업데이트 (당첨번호 강조)
+        const reviewAIInfo = document.getElementById('reviewAIInfo');
+        if (reviewAIInfo) {
+            // AI 13수에서 당첨번호와 일치하는 번호 강조
+            const basketHtml = basket.map(n => winSet.has(n) ? `<span class="matched">${n}</span>` : n).join(', ');
+            // 생존자 목록에서 당첨번호와 일치하는 번호 강조
+            const survivorsHtml = survivors.map(n => winSet.has(n) ? `<span class="matched">${n}</span>` : n).join(', ');
+            // B bag 및 보너스 정보
+            const intersectionCount = middle.filter(n => bonusNums.includes(n)).length;
+
+            reviewAIInfo.innerHTML = `
+                <div><span class="highlight-gold">현재 AI 13수:</span> ${basketHtml}</div>
+                <div><span class="highlight-blue">생존자 ${survivors.length}수:</span> ${survivorsHtml}</div>
+                <div><span class="highlight-blue">B bag ${middle.length}개 | 보너스 ${bonusNums.length}개 | 교집합 ${intersectionCount}개</span></div>
+            `;
         }
     }
 
