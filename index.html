@@ -582,7 +582,7 @@
                 let shuffled = [...survivorsNotInBasket].sort(() => Math.random() - 0.5);
                 for (let i = 0; i < 2; i++) res.add(shuffled[i]);
             }
-            // 10조합 9,10번째에 생존자(탈락수) 2개씩 포함 (변경: 3→2)
+            // 10조합 9,10번째에 생존자(탈락수) 2개씩 포함
             if (limit === 10 && (currentIdx === 9 || currentIdx === 10) && survivorsNotInBasket.length >= 2) {
                 let shuffled = [...survivorsNotInBasket].sort(() => Math.random() - 0.5);
                 for (let i = 0; i < 2; i++) res.add(shuffled[i]);
@@ -721,9 +721,12 @@
     function closePopup() {
         document.getElementById('popup').style.display = 'none';
     }
+
+    // ===== 보관함 초기화 (생성된 조합 목록도 함께 초기화) =====
     function clearStorage() {
         if(confirm("보관함을 초기화할까요?")) {
             savedNumbers = [];
+            generatedCombos = []; // 생성된 조합 목록도 초기화
             localStorage.removeItem(`lottoSave_${userName}`);
             renderStorage();
             showToast('🗑️ 보관함이 초기화되었습니다');
