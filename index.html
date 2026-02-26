@@ -1,3 +1,4 @@
+
 <!DOCTYPE html>
 <html lang="ko">
 <head>
@@ -113,7 +114,7 @@
     <div class="round-selector">
         <label>🎯 분석할 회차 선택</label>
         <div class="base-round-input">
-            <input type="number" id="baseRoundInput" min="901" max="1300" value="1213" step="1">
+            <input type="number" id="baseRoundInput" min="901" max="1300" value="1212" step="1">
             <button onclick="setBaseRound()">설정</button>
         </div>
         <div class="round-desc">(900~1212 데이터 기반)</div>
@@ -131,7 +132,7 @@
     </div>
 
     <div id="console"></div>
-    <div class="small-note">※ 10조합은 생존자 압축 방식 적용 | 🎯 <span id="targetRound">1213</span>회차 예상</div>
+    <div class="small-note">※ 10조합: 본번호 집합 + 11수 1개 강제 포함 슬라이딩 | 🎯 <span id="targetRound">1212</span>회차 예상</div>
 </div>
 
 <!-- 토스트 메시지 -->
@@ -184,7 +185,7 @@
 <div id="reviewPopup" class="popup-overlay" style="display:none;">
     <div class="popup-content">
         <button class="popup-close" onclick="closeReviewPopup()">&times;</button>
-        <div class="popup-title" id="reviewTitle">📊 1213회 복기</div>
+        <div class="popup-title" id="reviewTitle">📊 1212회 복기</div>
         <div class="winning-display" id="winningDisplay"></div>
         
         <!-- 현재 AI 11수 및 생존자 정보 표시 영역 (동적으로 업데이트됨) -->
@@ -246,11 +247,12 @@
     // ===== 전역 변수 =====
     let basket = []; // 11수
     let survivors = []; // 생존자 목록
+    let mainNumbers = []; // 생존자에서 보너스 제외한 본번호 집합
     let zeroFreqNums = [], machineFixed = [];
     let dynamicAvgSum = 145;
     let userName = "";
     let savedNumbers = [];
-    let currentBaseRound = 1213;
+    let currentBaseRound = 1212;
     let generatedCombos = []; // 생성된 조합 목록 (임시 저장)
     let weightedScore = {}; // 가중치 점수 (조합 생성 시 사용)
     let middle = []; // B bag
@@ -441,7 +443,7 @@
         // 중간 그룹 (B bag)
         let middleBag = rankedMain.filter(num => !basketSet.has(num));
 
-        // 생존자 (참고용)
+        // 생존자 (본번호 + 보너스)
         let survivorsSet = new Set([...mainPool, ...bonusPool]);
         let survivors = Array.from(survivorsSet).sort((a,b)=>a-b);
         let bonusNumbers = Array.from(new Set(bonusPool)).sort((a, b) => a - b);
@@ -456,7 +458,8 @@
             bonusNumbers: bonusNumbers,
             weightedScore: wScore,
             compressedOut: compressedOut,
-            full14: full14
+            full14: full14,
+            mainPool: mainPool  // 본번호 집합 (중복 포함)
         };
     }
 
@@ -507,6 +510,10 @@
         weightedScore = result.weightedScore || {};
         compressedOut3 = result.compressedOut || []; // 빠진 3개 번호
         machineFixed = basket.slice(0, 3);
+
+        // 본번호 집합: survivors에서 bonusNums를 제외한 숫자들
+        let bonusSet = new Set(bonusNums);
+        mainNumbers = survivors.filter(n => !bonusSet.has(n)).sort((a,b)=>a-b);
         
         // 합계 계산
         let sums = [];
@@ -531,6 +538,7 @@
         document.getElementById('status').innerHTML = `
             <div><span class="highlight-gold">★ 11수 엔진 (4회차 51주간격, 상위6+하위5, 최하위1 제외)</span></div>
             <div>생존자 ${survivors.length}수: ${survivors.join(', ')}</div>
+            <div>본번호 ${mainNumbers.length}수: ${mainNumbers.join(', ')}</div>
             <div>AI 추천 11수: ${basket.join(', ')}</div>
             <div>🔻 14수에서 빠진 3개: ${compressedOut3.join(', ') || '없음'}</div>
             <div><span class="highlight-blue">📊 기준 합계 (4회차 평균):</span> ${dynamicAvgSum} (${dynamicAvgSum-25}~${dynamicAvgSum+25})</div>
@@ -546,6 +554,7 @@
         if (reviewAIInfo) {
             reviewAIInfo.innerHTML = `
                 <div><span class="highlight-blue">생존자 ${survivors.length}수:</span> ${survivors.join(', ')}</div>
+                <div><span class="highlight-blue">본번호 ${mainNumbers.length}수:</span> ${mainNumbers.join(', ')}</div>
                 <div><span class="highlight-gold">AI 추천 11수:</span> ${basket.join(', ')}</div>
                 <div><span class="highlight-blue">📦 B bag ${middle.length}개:</span> ${middle.join(', ') || '없음'}</div>
                 <div><span class="highlight-blue">🎯 보너스 번호 ${bonusNums.length}개:</span> ${bonusNums.join(', ') || '없음'}</div>
@@ -567,37 +576,55 @@
 
     // ===== 조합 생성 =====
     function process(limit) {
-        analyze(); // survivors 업데이트
+        analyze(); // survivors, mainNumbers 업데이트
         generatedCombos = [];
         let count = 0, used = new Set();
 
         if (limit === 10) {
-            // 새로운 방식: survivors를 10조합으로 압축 (파이썬 코드 방식)
-            const sorted = [...survivors].sort((a,b)=>a-b);
-            const total = sorted.length;
-            if (total < 6) {
-                alert("생존자가 6개 미만입니다.");
+            // 본번호 집합 사용, 11수 번호 1개씩 강제 포함
+            const mainSorted = [...mainNumbers].sort((a,b)=>a-b);
+            // 11수에 속한 번호 리스트 (본번호 중에서)
+            const basketInMain = basket.filter(n => mainNumbers.includes(n));
+            if (basketInMain.length === 0) {
+                alert("11수에 본번호가 없습니다.");
                 return;
             }
+            // 본번호 중 11수를 제외한 나머지
+            const others = mainNumbers.filter(n => !basket.includes(n));
+            if (others.length < 5) {
+                alert("본번호 중 11수를 제외한 나머지가 5개 미만입니다.");
+                return;
+            }
+
             let safety = 0;
-            // 먼저 슬라이딩 방식으로 10개 시도
             while (count < 10 && safety < 10000) {
                 safety++;
-                let start = Math.floor((count * 1.5) % (total - 6));
-                let combo = sorted.slice(start, start + 6);
-                // 부족하면 랜덤 보충 (중복 없이)
-                while (combo.length < 6) {
-                    let candidates = sorted.filter(n => !combo.includes(n));
+                // 11수에서 랜덤 1개 선택
+                let pickBasket = basketInMain[Math.floor(Math.random() * basketInMain.length)];
+                let res = new Set([pickBasket]);
+
+                // others에서 슬라이딩으로 5개 선택 (시작 인덱스 = count * 1.5)
+                let start = Math.floor((count * 1.5) % (others.length - 5));
+                let slice = others.slice(start, start + 5);
+                for (let n of slice) res.add(n);
+
+                let finalArr = Array.from(res).sort((a,b)=>a-b);
+                // 만약 6개가 안 되면 (중복 제거로 줄어든 경우) 랜덤 보충
+                while (finalArr.length < 6) {
+                    let candidates = others.filter(n => !finalArr.includes(n));
                     if (candidates.length === 0) break;
                     let rand = candidates[Math.floor(Math.random() * candidates.length)];
-                    combo.push(rand);
+                    finalArr.push(rand);
+                    finalArr.sort((a,b)=>a-b);
                 }
-                combo.sort((a,b)=>a-b);
-                let key = combo.join(',');
+
+                if (finalArr.length < 6) continue;
+
+                let key = finalArr.join(',');
                 if (!used.has(key)) {
                     used.add(key);
                     generatedCombos.push({
-                        numbers: combo,
+                        numbers: finalArr,
                         key: key,
                         mark: '',
                         comboNumber: count+1
@@ -607,20 +634,20 @@
             }
             // 부족하면 랜덤으로 추가 생성
             while (count < 10) {
-                let start = Math.floor(Math.random() * (total - 6));
-                let combo = sorted.slice(start, start + 6);
-                while (combo.length < 6) {
-                    let candidates = sorted.filter(n => !combo.includes(n));
-                    if (candidates.length === 0) break;
-                    let rand = candidates[Math.floor(Math.random() * candidates.length)];
-                    combo.push(rand);
-                }
-                combo.sort((a,b)=>a-b);
-                let key = combo.join(',');
+                let pickBasket = basketInMain[Math.floor(Math.random() * basketInMain.length)];
+                let res = new Set([pickBasket]);
+                let needed = 5;
+                let candidates = others.filter(n => !res.has(n));
+                if (candidates.length < needed) continue;
+                // 랜덤하게 5개 선택
+                let shuffled = [...candidates].sort(() => Math.random() - 0.5);
+                for (let i=0; i<needed; i++) res.add(shuffled[i]);
+                let finalArr = Array.from(res).sort((a,b)=>a-b);
+                let key = finalArr.join(',');
                 if (!used.has(key)) {
                     used.add(key);
                     generatedCombos.push({
-                        numbers: combo,
+                        numbers: finalArr,
                         key: key,
                         mark: '',
                         comboNumber: count+1
@@ -629,42 +656,11 @@
                 }
             }
         } else {
-            // 기존 5조합 방식 (또는 다른 limit)
-            let minSum = dynamicAvgSum - 25;
-            let maxSum = dynamicAvgSum + 25;
-
-            // 특별 번호 2개 선정 (B bag에서 상위 9위 + 하위 5위) - 5조합에서는 사용하지 않음
-            let specialNumbers = [];
-            if (middle.length > 0) {
-                let sortedDesc = [...middle].sort((a, b) => (weightedScore[b] || 0) - (weightedScore[a] || 0));
-                let sortedAsc = [...middle].sort((a, b) => (weightedScore[a] || 0) - (weightedScore[b] || 0));
-                if (sortedDesc.length >= 9) specialNumbers.push(sortedDesc[8]); // 9위
-                if (sortedAsc.length >= 5) specialNumbers.push(sortedAsc[4]); // 5위
-            }
-
-            function getAC(arr) {
-                let gaps = [];
-                for (let i = 0; i < arr.length - 1; i++) {
-                    gaps.push(arr[i+1] - arr[i]);
-                }
-                return new Set(gaps).size;
-            }
-
-            function isValidCombo(arr, safetyVal) {
-                let sum = arr.reduce((a,b)=>a+b, 0);
-                if (sum < minSum || sum > maxSum) return false;
-                let ac = getAC(arr);
-                if (safetyVal < 20000) return ac >= 6 && ac <= 9;
-                else if (safetyVal < 40000) return ac >= 5 && ac <= 10;
-                else return true;
-            }
-
+            // 기존 5조합 방식 (필터 제거됨)
             let safety = 0;
             while (count < limit && safety < 50000) {
                 safety++;
                 let res = new Set();
-                let currentIdx = count;
-
                 // 5조합: 각 조합마다 compressedOut3 중 하나를 랜덤 포함
                 if (limit === 5 && compressedOut3.length > 0) {
                     let randNum = compressedOut3[Math.floor(Math.random() * compressedOut3.length)];
@@ -705,7 +701,7 @@
                 let finalArr = Array.from(res).sort((a,b)=>a-b);
                 let key = finalArr.join(',');
 
-                if (!used.has(key) && isValidCombo(finalArr, safety)) {
+                if (!used.has(key)) {
                     used.add(key);
                     count++;
                     generatedCombos.push({
@@ -1084,6 +1080,7 @@
         const reviewAIInfo = document.getElementById('reviewAIInfo');
         if (reviewAIInfo) {
             const survivorsHtml = survivors.map(n => winSet.has(n) ? `<span class="matched">${n}</span>` : n).join(', ');
+            const mainHtml = mainNumbers.map(n => winSet.has(n) ? `<span class="matched">${n}</span>` : n).join(', ');
             const basketHtml = basket.map(n => winSet.has(n) ? `<span class="matched">${n}</span>` : n).join(', ');
             const middleHtml = middle.map(n => winSet.has(n) ? `<span class="matched">${n}</span>` : n).join(', ') || '없음';
             const bonusNumsHtml = bonusNums.map(n => n === bonus ? `<span class="matched">${n}</span>` : n).join(', ') || '없음';
@@ -1091,6 +1088,7 @@
 
             reviewAIInfo.innerHTML = `
                 <div><span class="highlight-blue">생존자 ${survivors.length}수:</span> ${survivorsHtml}</div>
+                <div><span class="highlight-blue">본번호 ${mainNumbers.length}수:</span> ${mainHtml}</div>
                 <div><span class="highlight-gold">AI 추천 11수:</span> ${basketHtml}</div>
                 <div><span class="highlight-blue">📦 B bag ${middle.length}개:</span> ${middleHtml}</div>
                 <div><span class="highlight-blue">🎯 보너스 번호 ${bonusNums.length}개:</span> ${bonusNumsHtml}</div>
