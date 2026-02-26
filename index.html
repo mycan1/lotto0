@@ -21,6 +21,8 @@
         .status-info { font-size: 10px; color: var(--accent); line-height: 1.3; min-height: 65px; width: 100%; background: rgba(255,255,255,0.05); border-radius: 12px; padding: 6px; box-sizing: border-box; margin-top: 5px; text-align: left; border: 1px solid #333; overflow-y: auto; }
         .highlight-gold { color: var(--gold); font-weight: bold; }
         .highlight-blue { color: #00ccff; font-weight: bold; }
+        .replaced-in { color: #ff6666 !important; font-weight: bold; }
+        .replaced-out { color: #66aaff !important; font-weight: bold; }
         
         .btn-group { display: grid; grid-template-columns: 1fr 1fr; gap: 5px; margin: 3px 0; }
         button { border-radius: 8px; font-weight: bold; cursor: pointer; border: none; height: 40px; transition: 0.2s; font-size: 14px; }
@@ -44,6 +46,8 @@
         
         .num-box { width: 28px; height: 28px; line-height: 28px; text-align: center; font-size: 11px; font-weight: 900; border-radius: 50%; background: #000000 !important; color: var(--gold) !important; border: 1px solid var(--gold) !important; }
         .num-box.eliminated { border-color: #ff8888 !important; color: #ff8888 !important; }
+        .num-box.replaced-in { border-color: #ff6666 !important; color: #ff6666 !important; background: #330000 !important; }
+        .num-box.replaced-out { border-color: #66aaff !important; color: #66aaff !important; background: #001a33 !important; }
         
         .combo-label { font-size: 13px; font-weight: bold; color: var(--accent); margin-right: 6px; min-width: 40px; }
         .save-btn { font-size: 10px; background: var(--save); color: white; padding: 4px 6px; border-radius: 5px; cursor: pointer; margin-left: 6px; }
@@ -253,9 +257,14 @@
     let currentBaseRound = 1213;
     let generatedCombos = []; // 생성된 조합 목록 (임시 저장)
     let weightedScore = {}; // 가중치 점수 (조합 생성 시 사용)
-    let middle = []; // B bag (사용 안 함)
+    let middle = []; // B bag (교체당한 번호들이 여기로 감)
     let bonusNums = []; // 보너스 번호 목록
-    let compressedOut4 = []; // 14수에서 10수로 줄면서 빠진 4개 번호
+    let compressedOut4 = []; // 14수에서 10수로 줄면서 빠진 4개 번호 (교체 후 남은 2개)
+    let full14 = []; // 14수 (전체)
+
+    // 교체 관련 변수 (시각화용)
+    let replacedIn = [];    // 교체된 번호 (빠진4 → 10수로 들어온 2개) - 빨간색
+    let replacedOut = [];   // 교체당한 번호 (10수에서 빠져나간 2개) - 파란색
 
     // ===== 사용자 관리 =====
     function updateUserDisplay() {
@@ -456,11 +465,12 @@
             bonusNumbers: bonusNumbers,
             weightedScore: wScore,
             compressedOut: compressedOut,
-            full14: full14
+            full14: full14,
+            rankedMain: rankedMain
         };
     }
 
-    // ===== 분석 함수 =====
+    // ===== 분석 함수 (교체 로직 추가) =====
     function analyze() {
         const targetRound = currentBaseRound;
         const prevRound = targetRound - 1;
@@ -501,13 +511,67 @@
         
         const result = lottoSystem00001212Final(FULL_DATA, lastWinning);
         survivors = result.survivors;
-        basket = result.basket; // 10수
-        middle = result.middleBag || []; // 사용 안 함
+        basket = result.basket; // 초기 10수
+        middle = result.middleBag || []; // 기존 B bag (나중에 교체당한 번호 추가)
         bonusNums = result.bonusNumbers || [];
         weightedScore = result.weightedScore || {};
-        compressedOut4 = result.compressedOut || []; // 빠진 4개 번호
+        let originalCompressedOut = result.compressedOut || []; // 교체 전 빠진 4개
+        full14 = result.full14 || [];
         machineFixed = basket.slice(0, 3);
         
+        // ===== 교체 로직 시작 =====
+        // originalCompressedOut 중에서 직전 당첨번호와 일치하는 번호를 우선 선택
+        let candidates = originalCompressedOut.filter(num => lastWinning.includes(num));
+        if (candidates.length < 2) {
+            // 가중치 높은 순으로 추가
+            let sortedOut = [...originalCompressedOut].sort((a, b) => (weightedScore[b] || 0) - (weightedScore[a] || 0));
+            for (let num of sortedOut) {
+                if (!candidates.includes(num) && candidates.length < 2) {
+                    candidates.push(num);
+                }
+            }
+        }
+        candidates = [...new Set(candidates)].slice(0, 2); // 최대 2개
+
+        let lowestTwo = [];
+        if (candidates.length > 0) {
+            // 현재 basket에서 가중치 가장 낮은 2개 찾기
+            let basketWithScore = basket.map(num => ({ num, score: weightedScore[num] || 0 }));
+            basketWithScore.sort((a, b) => a.score - b.score);
+            lowestTwo = basketWithScore.slice(0, candidates.length).map(item => item.num);
+
+            // 교체
+            let newBasket = [...basket];
+            for (let i = 0; i < candidates.length; i++) {
+                let idx = newBasket.indexOf(lowestTwo[i]);
+                if (idx !== -1) {
+                    newBasket[idx] = candidates[i];
+                }
+            }
+            // 중복 제거 및 정렬
+            newBasket = [...new Set(newBasket)].sort((a, b) => a - b);
+            if (newBasket.length === basket.length) {
+                basket = newBasket;
+                // 교체 후 남은 4개 = 원본 compressedOut에서 candidates 제외
+                compressedOut4 = originalCompressedOut.filter(num => !candidates.includes(num));
+                // 교체당한 번호(lowestTwo)는 middle(B bag)에 추가
+                middle = [...middle, ...lowestTwo].filter((v, i, a) => a.indexOf(v) === i).sort((a,b)=>a-b);
+                // 교체된 번호 기록
+                replacedIn = candidates;
+                replacedOut = lowestTwo;
+            } else {
+                // 교체 실패 시 원본 유지
+                compressedOut4 = originalCompressedOut;
+                replacedIn = [];
+                replacedOut = [];
+            }
+        } else {
+            compressedOut4 = originalCompressedOut;
+            replacedIn = [];
+            replacedOut = [];
+        }
+        // ===== 교체 로직 끝 =====
+
         // 합계 계산 (참고용)
         let sums = [];
         targetRounds.forEach(r => {
@@ -528,30 +592,42 @@
         document.getElementById('roundDisplay').innerHTML = `예상 ${targetRound}회차`;
         document.getElementById('targetRound').innerText = targetRound;
         
-        // 상태창 표시
+        // 상태창 표시 (교체 정보 추가)
+        let replacedInHtml = replacedIn.length ? replacedIn.map(n => `<span class="replaced-in">${n}</span>`).join(', ') : '없음';
+        let replacedOutHtml = replacedOut.length ? replacedOut.map(n => `<span class="replaced-out">${n}</span>`).join(', ') : '없음';
+        let compressedOutHtml = compressedOut4.map(n => 
+            replacedIn.includes(n) ? `<span class="replaced-in">${n}</span>` : n
+        ).join(', ');
+
         document.getElementById('status').innerHTML = `
-            <div><span class="highlight-gold">★ 10수 엔진 (4회차 51주간격, 상위6+하위4)</span></div>
+            <div><span class="highlight-gold">★ 10수 엔진 (4회차 51주간격, 상위6+하위4 + 교체)</span></div>
             <div>생존자 ${survivors.length}수: ${survivors.join(', ')}</div>
             <div>AI 추천 10수: ${basket.join(', ')}</div>
-            <div>🔻 14수에서 빠진 4개: ${compressedOut4.join(', ') || '없음'}</div>
+            <div>🔻 14수에서 빠진 ${compressedOut4.length}개 (교체 후 남은): ${compressedOutHtml}</div>
+            <div style="margin-top:4px;">
+                <span style="color:#ff6666;">▶ 교체된 번호: ${replacedInHtml}</span><br>
+                <span style="color:#66aaff;">◀ 교체당한 번호: ${replacedOutHtml}</span><br>
+                <span style="color:#aaa;">📦 B bag: ${middle.join(', ') || '없음'}</span>
+            </div>
             <div><span class="highlight-blue">📊 기준 합계 (4회차 평균):</span> ${dynamicAvgSum} (참고용)</div>
             <div style="margin-top:4px; border-top:1px solid #333; padding-top:3px; font-size:9px; white-space:nowrap; overflow-x:auto; -webkit-overflow-scrolling:touch;">
-                📦 B bag: ${middle.join(', ') || '없음'} | 🎯 보너스: ${bonusNums.join(', ') || '없음'}
+                🎯 보너스: ${bonusNums.join(', ') || '없음'}
             </div>
         `;
         
         document.getElementById('reviewTitle').innerHTML = `📊 ${targetRound}회 복기`;
         document.getElementById('reviewDesc').innerHTML = `${targetRound}회 당첨번호 6개 + 보너스 번호를 입력하세요`;
         
-        // 복기 팝업 내 AI 정보 초기화
+        // 복기 팝업 내 AI 정보 초기화 (교체 정보 포함)
         const reviewAIInfo = document.getElementById('reviewAIInfo');
         if (reviewAIInfo) {
             reviewAIInfo.innerHTML = `
                 <div><span class="highlight-blue">생존자 ${survivors.length}수:</span> ${survivors.join(', ')}</div>
                 <div><span class="highlight-gold">AI 추천 10수:</span> ${basket.join(', ')}</div>
-                <div><span class="highlight-blue">📦 B bag ${middle.length}개:</span> ${middle.join(', ') || '없음'}</div>
-                <div><span class="highlight-blue">🎯 보너스 번호 ${bonusNums.length}개:</span> ${bonusNums.join(', ') || '없음'}</div>
-                <div><span class="highlight-blue">🔻 14수에서 빠진 4개:</span> ${compressedOut4.join(', ') || '없음'}</div>
+                <div><span class="highlight-blue">🔻 14수에서 빠진 ${compressedOut4.length}개 (교체 후 남은):</span> ${compressedOutHtml}</div>
+                <div><span style="color:#ff6666;">▶ 교체된 번호: ${replacedInHtml}</span></div>
+                <div><span style="color:#66aaff;">◀ 교체당한 번호: ${replacedOutHtml}</span></div>
+                <div><span style="color:#aaa;">📦 B bag: ${middle.join(', ') || '없음'}</span></div>
             `;
         }
     }
@@ -569,22 +645,43 @@
 
     // ===== 조합 생성 =====
     function process(limit) {
-        analyze();
+        analyze(); // 최신 데이터 반영 (교체된 basket, compressedOut4 등)
         generatedCombos = [];
         let used = new Set();
         
         if (limit === 10) {
             // 10조합: 홀수 인덱스(0,2,4,6,8) → 14수 사용, 짝수 인덱스(1,3,5,7,9) → 10수 사용
+            // 각 조합에 교체 후 남은 2개(compressedOut4) 중 하나를 반드시 포함시킴
             let b10 = [...basket];
-            let all14 = [...new Set([...b10, ...compressedOut4])].sort((a,b)=>a-b);
+            let all14 = [...full14]; // full14 사용
             
             for (let i = 0; i < limit; i++) {
                 let combo = new Set();
                 let pool = (i % 2 === 0) ? all14 : b10; // i=0,2,4,6,8 → 14수, i=1,3,5,7,9 → 10수
+                let available = [...pool];
                 
-                let shuffled = [...pool].sort(() => Math.random() - 0.5);
+                // compressedOut4에서 랜덤으로 하나 선택 (남은 2개 중)
+                let special = null;
+                if (compressedOut4.length > 0) {
+                    special = compressedOut4[Math.floor(Math.random() * compressedOut4.length)];
+                    combo.add(special);
+                    available = available.filter(n => n !== special); // 중복 방지
+                }
+                
+                // 나머지 5개를 available에서 랜덤 선택
+                let shuffled = available.sort(() => Math.random() - 0.5);
                 for (let n of shuffled) {
                     if (combo.size < 6) combo.add(n);
+                }
+                
+                // 혹시 모자라면 전체 풀에서 보충
+                if (combo.size < 6) {
+                    let all = [...new Set([...pool, ...compressedOut4])];
+                    let shuffledAll = all.sort(() => Math.random() - 0.5);
+                    for (let n of shuffledAll) {
+                        combo.add(n);
+                        if (combo.size === 6) break;
+                    }
                 }
                 
                 let finalArr = Array.from(combo).sort((a,b)=>a-b);
@@ -599,12 +696,13 @@
                         comboNumber: i + 1
                     });
                 } else {
-                    limit++; // 중복 시 재시도
+                    // 중복 시 재시도
+                    if (i < limit) limit++;
                     if (limit > 100) break;
                 }
             }
         } else {
-            // 5조합: 10수에서 가중치 기반 랜덤 (compressedOut4 사용 안 함)
+            // 5조합: 10수에서 가중치 기반 랜덤 (교체된 basket 사용)
             let count = 0, safety = 0;
             while (count < limit && safety < 50000) {
                 safety++;
@@ -628,7 +726,7 @@
                 for (let n of weightedOrder) {
                     if (res.size < 6) res.add(n);
                 }
-                // 혹시 모자라면 랜덤 보충 (이론상 없음)
+                // 혹시 모자라면 랜덤 보충
                 while (res.size < 6) {
                     let rand = basket[Math.floor(Math.random() * basket.length)];
                     res.add(rand);
@@ -660,10 +758,12 @@
         }
         let html = '';
         generatedCombos.forEach(combo => {
-            // 각 번호가 탈락수(생존자이지만 10수에 없음)인지 확인
+            // 각 번호에 맞는 클래스 부여
             const numberSpans = combo.numbers.map(n => {
-                const isEliminated = survivors.includes(n) && !basket.includes(n);
-                const className = isEliminated ? 'num-box eliminated' : 'num-box';
+                let className = 'num-box';
+                if (replacedIn.includes(n)) className += ' replaced-in';
+                else if (replacedOut.includes(n)) className += ' replaced-out';
+                else if (survivors.includes(n) && !basket.includes(n)) className += ' eliminated';
                 return `<span class="${className}" style="width:24px; height:24px; line-height:24px; font-size:10px;">${n}</span>`;
             }).join('');
             html += `<div class="combo-item-row">
@@ -1019,15 +1119,17 @@
             const survivorsHtml = survivors.map(n => winSet.has(n) ? `<span class="matched">${n}</span>` : n).join(', ');
             const basketHtml = basket.map(n => winSet.has(n) ? `<span class="matched">${n}</span>` : n).join(', ');
             const middleHtml = middle.map(n => winSet.has(n) ? `<span class="matched">${n}</span>` : n).join(', ') || '없음';
-            const bonusNumsHtml = bonusNums.map(n => n === bonus ? `<span class="matched">${n}</span>` : n).join(', ') || '없음';
             const outHtml = compressedOut4.map(n => winSet.has(n) ? `<span class="matched">${n}</span>` : n).join(', ') || '없음';
+            const replacedInHtml = replacedIn.map(n => winSet.has(n) ? `<span class="matched">${n}</span>` : n).join(', ');
+            const replacedOutHtml = replacedOut.map(n => winSet.has(n) ? `<span class="matched">${n}</span>` : n).join(', ');
 
             reviewAIInfo.innerHTML = `
                 <div><span class="highlight-blue">생존자 ${survivors.length}수:</span> ${survivorsHtml}</div>
                 <div><span class="highlight-gold">AI 추천 10수:</span> ${basketHtml}</div>
-                <div><span class="highlight-blue">📦 B bag ${middle.length}개:</span> ${middleHtml}</div>
-                <div><span class="highlight-blue">🎯 보너스 번호 ${bonusNums.length}개:</span> ${bonusNumsHtml}</div>
-                <div><span class="highlight-blue">🔻 14수에서 빠진 4개:</span> ${outHtml}</div>
+                <div><span class="highlight-blue">🔻 14수에서 빠진 ${compressedOut4.length}개 (교체 후 남은):</span> ${outHtml}</div>
+                <div><span style="color:#ff6666;">▶ 교체된 번호: ${replacedInHtml}</span></div>
+                <div><span style="color:#66aaff;">◀ 교체당한 번호: ${replacedOutHtml}</span></div>
+                <div><span style="color:#aaa;">📦 B bag: ${middleHtml}</span></div>
             `;
         }
     }
