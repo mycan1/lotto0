@@ -131,7 +131,7 @@
     </div>
 
     <div id="console"></div>
-    <div class="small-note">※ 10조합: 10수 3칸 슬라이딩 + 빠진 4개 중 연관 2개 중 1개 랜덤 | 🎯 <span id="targetRound">1213</span>회차 예상</div>
+    <div class="small-note">※ 10조합: 1~5조합 special[0] + 10수 랜덤, 6~10조합 special[1] + 10수 랜덤 | 🎯 <span id="targetRound">1213</span>회차 예상</div>
 </div>
 
 <!-- 토스트 메시지 -->
@@ -585,33 +585,27 @@
         let used = new Set();
         
         if (limit === 10) {
-            // 10조합 생성: 10수 3칸 슬라이딩 + specialTwo 중 랜덤 1개
+            // 10조합 생성: 슬라이딩 없음, specialTwo를 각각 1~5, 6~10조합에 고정 배치
             let b10 = [...basket];
             
             for (let i = 0; i < limit; i++) {
                 let combo = new Set();
                 
-                // 1. 10수에서 3개씩 슬라이딩 청크
-                let startIdx = (i * 2) % (b10.length - 2); // 3칸 슬라이딩
-                let chunk = b10.slice(startIdx, startIdx + 3);
-                for (let n of chunk) {
-                    combo.add(n);
+                // specialTwo 배치: 0~4 인덱스는 specialTwo[0], 5~9 인덱스는 specialTwo[1]
+                if (i < 5) {
+                    if (specialTwo.length > 0) combo.add(specialTwo[0]);
+                } else {
+                    if (specialTwo.length > 1) combo.add(specialTwo[1]);
                 }
                 
-                // 2. specialTwo 중 랜덤 1개 추가
-                if (specialTwo.length > 0) {
-                    let pick = specialTwo[Math.floor(Math.random() * specialTwo.length)];
-                    combo.add(pick);
-                }
-                
-                // 3. 나머지 2개를 10수에서 랜덤 선택 (이미 있는 번호 제외)
+                // 나머지 5개를 10수에서 랜덤 선택 (이미 있는 번호 제외)
                 let available = b10.filter(n => !combo.has(n));
                 let shuffled = [...available].sort(() => Math.random() - 0.5);
                 for (let n of shuffled) {
                     if (combo.size < 6) combo.add(n);
                 }
                 
-                // 4. 부족하면 생존자에서 랜덤 보충 (비상용)
+                // 부족하면 생존자에서 랜덤 보충 (비상용)
                 while (combo.size < 6) {
                     let rand = survivors[Math.floor(Math.random() * survivors.length)];
                     combo.add(rand);
