@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>SHIN-UI-SON - 10수 (4회차, 상위6+하위4)</title>
+    <title>SHIN-UI-SON - 10수 (4회차, 상위6+하위4, 특수규칙)</title>
     <style>
         :root { --gold: #ffd700; --bg: #0b0b0b; --card: #1a1a1a; --accent: #00ffcc; --save: #ff00ff; --danger: #ff4444; }
         body { background-color: var(--bg); color: var(--gold); font-family: 'Malgun Gothic', sans-serif; padding: 8px; margin: 0; }
@@ -131,7 +131,7 @@
     </div>
 
     <div id="console"></div>
-    <div class="small-note">※ 10조합: 생존자 점수순 간격 3 슬라이딩 | 5조합: 10수 가중치 랜덤 | 🎯 <span id="targetRound">1213</span>회차 예상</div>
+    <div class="small-note">※ 10조합: 홀수조합(1,3,5,7,9) 14수, 짝수조합(2,4,6,8,10) 10수 | 5조합: 10수 가중치 랜덤 | 🎯 <span id="targetRound">1213</span>회차 예상</div>
 </div>
 
 <!-- 토스트 메시지 -->
@@ -139,8 +139,105 @@
     <span style="background:#333; color:#ffd700; padding:5px 10px; border-radius:18px; font-size:11px; box-shadow:0 2px 6px rgba(0,0,0,0.3); display:inline-block;">✅ 저장되었습니다</span>
 </div>
 
-<!-- 팝업들 (보관함, 게임센터, 복기 등은 생략 가능하지만 기존과 동일) -->
-<!-- ... 기존 팝업 HTML 유지 ... (너무 길어 생략) -->
+<!-- 팝업들 -->
+<div id="popup" class="popup-overlay" style="display:none;">
+    <div class="popup-content">
+        <button class="popup-close" onclick="closePopup()">&times;</button>
+        <div class="popup-title">📦 보관함</div>
+        <div id="storage"></div>
+    </div>
+</div>
+
+<div id="gamePopup" class="popup-overlay" style="display:none;">
+    <div class="popup-content" style="max-width: 420px;">
+        <button class="popup-close" onclick="closeGamePopup()" ontouchstart="event.stopPropagation(); closeGamePopup();">&times;</button>
+        <div class="popup-title">🎮 게임센터</div>
+        <div class="game-tabs">
+            <button class="game-tab active" data-game="touch" onclick="switchGame('touch')" ontouchstart="event.stopPropagation(); switchGame('touch');">터치 러쉬</button>
+            <button class="game-tab" data-game="reaction" onclick="switchGame('reaction')" ontouchstart="event.stopPropagation(); switchGame('reaction');">반응속도</button>
+        </div>
+        <div id="touchGame" class="game-panel active">
+            <canvas id="gameCanvas" class="game-canvas"></canvas>
+            <div class="selected-numbers" id="selectedNumbersContainer"></div>
+            <div style="font-size:8px; color:#888; text-align:center;">* 6개를 선택하면 저장 버튼이 활성화됩니다</div>
+            <div class="game-btn-group">
+                <button class="game-btn" onclick="resetTouchGame()" ontouchstart="event.stopPropagation(); resetTouchGame();">리셋</button>
+                <button class="game-btn" id="saveComboBtn" onclick="saveTouchCombo()" ontouchstart="event.stopPropagation(); saveTouchCombo();" disabled>조합 저장</button>
+            </div>
+        </div>
+        <div id="reactionGame" class="game-panel">
+            <div style="text-align: center; margin: 8px 0;">
+                <div class="reaction-box" id="reactionBox" onclick="handleReactionClick()" ontouchstart="event.stopPropagation(); handleReactionClick();">시작하려면 누르세요</div>
+                <div class="reaction-result" id="reactionResult"></div>
+                <div class="selected-numbers" id="reactionSelectedContainer"></div>
+                <div style="font-size:8px; color:#888; text-align:center;">* 6개를 선택하면 저장 버튼이 활성화됩니다</div>
+                <div class="game-btn-group">
+                    <button class="game-btn" onclick="resetReactionGame()" ontouchstart="event.stopPropagation(); resetReactionGame();">리셋</button>
+                    <button class="game-btn" id="saveReactionBtn" onclick="saveReactionCombo()" ontouchstart="event.stopPropagation(); saveReactionCombo();" disabled>조합 저장</button>
+                    <button class="game-btn" onclick="startReaction()" ontouchstart="event.stopPropagation(); startReaction();">새 게임</button>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div id="reviewPopup" class="popup-overlay" style="display:none;">
+    <div class="popup-content">
+        <button class="popup-close" onclick="closeReviewPopup()">&times;</button>
+        <div class="popup-title" id="reviewTitle">📊 1213회 복기</div>
+        <div class="winning-display" id="winningDisplay"></div>
+        
+        <!-- 현재 AI 10수 및 생존자 정보 표시 영역 (동적으로 업데이트됨) -->
+        <div class="ai-info-box" id="reviewAIInfo">
+            <!-- analyze()에서 채움 (비교하기 누르면 업데이트) -->
+        </div>
+
+        <div style="text-align: center; margin-bottom: 8px;" id="reviewDesc">당첨번호 6개 + 보너스를 입력하세요</div>
+        <div class="winning-input">
+            <input type="number" id="win1" min="1" max="45" step="1" placeholder="1">
+            <input type="number" id="win2" min="1" max="45" step="1" placeholder="2">
+            <input type="number" id="win3" min="1" max="45" step="1" placeholder="3">
+            <input type="number" id="win4" min="1" max="45" step="1" placeholder="4">
+            <input type="number" id="win5" min="1" max="45" step="1" placeholder="5">
+            <input type="number" id="win6" min="1" max="45" step="1" placeholder="6">
+        </div>
+        <div style="text-align: center; margin: 5px 0;">보너스 번호</div>
+        <div class="winning-input">
+            <input type="number" id="bonus" min="1" max="45" step="1" placeholder="보너스">
+        </div>
+        <div style="text-align: center; margin: 8px 0;">
+            <button class="game-btn" onclick="compareNumbers()">비교하기</button>
+        </div>
+        <div id="reviewResult" class="result-box">
+            <div>AI 추천 10수와 비교:</div>
+            <div id="aiMatch" class="match-count">-</div>
+            <div id="aiMatchedList" style="font-size: 12px; color: #ffd700;"></div>
+            <div id="aiBonus" style="font-size: 12px; color: #aaa;"></div>
+            <div style="margin-top: 6px;">보관함 조합 비교:</div>
+            <div id="savedMatch" style="max-height: 140px; overflow-y: auto;"></div>
+        </div>
+    </div>
+</div>
+
+<div id="comboDetailPopup" class="popup-overlay" style="display:none;">
+    <div class="popup-content">
+        <button class="popup-close" onclick="closeComboDetailPopup()">&times;</button>
+        <div class="popup-title" id="comboDetailTitle">조합 상세</div>
+        <div id="comboDetailContent"></div>
+    </div>
+</div>
+
+<!-- 조합 목록 팝업 (모두 저장 버튼 포함) -->
+<div id="comboListPopup" class="popup-overlay" style="display:none;">
+    <div class="popup-content">
+        <button class="popup-close" onclick="closeComboListPopup()">&times;</button>
+        <div class="popup-title">📋 생성된 조합</div>
+        <div style="text-align: right; margin-bottom: 8px;">
+            <button class="combo-save-btn" onclick="saveAllCombos()" style="background:#00ccff; color:#000; font-size:10px; padding:4px 8px;">📥 모두 저장</button>
+        </div>
+        <div id="comboListContent" class="combo-list"></div>
+    </div>
+</div>
 
 <script>
     // ===== 900~1212회차 전체 데이터 =====
@@ -154,32 +251,144 @@
     let userName = "";
     let savedNumbers = [];
     let currentBaseRound = 1213;
-    let generatedCombos = [];
-    let weightedScore = {};
-    let middle = [];
-    let bonusNums = [];
-    let compressedOut4 = [];
+    let generatedCombos = []; // 생성된 조합 목록 (임시 저장)
+    let weightedScore = {}; // 가중치 점수 (조합 생성 시 사용)
+    let middle = []; // B bag (사용 안 함)
+    let bonusNums = []; // 보너스 번호 목록
+    let compressedOut4 = []; // 14수에서 10수로 줄면서 빠진 4개 번호
 
-    // ===== 사용자 관리 (기존과 동일) =====
-    function updateUserDisplay() { /* 기존 코드 */ }
-    function changeName() { /* 기존 코드 */ }
-    function deleteUser() { /* 기존 코드 */ }
-    function initUser() { /* 기존 코드 */ }
-    function showToast(message, duration = 1500) { /* 기존 코드 */ }
-    function saveToBox(s) { /* 기존 코드 */ }
-    function saveAllCombos() { /* 기존 코드 */ }
-    function deleteSingleItem(index) { /* 기존 코드 */ }
-    function loadFromStorage(nums) { /* 기존 코드 */ }
-    function renderStorage() { /* 기존 코드 */ }
+    // ===== 사용자 관리 =====
+    function updateUserDisplay() {
+        const userDisplay = document.getElementById('userDisplay');
+        userDisplay.innerHTML = `👤 ${userName} 
+            <button class="change-name-btn" onclick="changeName()">이름변경</button>
+            <button class="change-name-btn" style="background:#ff4444;" onclick="deleteUser()">삭제</button>`;
+    }
+    function changeName() {
+        const newName = prompt("새로운 이름을 입력하세요:", userName);
+        if (newName && newName.trim() !== "") {
+            userName = newName.trim();
+            localStorage.setItem('lottoUserName', userName);
+            const storageKey = `lottoSave_${userName}`;
+            savedNumbers = JSON.parse(localStorage.getItem(storageKey)) || [];
+            updateUserDisplay();
+            showToast(`이름이 ${userName}(으)로 변경되었습니다`);
+        }
+    }
+    function deleteUser() {
+        if(confirm(`정말 ${userName}님의 모든 기록을 삭제하시겠습니까?`)) {
+            localStorage.removeItem(`lottoSave_${userName}`);
+            userName = "guest_" + Math.random().toString(36).substring(2, 6);
+            localStorage.setItem('lottoUserName', userName);
+            savedNumbers = [];
+            updateUserDisplay();
+            showToast(`새로운 손님 계정(${userName})으로 시작합니다`);
+        }
+    }
+    function initUser() {
+        const savedName = localStorage.getItem('lottoUserName');
+        if (savedName) userName = savedName;
+        else {
+            userName = "guest_" + Math.random().toString(36).substring(2, 6);
+            localStorage.setItem('lottoUserName', userName);
+        }
+        const storageKey = `lottoSave_${userName}`;
+        savedNumbers = JSON.parse(localStorage.getItem(storageKey)) || [];
+        updateUserDisplay();
+    }
 
-    // ===== 10수 생성 알고리즘 =====
+    // 토스트 표시 함수
+    function showToast(message, duration = 1500) {
+        const toast = document.getElementById('toast');
+        const span = toast.querySelector('span');
+        span.innerText = message;
+        toast.style.display = 'block';
+        setTimeout(() => {
+            toast.style.display = 'none';
+        }, duration);
+    }
+
+    // 저장 함수 (피드백 추가)
+    function saveToBox(s) {
+        if (!savedNumbers.includes(s)) {
+            savedNumbers.push(s);
+            localStorage.setItem(`lottoSave_${userName}`, JSON.stringify(savedNumbers));
+            showToast('✅ 저장되었습니다');
+        } else {
+            showToast('⚠️ 이미 저장된 조합입니다');
+        }
+    }
+
+    // 모든 조합 한 번에 저장
+    function saveAllCombos() {
+        if (generatedCombos.length === 0) {
+            showToast('저장할 조합이 없습니다');
+            return;
+        }
+        let savedCount = 0;
+        generatedCombos.forEach(combo => {
+            if (!savedNumbers.includes(combo.key)) {
+                savedNumbers.push(combo.key);
+                savedCount++;
+            }
+        });
+        if (savedCount > 0) {
+            localStorage.setItem(`lottoSave_${userName}`, JSON.stringify(savedNumbers));
+            showToast(`📦 ${savedCount}개 조합 저장됨`);
+        } else {
+            showToast('모두 이미 저장된 조합입니다');
+        }
+    }
+
+    function deleteSingleItem(index) {
+        if(confirm("이 조합을 삭제할까요?")) {
+            savedNumbers.splice(index, 1);
+            localStorage.setItem(`lottoSave_${userName}`, JSON.stringify(savedNumbers));
+            renderStorage();
+            showToast('🗑️ 삭제되었습니다');
+        }
+    }
+    function loadFromStorage(nums) {
+        alert(`선택된 번호: ${nums.split(',').join(', ')}`);
+        closePopup();
+    }
+    function renderStorage() {
+        const st = document.getElementById('storage');
+        if(savedNumbers.length === 0) { 
+            st.innerHTML = "<div style='text-align:center; padding:12px; opacity:0.5;'>저장된 조합이 없습니다.</div>"; 
+            return; 
+        }
+        st.innerHTML = savedNumbers.map((n, index) => {
+            const numbers = n.split(',');
+            return `
+                <div class="row-line" style="margin-bottom:6px; background:#2a2a2a; padding:6px;">
+                    <div class="num-container">
+                        ${numbers.map(v=>`<span class="num-box" style="width:24px; height:24px; line-height:24px; font-size:10px;">${v}</span>`).join('')}
+                    </div>
+                    <div style="display:flex; gap:4px;">
+                        <button onclick="loadFromStorage('${n}')" 
+                                style="background:#00ccff; color:white; border:none; border-radius:4px; padding:3px 5px; font-size:9px; cursor:pointer;">불러오기</button>
+                        <button onclick="deleteSingleItem(${index})" 
+                                style="background:#ff4444; color:white; border:none; border-radius:4px; padding:3px 5px; font-size:9px; cursor:pointer;">삭제</button>
+                    </div>
+                </div>
+            `;
+        }).join('');
+        document.querySelector('.popup-title').innerHTML = `📦 ${userName}의 보관함 (${savedNumbers.length}개)`;
+    }
+
+    // ===== 10수 생성 알고리즘 (4회차 51주간격, 상위6+하위4) =====
     function lottoSystem00001212Final(allData, lastWinning) {
         const targetRound = currentBaseRound;
         const targetRounds = [];
-        for (let i = 1; i <= 4; i++) targetRounds.push(targetRound - 51 * i);
+        for (let i = 1; i <= 4; i++) {
+            targetRounds.push(targetRound - 51 * i);
+        }
         const weights = [1.6, 1.5, 1.4, 1.3];
 
-        let mainPool = [], bonusPool = [], mainWithRound = [];
+        let mainPool = [];
+        let bonusPool = [];
+        let mainWithRound = [];
 
         targetRounds.forEach((r, idx) => {
             const row = FULL_DATA.find(x => x[0] === r);
@@ -191,6 +400,7 @@
                     mainWithRound.push({ num: n, round: r, weight: weights[idx] });
                 });
                 bonusPool.push(bonusNum);
+                // 보너스 번호는 가중치 계산에 포함하지 않음
             }
         });
 
@@ -203,12 +413,20 @@
         });
 
         zeroFreqNums.forEach(num => {
-            if (wScore[num] !== undefined) wScore[num] += 0.2;
+            if (wScore[num] !== undefined) {
+                wScore[num] += 0.2;
+            }
         });
 
-        let rankedMain = mainNumbers.sort((a, b) => (wScore[b]||0) - (wScore[a]||0) || a - b);
+        let rankedMain = mainNumbers.sort((a, b) => {
+            let aScore = wScore[a] || 0;
+            let bScore = wScore[b] || 0;
+            if (aScore > bScore) return -1;
+            if (aScore < bScore) return 1;
+            return a - b;
+        });
 
-        // 14수 (상위8 + 하위6)
+        // 14수 (상위8 + 하위6) - 빠진 4개 계산용
         let top8 = rankedMain.slice(0, 8);
         let bottom6 = rankedMain.slice(-6);
         let full14Set = new Set([...top8, ...bottom6]);
@@ -218,26 +436,46 @@
         let top6 = rankedMain.slice(0, 6);
         let bottom4 = rankedMain.slice(-4);
         let basketSet = new Set([...top6, ...bottom4]);
-        let basket = Array.from(basketSet).sort((a,b)=>a-b);
+        let basket = Array.from(basketSet).sort((a, b) => a - b);
+
+        // 중간 그룹 (사용 안 함)
         let middleBag = rankedMain.filter(num => !basketSet.has(num));
 
+        // 생존자 (본번호 + 보너스)
         let survivorsSet = new Set([...mainPool, ...bonusPool]);
         let survivors = Array.from(survivorsSet).sort((a,b)=>a-b);
-        let bonusNumbers = Array.from(new Set(bonusPool)).sort((a,b)=>a-b);
+        let bonusNumbers = Array.from(new Set(bonusPool)).sort((a, b) => a - b);
+
+        // 빠진 4개 번호 (14수 - 10수)
         let compressedOut = full14.filter(num => !basketSet.has(num));
 
-        return { survivors, basket, middleBag, bonusNumbers, weightedScore: wScore, compressedOut, full14 };
+        return {
+            survivors: survivors,
+            basket: basket,
+            middleBag: middleBag,
+            bonusNumbers: bonusNumbers,
+            weightedScore: wScore,
+            compressedOut: compressedOut,
+            full14: full14
+        };
     }
 
+    // ===== 분석 함수 =====
     function analyze() {
         const targetRound = currentBaseRound;
         const prevRound = targetRound - 1;
+        
         const prevData = FULL_DATA.find(row => row[0] === prevRound);
-        if (!prevData) { alert(`경고: ${prevRound}회차 데이터가 없습니다.`); return; }
+        if (!prevData) {
+            alert(`경고: ${prevRound}회차 데이터가 없습니다.`);
+            return;
+        }
         const lastWinning = prevData.slice(1, 7);
         
         const targetRounds = [];
-        for (let i = 1; i <= 4; i++) targetRounds.push(targetRound - 51 * i);
+        for (let i = 1; i <= 4; i++) {
+            targetRounds.push(targetRound - 51 * i);
+        }
         
         let mainPool = [], bonusPool = [];
         targetRounds.forEach(r => {
@@ -248,6 +486,12 @@
             }
         });
         
+        if (mainPool.length === 0) {
+            alert('4회차 데이터가 충분하지 않습니다.');
+            return;
+        }
+        
+        // 미출수 계산 (최근 22회차)
         let freq22 = {};
         for(let i=1; i<=45; i++) freq22[i] = 0;
         FULL_DATA.slice(0,22).forEach(row => {
@@ -257,13 +501,14 @@
         
         const result = lottoSystem00001212Final(FULL_DATA, lastWinning);
         survivors = result.survivors;
-        basket = result.basket;
-        middle = result.middleBag || [];
+        basket = result.basket; // 10수
+        middle = result.middleBag || []; // 사용 안 함
         bonusNums = result.bonusNumbers || [];
         weightedScore = result.weightedScore || {};
-        compressedOut4 = result.compressedOut || [];
+        compressedOut4 = result.compressedOut || []; // 빠진 4개 번호
         machineFixed = basket.slice(0, 3);
         
+        // 합계 계산 (참고용)
         let sums = [];
         targetRounds.forEach(r => {
             let row = FULL_DATA.find(x => x[0] === r);
@@ -275,23 +520,30 @@
         const baseNums = prevData.slice(1, 7);
         const bonus = prevData[7];
         let ballHtml = baseNums.map(n => `<span class="base-num-box">${n}</span>`).join('');
-        ballHtml += `<span class="bonus-label">보너스</span><span class="base-num-box">${bonus}</span>`;
+        ballHtml += `<span class="bonus-label">보너스</span>`;
+        ballHtml += `<span class="base-num-box">${bonus}</span>`;
         document.getElementById('baseRoundInfo').innerHTML = ballHtml;
         document.getElementById('prevWinLabel').innerHTML = `📌 ${prevRound}회 당첨번호`;
+        
         document.getElementById('roundDisplay').innerHTML = `예상 ${targetRound}회차`;
         document.getElementById('targetRound').innerText = targetRound;
         
+        // 상태창 표시
         document.getElementById('status').innerHTML = `
             <div><span class="highlight-gold">★ 10수 엔진 (4회차 51주간격, 상위6+하위4)</span></div>
             <div>생존자 ${survivors.length}수: ${survivors.join(', ')}</div>
             <div>AI 추천 10수: ${basket.join(', ')}</div>
             <div>🔻 14수에서 빠진 4개: ${compressedOut4.join(', ') || '없음'}</div>
             <div><span class="highlight-blue">📊 기준 합계 (4회차 평균):</span> ${dynamicAvgSum} (참고용)</div>
+            <div style="margin-top:4px; border-top:1px solid #333; padding-top:3px; font-size:9px; white-space:nowrap; overflow-x:auto; -webkit-overflow-scrolling:touch;">
+                📦 B bag: ${middle.join(', ') || '없음'} | 🎯 보너스: ${bonusNums.join(', ') || '없음'}
+            </div>
         `;
         
         document.getElementById('reviewTitle').innerHTML = `📊 ${targetRound}회 복기`;
         document.getElementById('reviewDesc').innerHTML = `${targetRound}회 당첨번호 6개 + 보너스 번호를 입력하세요`;
         
+        // 복기 팝업 내 AI 정보 초기화
         const reviewAIInfo = document.getElementById('reviewAIInfo');
         if (reviewAIInfo) {
             reviewAIInfo.innerHTML = `
@@ -322,64 +574,43 @@
         let used = new Set();
         
         if (limit === 10) {
-            // 생존자를 가중치 점수 내림차순으로 정렬
-            let sorted = [...survivors].sort((a,b) => (weightedScore[b]||0) - (weightedScore[a]||0));
-            let step = 3;
+            // 10조합: 홀수 인덱스(0,2,4,6,8) → 14수 사용, 짝수 인덱스(1,3,5,7,9) → 10수 사용
+            let b10 = [...basket];
+            let all14 = [...new Set([...b10, ...compressedOut4])].sort((a,b)=>a-b);
             
-            // 시작 인덱스 0~6까지 7개 조합 생성
-            for (let start = 0; start < 7; start++) {
-                let combo = [];
-                for (let j = 0; j < 6; j++) {
-                    let idx = (start + j * step) % sorted.length;
-                    combo.push(sorted[idx]);
+            for (let i = 0; i < limit; i++) {
+                let combo = new Set();
+                let pool = (i % 2 === 0) ? all14 : b10; // i=0,2,4,6,8 → 14수, i=1,3,5,7,9 → 10수
+                
+                let shuffled = [...pool].sort(() => Math.random() - 0.5);
+                for (let n of shuffled) {
+                    if (combo.size < 6) combo.add(n);
                 }
-                combo.sort((a,b)=>a-b);
-                let key = combo.join(',');
+                
+                let finalArr = Array.from(combo).sort((a,b)=>a-b);
+                let key = finalArr.join(',');
+                
                 if (!used.has(key)) {
                     used.add(key);
                     generatedCombos.push({
-                        numbers: combo,
+                        numbers: finalArr,
                         key: key,
                         mark: '',
-                        comboNumber: generatedCombos.length + 1
+                        comboNumber: i + 1
                     });
-                }
-            }
-            
-            // 나머지 3개 조합을 랜덤 시작점으로 생성
-            while (generatedCombos.length < 10) {
-                let start = Math.floor(Math.random() * sorted.length);
-                let combo = [];
-                for (let j = 0; j < 6; j++) {
-                    let idx = (start + j * step) % sorted.length;
-                    combo.push(sorted[idx]);
-                }
-                combo.sort((a,b)=>a-b);
-                let key = combo.join(',');
-                if (!used.has(key)) {
-                    used.add(key);
-                    generatedCombos.push({
-                        numbers: combo,
-                        key: key,
-                        mark: '',
-                        comboNumber: generatedCombos.length + 1
-                    });
+                } else {
+                    limit++; // 중복 시 재시도
+                    if (limit > 100) break;
                 }
             }
         } else {
-            // 5조합: 기존 방식 유지 (빠진 4개 중 1개 + 10수 가중치)
+            // 5조합: 10수에서 가중치 기반 랜덤 (compressedOut4 사용 안 함)
             let count = 0, safety = 0;
             while (count < limit && safety < 50000) {
                 safety++;
                 let res = new Set();
-                
-                if (limit === 5 && compressedOut4.length > 0) {
-                    let randNum = compressedOut4[Math.floor(Math.random() * compressedOut4.length)];
-                    res.add(randNum);
-                }
-                
-                let availableBasket = [...basket].filter(n => !res.has(n));
-                let weightedItems = availableBasket.map(n => ({ num: n, weight: weightedScore[n] || 1 }));
+                // 가중치 기반 선택
+                let weightedItems = basket.map(n => ({ num: n, weight: weightedScore[n] || 1 }));
                 let weightedOrder = [];
                 while (weightedItems.length > 0) {
                     let total = weightedItems.reduce((sum, item) => sum + item.weight, 0);
@@ -397,14 +628,11 @@
                 for (let n of weightedOrder) {
                     if (res.size < 6) res.add(n);
                 }
+                // 혹시 모자라면 랜덤 보충 (이론상 없음)
                 while (res.size < 6) {
-                    let remaining = [...basket].filter(n => !res.has(n));
-                    if (remaining.length === 0) break;
-                    let randIndex = Math.floor(Math.random() * remaining.length);
-                    res.add(remaining[randIndex]);
+                    let rand = basket[Math.floor(Math.random() * basket.length)];
+                    res.add(rand);
                 }
-                if (res.size < 6) continue;
-                
                 let finalArr = Array.from(res).sort((a,b)=>a-b);
                 let key = finalArr.join(',');
                 if (!used.has(key)) {
@@ -423,20 +651,414 @@
         showComboList();
     }
 
-    function showComboList() { /* 기존 코드 */ }
-    function saveComboFromList(key) { saveToBox(key); }
-    function closeComboListPopup() { /* 기존 코드 */ }
-    function openPopup() { /* 기존 코드 */ }
-    function closePopup() { /* 기존 코드 */ }
-    function clearStorage() { /* 기존 코드 */ }
+    function showComboList() {
+        const content = document.getElementById('comboListContent');
+        if (generatedCombos.length === 0) {
+            content.innerHTML = '<div style="text-align:center; padding:12px;">생성된 조합이 없습니다.</div>';
+            document.getElementById('comboListPopup').style.display = 'flex';
+            return;
+        }
+        let html = '';
+        generatedCombos.forEach(combo => {
+            // 각 번호가 탈락수(생존자이지만 10수에 없음)인지 확인
+            const numberSpans = combo.numbers.map(n => {
+                const isEliminated = survivors.includes(n) && !basket.includes(n);
+                const className = isEliminated ? 'num-box eliminated' : 'num-box';
+                return `<span class="${className}" style="width:24px; height:24px; line-height:24px; font-size:10px;">${n}</span>`;
+            }).join('');
+            html += `<div class="combo-item-row">
+                <div class="combo-nums">${numberSpans}</div>
+                <div>
+                    <button class="combo-save-btn" onclick="saveComboFromList('${combo.key}')">저장</button>
+                </div>
+            </div>`;
+        });
+        content.innerHTML = html;
+        document.getElementById('comboListPopup').style.display = 'flex';
+    }
 
-    // ===== 게임 관련 함수 (기존과 동일, 생략 가능) =====
-    // ... (touchGame, reactionGame 등은 기존 코드와 동일)
+    function saveComboFromList(key) {
+        saveToBox(key);
+    }
+
+    function closeComboListPopup() {
+        document.getElementById('comboListPopup').style.display = 'none';
+    }
+
+    // ===== 팝업 함수 =====
+    function openPopup() {
+        document.getElementById('popup').style.display = 'flex';
+        renderStorage();
+    }
+    function closePopup() {
+        document.getElementById('popup').style.display = 'none';
+    }
+
+    // ===== 보관함 초기화 (생성된 조합 목록도 함께 초기화) =====
+    function clearStorage() {
+        if(confirm("보관함을 초기화할까요?")) {
+            savedNumbers = [];
+            generatedCombos = [];
+            localStorage.removeItem(`lottoSave_${userName}`);
+            renderStorage();
+            showToast('🗑️ 보관함이 초기화되었습니다');
+        }
+    }
+
+    // ===== 게임 관련 함수 (기존과 동일) =====
+    let touchGame = null;
+    let touchInterval = null;
+    let touchSelected = [];
+    let reactionSelected = [];
+    let reactionState = 'idle';
+    let reactionTimer = null;
+    let reactionStartTime = 0;
+
+    function openGamePopup() {
+        analyze();
+        document.getElementById('gamePopup').style.display = 'flex';
+        switchGame('touch');
+    }
+    function closeGamePopup() {
+        document.getElementById('gamePopup').style.display = 'none';
+        if (touchInterval) {
+            cancelAnimationFrame(touchInterval);
+            touchInterval = null;
+        }
+        clearTimeout(reactionTimer);
+    }
+
+    function switchGame(game) {
+        document.querySelectorAll('.game-tab').forEach(tab => tab.classList.remove('active'));
+        document.querySelectorAll('.game-panel').forEach(panel => panel.classList.remove('active'));
+        if (game === 'touch') {
+            document.querySelector('[data-game="touch"]').classList.add('active');
+            document.getElementById('touchGame').classList.add('active');
+            startTouchGame();
+        } else {
+            document.querySelector('[data-game="reaction"]').classList.add('active');
+            document.getElementById('reactionGame').classList.add('active');
+            const box = document.getElementById('reactionBox');
+            if (box) {
+                box.style.background = '#222';
+                box.innerText = '시작하려면 누르세요';
+            }
+            document.getElementById('reactionResult').innerText = '';
+            reactionSelected = [];
+            updateReactionSelectedDisplay();
+            reactionState = 'idle';
+            clearTimeout(reactionTimer);
+        }
+    }
+
+    function startTouchGame() {
+        const canvas = document.getElementById('gameCanvas');
+        if (!canvas) return;
+        canvas.width = canvas.clientWidth;
+        canvas.height = canvas.clientHeight;
+        touchGame = {
+            ctx: canvas.getContext('2d'),
+            width: canvas.width,
+            height: canvas.height,
+            numbers: [],
+            highlightSet: new Set(basket)
+        };
+        for (let i = 1; i <= 45; i++) {
+            touchGame.numbers.push({
+                num: i,
+                x: Math.random() * (canvas.width - 40) + 20,
+                y: Math.random() * (canvas.height - 40) + 20,
+                vx: (Math.random() - 0.5) * 3,
+                vy: (Math.random() - 0.5) * 3,
+                radius: 18
+            });
+        }
+        touchSelected = [];
+        updateTouchDisplay();
+        if (touchInterval) cancelAnimationFrame(touchInterval);
+        touchInterval = requestAnimationFrame(updateTouchGame);
+    }
+    function updateTouchGame() {
+        if (!touchGame) return;
+        const ctx = touchGame.ctx;
+        const w = touchGame.width;
+        const h = touchGame.height;
+        ctx.clearRect(0, 0, w, h);
+        touchGame.numbers.forEach(num => {
+            num.x += num.vx;
+            num.y += num.vy;
+            if (num.x - num.radius < 0 || num.x + num.radius > w) {
+                num.vx *= -1;
+                num.x = Math.max(num.radius, Math.min(w - num.radius, num.x));
+            }
+            if (num.y - num.radius < 0 || num.y + num.radius > h) {
+                num.vy *= -1;
+                num.y = Math.max(num.radius, Math.min(h - num.radius, num.y));
+            }
+            ctx.beginPath();
+            ctx.arc(num.x, num.y, num.radius, 0, 2 * Math.PI);
+            if (touchGame.highlightSet.has(num.num)) {
+                ctx.strokeStyle = '#ffd700';
+                ctx.lineWidth = 3;
+                ctx.fillStyle = '#000000';
+            } else {
+                ctx.strokeStyle = '#888';
+                ctx.lineWidth = 2;
+                ctx.fillStyle = '#000000';
+            }
+            ctx.fill();
+            ctx.stroke();
+            ctx.fillStyle = '#ffd700';
+            ctx.font = 'bold 12px Malgun Gothic';
+            ctx.textAlign = 'center';
+            ctx.textBaseline = 'middle';
+            ctx.fillText(num.num, num.x, num.y);
+        });
+        touchInterval = requestAnimationFrame(updateTouchGame);
+    }
+    document.addEventListener('touchstart', (e) => {
+        if (!touchGame || document.getElementById('gamePopup').style.display !== 'flex' || !document.getElementById('touchGame').classList.contains('active')) return;
+        const canvas = document.getElementById('gameCanvas');
+        const rect = canvas.getBoundingClientRect();
+        const touch = e.touches[0];
+        const x = (touch.clientX - rect.left) * (canvas.width / rect.width);
+        const y = (touch.clientY - rect.top) * (canvas.height / rect.height);
+        let touchedNum = null;
+        let minDist = Infinity;
+        touchGame.numbers.forEach(num => {
+            const dx = num.x - x;
+            const dy = num.y - y;
+            const dist = Math.sqrt(dx*dx + dy*dy);
+            if (dist < num.radius && dist < minDist) {
+                minDist = dist;
+                touchedNum = num.num;
+            }
+        });
+        if (touchedNum !== null && !touchSelected.includes(touchedNum)) {
+            touchSelected.push(touchedNum);
+            updateTouchDisplay();
+        }
+        e.preventDefault();
+    }, { passive: false });
+    function updateTouchDisplay() {
+        const container = document.getElementById('selectedNumbersContainer');
+        const html = touchSelected.map(n => `<div class="selected-ball">${n}</div>`).join('');
+        container.innerHTML = html || '<div style="color:#666;">터치해서 숫자를 선택하세요</div>';
+        document.getElementById('saveComboBtn').disabled = touchSelected.length !== 6;
+    }
+    function resetTouchGame() {
+        if (touchGame) {
+            touchGame.numbers.forEach(num => {
+                num.x = Math.random() * (touchGame.width - 40) + 20;
+                num.y = Math.random() * (touchGame.height - 40) + 20;
+                num.vx = (Math.random() - 0.5) * 3;
+                num.vy = (Math.random() - 0.5) * 3;
+            });
+            touchSelected = [];
+            updateTouchDisplay();
+        }
+    }
+    function saveTouchCombo() {
+        if (touchSelected.length === 6) {
+            const sorted = [...touchSelected].sort((a,b)=>a-b);
+            saveToBox(sorted.join(','));
+            touchSelected = [];
+            updateTouchDisplay();
+        }
+    }
+
+    function updateReactionSelectedDisplay() {
+        const container = document.getElementById('reactionSelectedContainer');
+        const html = reactionSelected.map(n => `<div class="selected-ball">${n}</div>`).join('');
+        container.innerHTML = html || '<div style="color:#666;">터치해서 번호를 뽑으세요</div>';
+        document.getElementById('saveReactionBtn').disabled = reactionSelected.length !== 6;
+    }
+
+    function startReaction() {
+        const box = document.getElementById('reactionBox');
+        if (!box) return;
+        reactionState = 'waiting';
+        box.style.background = '#222';
+        box.innerText = '기다리세요...';
+        document.getElementById('reactionResult').innerText = '';
+        const delay = Math.random() * 2000 + 1000;
+        clearTimeout(reactionTimer);
+        reactionTimer = setTimeout(() => {
+            if (reactionState === 'waiting') {
+                reactionState = 'ready';
+                box.style.background = '#00aa00';
+                box.innerText = '터치!';
+                reactionStartTime = performance.now();
+            }
+        }, delay);
+    }
+
+    function handleReactionClick() {
+        const box = document.getElementById('reactionBox');
+        const result = document.getElementById('reactionResult');
+        if (!box || !result) return;
+        
+        if (reactionState === 'ready') {
+            const reactionTime = performance.now() - reactionStartTime;
+            const randomNum = Math.floor(Math.random() * 45) + 1;
+            result.innerText = `반응속도: ${reactionTime.toFixed(0)}ms`;
+            
+            if (!reactionSelected.includes(randomNum)) {
+                reactionSelected.push(randomNum);
+                updateReactionSelectedDisplay();
+            }
+            
+            box.style.background = '#222';
+            box.innerText = '다시 하려면 새 게임 버튼';
+            reactionState = 'idle';
+            clearTimeout(reactionTimer);
+        } else if (reactionState === 'waiting') {
+            result.innerText = '너무 빨랐어요! 다시 시작하세요.';
+            box.style.background = '#222';
+            box.innerText = '시작 버튼 누르기';
+            reactionState = 'idle';
+            clearTimeout(reactionTimer);
+        }
+    }
+
+    function resetReactionGame() {
+        reactionSelected = [];
+        updateReactionSelectedDisplay();
+        startReaction();
+    }
+
+    function saveReactionCombo() {
+        if (reactionSelected.length === 6) {
+            const sorted = [...reactionSelected].sort((a,b)=>a-b);
+            saveToBox(sorted.join(','));
+            reactionSelected = [];
+            updateReactionSelectedDisplay();
+            startReaction();
+        }
+    }
 
     // ===== 복기 함수 =====
-    function openReviewPopup() { /* 기존 코드 */ }
-    function closeReviewPopup() { /* 기존 코드 */ }
-    function compareNumbers() { /* 기존 코드 */ }
+    function openReviewPopup() {
+        analyze();
+        const targetRound = currentBaseRound;
+        const winData = FULL_DATA.find(row => row[0] === targetRound);
+        const winningDisplay = document.getElementById('winningDisplay');
+        if (winData) {
+            const nums = winData.slice(1, 7).join(', ');
+            const bonus = winData[7];
+            winningDisplay.innerHTML = `📌 ${targetRound}회 당첨번호: ${nums} + 보너스 ${bonus}`;
+            for (let i = 1; i <= 6; i++) {
+                document.getElementById(`win${i}`).value = winData[i];
+            }
+            document.getElementById('bonus').value = winData[7];
+        } else {
+            winningDisplay.innerHTML = `📌 ${targetRound}회 데이터가 없습니다.`;
+            for (let i = 1; i <= 6; i++) {
+                document.getElementById(`win${i}`).value = '';
+            }
+            document.getElementById('bonus').value = '';
+        }
+        document.getElementById('reviewPopup').style.display = 'flex';
+    }
+
+    function closeReviewPopup() {
+        document.getElementById('reviewPopup').style.display = 'none';
+    }
+
+    function compareNumbers() {
+        const win = [
+            parseInt(document.getElementById('win1').value),
+            parseInt(document.getElementById('win2').value),
+            parseInt(document.getElementById('win3').value),
+            parseInt(document.getElementById('win4').value),
+            parseInt(document.getElementById('win5').value),
+            parseInt(document.getElementById('win6').value)
+        ];
+        const bonus = parseInt(document.getElementById('bonus').value);
+
+        if (win.some(isNaN) || isNaN(bonus)) {
+            alert('모든 번호를 입력해주세요.');
+            return;
+        }
+        if (new Set(win).size !== 6) {
+            alert('당첨번호는 중복 없이 6개를 입력해야 합니다.');
+            return;
+        }
+
+        const winSet = new Set(win);
+        const aiMatched = basket.filter(n => winSet.has(n));
+        const aiMatchCount = aiMatched.length;
+        const aiBonusMatch = basket.includes(bonus);
+        document.getElementById('aiMatch').innerText = `${aiMatchCount}개 일치`;
+        document.getElementById('aiMatchedList').innerHTML = aiMatched.length ? `일치 번호: ${aiMatched.join(', ')}` : '';
+        document.getElementById('aiBonus').innerHTML = aiBonusMatch ? '(보너스 번호 포함)' : '';
+
+        const savedDiv = document.getElementById('savedMatch');
+        if (savedNumbers.length === 0) {
+            savedDiv.innerHTML = '저장된 조합이 없습니다.';
+        } else {
+            let html = '';
+            savedNumbers.forEach(combo => {
+                const nums = combo.split(',').map(Number);
+                const matchCount = nums.filter(n => winSet.has(n)).length;
+                const hasBonus = nums.includes(bonus);
+                let rankInfo = '';
+                if (matchCount === 6) rankInfo = '🥇 1등';
+                else if (matchCount === 5 && hasBonus) rankInfo = '🥈 2등';
+                else if (matchCount === 5) rankInfo = '🥉 3등';
+                else if (matchCount === 4) rankInfo = '4등';
+                else if (matchCount === 3) rankInfo = '5등';
+                else rankInfo = '낙첨';
+                html += `<div class="combo-item"><span>${combo}</span><span>${matchCount}개 ${rankInfo}</span></div>`;
+            });
+            savedDiv.innerHTML = html;
+        }
+
+        const reviewAIInfo = document.getElementById('reviewAIInfo');
+        if (reviewAIInfo) {
+            const survivorsHtml = survivors.map(n => winSet.has(n) ? `<span class="matched">${n}</span>` : n).join(', ');
+            const basketHtml = basket.map(n => winSet.has(n) ? `<span class="matched">${n}</span>` : n).join(', ');
+            const middleHtml = middle.map(n => winSet.has(n) ? `<span class="matched">${n}</span>` : n).join(', ') || '없음';
+            const bonusNumsHtml = bonusNums.map(n => n === bonus ? `<span class="matched">${n}</span>` : n).join(', ') || '없음';
+            const outHtml = compressedOut4.map(n => winSet.has(n) ? `<span class="matched">${n}</span>` : n).join(', ') || '없음';
+
+            reviewAIInfo.innerHTML = `
+                <div><span class="highlight-blue">생존자 ${survivors.length}수:</span> ${survivorsHtml}</div>
+                <div><span class="highlight-gold">AI 추천 10수:</span> ${basketHtml}</div>
+                <div><span class="highlight-blue">📦 B bag ${middle.length}개:</span> ${middleHtml}</div>
+                <div><span class="highlight-blue">🎯 보너스 번호 ${bonusNums.length}개:</span> ${bonusNumsHtml}</div>
+                <div><span class="highlight-blue">🔻 14수에서 빠진 4개:</span> ${outHtml}</div>
+            `;
+        }
+    }
+
+    function showComboDetail(arr, comboNumber) {
+        document.getElementById('comboDetailTitle').innerText = `${comboNumber}조합 상세 (${arr.join(', ')})`;
+        const content = document.getElementById('comboDetailContent');
+        const sections = [
+            { name: '1-10', range: [1,10] },
+            { name: '11-20', range: [11,20] },
+            { name: '21-30', range: [21,30] },
+            { name: '31-40', range: [31,40] },
+            { name: '41-45', range: [41,45] }
+        ];
+        let html = '';
+        sections.forEach(sec => {
+            const numsInSection = arr.filter(n => n >= sec.range[0] && n <= sec.range[1]);
+            html += `<div class="section-row">
+                <span class="section-label">${sec.name}</span>
+                <div class="section-nums">
+                    ${numsInSection.length ? numsInSection.map(n => `<span class="num-box" style="width:24px; height:24px; line-height:24px; font-size:10px;">${n}</span>`).join('') : '없음'}
+                </div>
+            </div>`;
+        });
+        content.innerHTML = html;
+        document.getElementById('comboDetailPopup').style.display = 'flex';
+    }
+
+    function closeComboDetailPopup() {
+        document.getElementById('comboDetailPopup').style.display = 'none';
+    }
 
     window.onload = function() {
         initUser();
