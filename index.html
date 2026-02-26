@@ -255,6 +255,7 @@
     let weightedScore = {}; // 가중치 점수 (조합 생성 시 사용)
     let middle = []; // B bag
     let bonusNums = []; // 보너스 번호 목록
+    let lowestOne = null; // 최하위 1개 탈락번호
 
     // ===== 사용자 관리 =====
     function updateUserDisplay() {
@@ -506,6 +507,14 @@
         weightedScore = result.weightedScore || {};
         machineFixed = basket.slice(0, 3);
         
+        // 최하위 1개 탈락번호 계산 (middleBag에서 점수 가장 낮은 것)
+        if (middle.length > 0) {
+            let sortedAsc = [...middle].sort((a, b) => (weightedScore[a] || 0) - (weightedScore[b] || 0));
+            lowestOne = sortedAsc[0];
+        } else {
+            lowestOne = null;
+        }
+        
         // 합계 계산 (4회차 평균)
         let sums = [];
         targetRounds.forEach(r => {
@@ -533,7 +542,7 @@
             <div>AI 추천 11수: ${basket.join(', ')}</div>
             <div><span class="highlight-blue">📊 기준 합계 (4회차 평균):</span> ${dynamicAvgSum} (${dynamicAvgSum-25}~${dynamicAvgSum+25})</div>
             <div style="margin-top:4px; border-top:1px solid #333; padding-top:3px; font-size:9px; white-space:nowrap; overflow-x:auto; -webkit-overflow-scrolling:touch;">
-                📦 B bag: ${middle.join(', ') || '없음'} | 🎯 보너스: ${bonusNums.join(', ') || '없음'} | 🔗 교집합: ${middle.filter(n => bonusNums.includes(n)).join(', ') || '없음'}
+                📦 B bag: ${middle.join(', ') || '없음'} | 🎯 보너스: ${bonusNums.join(', ') || '없음'} | 🔗 교집합: ${middle.filter(n => bonusNums.includes(n)).join(', ') || '없음'} | 🔻 최하위 탈락번호: ${lowestOne !== null ? lowestOne : '없음'}
             </div>
         `;
         
@@ -564,7 +573,7 @@
         analyze();
     }
 
-    // ===== 조합 생성 (AC 6~9, 10조합 1~4번에 특별번호 포함) =====
+    // ===== 조합 생성 (AC 6~9, 10조합 1~4번에 특별번호 포함, 최하위 탈락번호 3개 조합에 강제 포함) =====
     function process(limit) {
         analyze();
         generatedCombos = [];
@@ -606,22 +615,46 @@
             return new Set(gaps).size;
         }
 
-        // 유효성 검사 (합계 + AC 6~9)
-        function isValidCombo(arr) {
+        // 유효성 검사 (합계 + AC, safety에 따라 조건 완화)
+        function isValidCombo(arr, safetyVal) {
             let sum = arr.reduce((a,b)=>a+b, 0);
             if (sum < minSum || sum > maxSum) return false;
             let ac = getAC(arr);
-            return ac >= 6 && ac <= 9;
+            if (safetyVal < 20000) {
+                return ac >= 6 && ac <= 9;
+            } else if (safetyVal < 40000) {
+                return ac >= 5 && ac <= 10; // 조건 완화
+            } else {
+                return true; // AC 조건 아예 무시
+            }
+        }
+
+        // 10조합일 경우, 최하위 탈락번호를 넣을 3개의 랜덤 인덱스 미리 선택
+        let lowInsertIndices = [];
+        if (limit === 10 && lowestOne !== null) {
+            // 0~9 중 3개를 무작위로 선택 (중복 없이)
+            let candidates = [0,1,2,3,4,5,6,7,8,9];
+            for (let i = 0; i < 3; i++) {
+                if (candidates.length === 0) break;
+                let randIdx = Math.floor(Math.random() * candidates.length);
+                lowInsertIndices.push(candidates[randIdx]);
+                candidates.splice(randIdx, 1);
+            }
         }
 
         while(count < limit && safety < 50000) {
             safety++;
             let res = new Set();
-            let currentIdx = count + 1; // 현재 조합 번호 (1~10)
+            let currentIdx = count; // 0-based
 
-            // 10조합이고, 현재 조합 번호가 1~4이며 specialNumbers에 해당 번호가 있으면 추가
-            if (limit === 10 && currentIdx <= 4 && currentIdx <= specialNumbers.length) {
-                res.add(specialNumbers[currentIdx - 1]);
+            // 최하위 탈락번호 강제 삽입 (10조합이고 현재 인덱스가 lowInsertIndices에 포함되면)
+            if (limit === 10 && lowestOne !== null && lowInsertIndices.includes(currentIdx)) {
+                res.add(lowestOne);
+            }
+
+            // 특별번호 삽입 (10조합이고 1~4번)
+            if (limit === 10 && currentIdx < 4 && currentIdx < specialNumbers.length) {
+                res.add(specialNumbers[currentIdx]);
             }
 
             // 나머지 자리를 11수(basket)에서 가중치 기반으로 채움
@@ -659,7 +692,8 @@
             let finalArr = Array.from(res).sort((a,b)=>a-b);
             let key = finalArr.join(',');
 
-            if (!used.has(key) && isValidCombo(finalArr)) {
+            // safety 값을 이용해 조건 검사
+            if (!used.has(key) && isValidCombo(finalArr, safety)) {
                 used.add(key);
                 count++;
                 generatedCombos.push({
