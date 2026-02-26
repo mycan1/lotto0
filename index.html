@@ -131,7 +131,7 @@
     </div>
 
     <div id="console"></div>
-    <div class="small-note">※ 10조합: 빠진 4개 중 1개 랜덤 + 10수 랜덤 | 🎯 <span id="targetRound">1213</span>회차 예상</div>
+    <div class="small-note">※ 10조합: 홀수조합(1,3,5,7,9)은 14수, 짝수조합(2,4,6,8,10)은 10수 | 🎯 <span id="targetRound">1213</span>회차 예상</div>
 </div>
 
 <!-- 토스트 메시지 -->
@@ -574,27 +574,21 @@
         let used = new Set();
         
         if (limit === 10) {
-            // 10조합 생성: 각 조합에 compressedOut4 중 랜덤 1개 포함 + 10수에서 나머지 5개 랜덤
+            // 10조합 생성: 홀수 조합(1,3,5,7,9)은 14수, 짝수 조합(2,4,6,8,10)은 10수
+            let full14 = [...new Set([...basket, ...compressedOut4])].sort((a,b)=>a-b); // 14수 (중복 제거)
             let b10 = [...basket];
-            let out4 = [...compressedOut4];
             
             for (let i = 0; i < limit; i++) {
                 let combo = new Set();
+                let pool = (i % 2 === 0) ? full14 : b10; // i=0(조합1) 홀수 -> full14, i=1(조합2) 짝수 -> b10
                 
-                // 1. out4에서 랜덤 1개 선택
-                if (out4.length > 0) {
-                    let pick = out4[Math.floor(Math.random() * out4.length)];
-                    combo.add(pick);
-                }
-                
-                // 2. 나머지 5개를 10수에서 랜덤 선택 (이미 있는 번호 제외)
-                let available = b10.filter(n => !combo.has(n));
-                let shuffled = [...available].sort(() => Math.random() - 0.5);
+                // 풀에서 6개를 랜덤하게 선택 (중복 없이)
+                let shuffled = [...pool].sort(() => Math.random() - 0.5);
                 for (let n of shuffled) {
                     if (combo.size < 6) combo.add(n);
                 }
                 
-                // 3. 부족하면 생존자에서 랜덤 보충 (비상용)
+                // 혹시 부족하면 (풀 크기가 6보다 작은 경우는 없음) 생존자에서 보충
                 while (combo.size < 6) {
                     let rand = survivors[Math.floor(Math.random() * survivors.length)];
                     combo.add(rand);
