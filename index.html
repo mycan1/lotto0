@@ -131,7 +131,7 @@
     </div>
 
     <div id="console"></div>
-    <div class="small-note">※ 10조합 1~4번에 특별번호 포함, AC 6~9 | 🎯 <span id="targetRound">1213</span>회차 예상</div>
+    <div class="small-note">※ 10조합 1~2번에 B bag 특별번호 포함, AC 6~9 | 🎯 <span id="targetRound">1213</span>회차 예상</div>
 </div>
 
 <!-- 토스트 메시지 -->
@@ -255,7 +255,7 @@
     let weightedScore = {}; // 가중치 점수 (조합 생성 시 사용)
     let middle = []; // B bag
     let bonusNums = []; // 보너스 번호 목록
-    let lowestOne = null; // 최하위 1개 탈락번호
+    let compressedOut3 = []; // 14수에서 11수로 줄면서 빠진 3개 번호
 
     // ===== 사용자 관리 =====
     function updateUserDisplay() {
@@ -377,16 +377,13 @@
         document.querySelector('.popup-title').innerHTML = `📦 ${userName}의 보관함 (${savedNumbers.length}개)`;
     }
 
-    // ===== 11수 생성 알고리즘 (4회차 51주간격, 상위6+하위5, 보너스 가중치 제거, 미출수 가중치 유지, 최하위 1개 퇴출) =====
+    // ===== 11수 생성 알고리즘 (4회차 51주간격, 상위6+하위5, 보너스 가중치 제거, 미출수 가중치 유지) =====
     function lottoSystem00001212Final(allData, lastWinning) {
         const targetRound = currentBaseRound;
-        // 4개 회차 (51주 간격)
         const targetRounds = [];
         for (let i = 1; i <= 4; i++) {
             targetRounds.push(targetRound - 51 * i);
         }
-
-        // 가중치: 최신순 1.6,1.5,1.4,1.3
         const weights = [1.6, 1.5, 1.4, 1.3];
 
         let mainPool = [];
@@ -407,25 +404,20 @@
             }
         });
 
-        // 본번호 집합 (중복 제거, 11수 후보는 본번호만)
         let mainSet = new Set(mainPool);
         let mainNumbers = Array.from(mainSet);
 
-        // 가중치 점수 계산
         let wScore = {};
         mainWithRound.forEach(item => {
             wScore[item.num] = (wScore[item.num] || 0) + item.weight;
         });
 
-        // 미출수 가중치 추가 (+0.2) - 유지
         zeroFreqNums.forEach(num => {
             if (wScore[num] !== undefined) {
                 wScore[num] += 0.2;
             }
-            // 본번호에 없는 미출수는 후보가 아니므로 무시
         });
 
-        // 본번호 후보들을 가중치 점수로 정렬 (내림차순)
         let rankedMain = mainNumbers.sort((a, b) => {
             let aScore = wScore[a] || 0;
             let bScore = wScore[b] || 0;
@@ -434,27 +426,37 @@
             return a - b;
         });
 
-        // 상위 6개
+        // 14수 (상위8 + 하위6) - 빠진 3개 계산용
+        let top8 = rankedMain.slice(0, 8);
+        let bottom6 = rankedMain.slice(-6);
+        let full14Set = new Set([...top8, ...bottom6]);
+        let full14 = Array.from(full14Set).sort((a,b)=>a-b);
+
+        // 11수 (상위6 + 하위5, 최하위1 제외)
         let top6 = rankedMain.slice(0, 6);
-        // 하위 5개 (최하위 1개 제외: 뒤에서 6번째부터 2번째까지)
-        let bottom5 = rankedMain.slice(-6, -1);
+        let bottom5 = rankedMain.slice(-6, -1); // 뒤에서 6번째부터 2번째까지
         let basketSet = new Set([...top6, ...bottom5]);
         let basket = Array.from(basketSet).sort((a, b) => a - b);
 
-        // 중간에 빠진 번호 (B bag)
+        // 중간 그룹 (B bag)
         let middleBag = rankedMain.filter(num => !basketSet.has(num));
 
-        // 생존자(survivors)는 본번호 + 보너스 번호 합집합 (참고용)
+        // 생존자 (참고용)
         let survivorsSet = new Set([...mainPool, ...bonusPool]);
         let survivors = Array.from(survivorsSet).sort((a,b)=>a-b);
         let bonusNumbers = Array.from(new Set(bonusPool)).sort((a, b) => a - b);
+
+        // 빠진 3개 번호 (14수 - 11수)
+        let compressedOut = full14.filter(num => !basketSet.has(num));
 
         return {
             survivors: survivors,
             basket: basket,
             middleBag: middleBag,
             bonusNumbers: bonusNumbers,
-            weightedScore: wScore
+            weightedScore: wScore,
+            compressedOut: compressedOut,
+            full14: full14
         };
     }
 
@@ -470,7 +472,6 @@
         }
         const lastWinning = prevData.slice(1, 7);
         
-        // 합계 계산용 4개 회차 (51주 간격)
         const targetRounds = [];
         for (let i = 1; i <= 4; i++) {
             targetRounds.push(targetRound - 51 * i);
@@ -490,7 +491,7 @@
             return;
         }
         
-        // 미출수 계산 (최근 22회차 기준)
+        // 미출수 계산 (최근 22회차)
         let freq22 = {};
         for(let i=1; i<=45; i++) freq22[i] = 0;
         FULL_DATA.slice(0,22).forEach(row => {
@@ -498,24 +499,16 @@
         });
         zeroFreqNums = Object.keys(freq22).filter(n => freq22[n]===0).map(Number).sort((a,b)=>a-b);
         
-        // 11수 생성
         const result = lottoSystem00001212Final(FULL_DATA, lastWinning);
         survivors = result.survivors;
         basket = result.basket;
         middle = result.middleBag || [];
         bonusNums = result.bonusNumbers || [];
         weightedScore = result.weightedScore || {};
+        compressedOut3 = result.compressedOut || []; // 빠진 3개 번호
         machineFixed = basket.slice(0, 3);
         
-        // 최하위 1개 탈락번호 계산 (middleBag에서 점수 가장 낮은 것)
-        if (middle.length > 0) {
-            let sortedAsc = [...middle].sort((a, b) => (weightedScore[a] || 0) - (weightedScore[b] || 0));
-            lowestOne = sortedAsc[0];
-        } else {
-            lowestOne = null;
-        }
-        
-        // 합계 계산 (4회차 평균)
+        // 합계 계산
         let sums = [];
         targetRounds.forEach(r => {
             let row = FULL_DATA.find(x => x[0] === r);
@@ -535,29 +528,28 @@
         document.getElementById('roundDisplay').innerHTML = `예상 ${targetRound}회차`;
         document.getElementById('targetRound').innerText = targetRound;
         
-        // 상태창 표시 (11수, B bag 한 줄)
         document.getElementById('status').innerHTML = `
             <div><span class="highlight-gold">★ 11수 엔진 (4회차 51주간격, 상위6+하위5, 최하위1 제외)</span></div>
             <div>생존자 ${survivors.length}수: ${survivors.join(', ')}</div>
             <div>AI 추천 11수: ${basket.join(', ')}</div>
+            <div>🔻 14수에서 빠진 3개: ${compressedOut3.join(', ') || '없음'}</div>
             <div><span class="highlight-blue">📊 기준 합계 (4회차 평균):</span> ${dynamicAvgSum} (${dynamicAvgSum-25}~${dynamicAvgSum+25})</div>
             <div style="margin-top:4px; border-top:1px solid #333; padding-top:3px; font-size:9px; white-space:nowrap; overflow-x:auto; -webkit-overflow-scrolling:touch;">
-                📦 B bag: ${middle.join(', ') || '없음'} | 🎯 보너스: ${bonusNums.join(', ') || '없음'} | 🔗 교집합: ${middle.filter(n => bonusNums.includes(n)).join(', ') || '없음'} | 🔻 최하위 탈락번호: ${lowestOne !== null ? lowestOne : '없음'}
+                📦 B bag: ${middle.join(', ') || '없음'} | 🎯 보너스: ${bonusNums.join(', ') || '없음'}
             </div>
         `;
         
         document.getElementById('reviewTitle').innerHTML = `📊 ${targetRound}회 복기`;
         document.getElementById('reviewDesc').innerHTML = `${targetRound}회 당첨번호 6개 + 보너스 번호를 입력하세요`;
         
-        // 복기 팝업 내 AI 정보 초기화 (analyze 시점에서는 아직 당첨번호 미입력 상태)
         const reviewAIInfo = document.getElementById('reviewAIInfo');
         if (reviewAIInfo) {
-            // 당첨번호 입력 전에는 그냥 숫자만 표시 (강조 없음)
             reviewAIInfo.innerHTML = `
                 <div><span class="highlight-blue">생존자 ${survivors.length}수:</span> ${survivors.join(', ')}</div>
                 <div><span class="highlight-gold">AI 추천 11수:</span> ${basket.join(', ')}</div>
                 <div><span class="highlight-blue">📦 B bag ${middle.length}개:</span> ${middle.join(', ') || '없음'}</div>
                 <div><span class="highlight-blue">🎯 보너스 번호 ${bonusNums.length}개:</span> ${bonusNums.join(', ') || '없음'}</div>
+                <div><span class="highlight-blue">🔻 14수에서 빠진 3개:</span> ${compressedOut3.join(', ') || '없음'}</div>
             `;
         }
     }
@@ -573,7 +565,7 @@
         analyze();
     }
 
-    // ===== 조합 생성 (AC 6~9, 10조합 1~4번에 특별번호 포함, 최하위 탈락번호 3개 조합에 강제 포함) =====
+    // ===== 조합 생성 =====
     function process(limit) {
         analyze();
         generatedCombos = [];
@@ -581,32 +573,6 @@
         let minSum = dynamicAvgSum - 25;
         let maxSum = dynamicAvgSum + 25;
 
-        // 특별 번호 4개 선정 (B bag에서 상위 9,10위 + 하위 5,6위)
-        let specialNumbers = [];
-        if (middle.length > 0) {
-            // 점수 내림차순 (높은 순)
-            let sortedDesc = [...middle].sort((a, b) => (weightedScore[b] || 0) - (weightedScore[a] || 0));
-            // 점수 오름차순 (낮은 순)
-            let sortedAsc = [...middle].sort((a, b) => (weightedScore[a] || 0) - (weightedScore[b] || 0));
-
-            // 상위 9,10위 (인덱스 8,9)
-            if (sortedDesc.length >= 10) {
-                specialNumbers.push(sortedDesc[8]); // 9위
-                specialNumbers.push(sortedDesc[9]); // 10위
-            } else if (sortedDesc.length >= 9) {
-                specialNumbers.push(sortedDesc[8]); // 9위만
-            }
-
-            // 하위 5,6위 (인덱스 4,5)
-            if (sortedAsc.length >= 6) {
-                specialNumbers.push(sortedAsc[4]); // 5위
-                specialNumbers.push(sortedAsc[5]); // 6위
-            } else if (sortedAsc.length >= 5) {
-                specialNumbers.push(sortedAsc[4]); // 5위만
-            }
-        }
-
-        // AC 값 계산 함수
         function getAC(arr) {
             let gaps = [];
             for (let i = 0; i < arr.length - 1; i++) {
@@ -615,46 +581,42 @@
             return new Set(gaps).size;
         }
 
-        // 유효성 검사 (합계 + AC, safety에 따라 조건 완화)
         function isValidCombo(arr, safetyVal) {
             let sum = arr.reduce((a,b)=>a+b, 0);
             if (sum < minSum || sum > maxSum) return false;
             let ac = getAC(arr);
-            if (safetyVal < 20000) {
-                return ac >= 6 && ac <= 9;
-            } else if (safetyVal < 40000) {
-                return ac >= 5 && ac <= 10; // 조건 완화
-            } else {
-                return true; // AC 조건 아예 무시
-            }
+            if (safetyVal < 20000) return ac >= 6 && ac <= 9;
+            else if (safetyVal < 40000) return ac >= 5 && ac <= 10;
+            else return true;
         }
 
-        // 10조합일 경우, 최하위 탈락번호를 넣을 3개의 랜덤 인덱스 미리 선택
-        let lowInsertIndices = [];
-        if (limit === 10 && lowestOne !== null) {
-            // 0~9 중 3개를 무작위로 선택 (중복 없이)
+        // 10조합용 랜덤 인덱스 3개 미리 선택 (빠진 3개를 넣을 위치)
+        let insertIndices = [];
+        if (limit === 10 && compressedOut3.length > 0) {
             let candidates = [0,1,2,3,4,5,6,7,8,9];
             for (let i = 0; i < 3; i++) {
                 if (candidates.length === 0) break;
                 let randIdx = Math.floor(Math.random() * candidates.length);
-                lowInsertIndices.push(candidates[randIdx]);
+                insertIndices.push(candidates[randIdx]);
                 candidates.splice(randIdx, 1);
             }
         }
 
-        while(count < limit && safety < 50000) {
+        while (count < limit && safety < 50000) {
             safety++;
             let res = new Set();
             let currentIdx = count; // 0-based
 
-            // 최하위 탈락번호 강제 삽입 (10조합이고 현재 인덱스가 lowInsertIndices에 포함되면)
-            if (limit === 10 && lowestOne !== null && lowInsertIndices.includes(currentIdx)) {
-                res.add(lowestOne);
+            // 5조합: 각 조합마다 compressedOut3 중 하나를 랜덤 포함
+            if (limit === 5 && compressedOut3.length > 0) {
+                let randNum = compressedOut3[Math.floor(Math.random() * compressedOut3.length)];
+                res.add(randNum);
             }
 
-            // 특별번호 삽입 (10조합이고 1~4번)
-            if (limit === 10 && currentIdx < 4 && currentIdx < specialNumbers.length) {
-                res.add(specialNumbers[currentIdx]);
+            // 10조합: 미리 선택된 3개 인덱스에만 compressedOut3 중 하나를 랜덤 포함
+            if (limit === 10 && compressedOut3.length > 0 && insertIndices.includes(currentIdx)) {
+                let randNum = compressedOut3[Math.floor(Math.random() * compressedOut3.length)];
+                res.add(randNum);
             }
 
             // 나머지 자리를 11수(basket)에서 가중치 기반으로 채움
@@ -679,8 +641,7 @@
                 res.add(n);
             }
 
-            // 부족하면 11수 내에서 랜덤으로 채움
-            while(res.size < 6) {
+            while (res.size < 6) {
                 let remaining = [...basket].filter(n => !res.has(n));
                 if (remaining.length === 0) break;
                 let randIndex = Math.floor(Math.random() * remaining.length);
@@ -692,7 +653,6 @@
             let finalArr = Array.from(res).sort((a,b)=>a-b);
             let key = finalArr.join(',');
 
-            // safety 값을 이용해 조건 검사
             if (!used.has(key) && isValidCombo(finalArr, safety)) {
                 used.add(key);
                 count++;
@@ -716,7 +676,6 @@
         }
         let html = '';
         generatedCombos.forEach(combo => {
-            // 각 번호가 탈락수(생존자이지만 11수에 없음)인지 확인
             const numberSpans = combo.numbers.map(n => {
                 const isEliminated = survivors.includes(n) && !basket.includes(n);
                 const className = isEliminated ? 'num-box eliminated' : 'num-box';
@@ -750,7 +709,6 @@
         document.getElementById('popup').style.display = 'none';
     }
 
-    // ===== 보관함 초기화 (생성된 조합 목록도 함께 초기화) =====
     function clearStorage() {
         if(confirm("보관함을 초기화할까요?")) {
             savedNumbers = [];
@@ -761,7 +719,7 @@
         }
     }
 
-    // ===== 게임 관련 함수 (기존과 동일) =====
+    // ===== 게임 관련 함수 (변경 없음) =====
     let touchGame = null;
     let touchInterval = null;
     let touchSelected = [];
@@ -993,13 +951,11 @@
         }
     }
 
-    // ===== 복기 함수 (자동 채움 포함, 생존자 강조) =====
+    // ===== 복기 함수 =====
     function openReviewPopup() {
         analyze();
-
         const targetRound = currentBaseRound;
         const winData = FULL_DATA.find(row => row[0] === targetRound);
-        
         const winningDisplay = document.getElementById('winningDisplay');
         if (winData) {
             const nums = winData.slice(1, 7).join(', ');
@@ -1016,7 +972,6 @@
             }
             document.getElementById('bonus').value = '';
         }
-
         document.getElementById('reviewPopup').style.display = 'flex';
     }
 
@@ -1052,7 +1007,6 @@
         document.getElementById('aiMatchedList').innerHTML = aiMatched.length ? `일치 번호: ${aiMatched.join(', ')}` : '';
         document.getElementById('aiBonus').innerHTML = aiBonusMatch ? '(보너스 번호 포함)' : '';
 
-        // 보관함 조합 비교
         const savedDiv = document.getElementById('savedMatch');
         if (savedNumbers.length === 0) {
             savedDiv.innerHTML = '저장된 조합이 없습니다.';
@@ -1074,23 +1028,20 @@
             savedDiv.innerHTML = html;
         }
 
-        // 복기 팝업 상단 정보 영역 업데이트 (생존자 → 11수 → B bag → 보너스)
         const reviewAIInfo = document.getElementById('reviewAIInfo');
         if (reviewAIInfo) {
-            // 생존자 목록 (본번호 당첨 시 강조)
             const survivorsHtml = survivors.map(n => winSet.has(n) ? `<span class="matched">${n}</span>` : n).join(', ');
-            // AI 11수 목록 (본번호 당첨 시 강조)
             const basketHtml = basket.map(n => winSet.has(n) ? `<span class="matched">${n}</span>` : n).join(', ');
-            // B bag 목록 (본번호 당첨 시 강조)
             const middleHtml = middle.map(n => winSet.has(n) ? `<span class="matched">${n}</span>` : n).join(', ') || '없음';
-            // 보너스 번호 목록 (보너스 당첨 시 강조)
             const bonusNumsHtml = bonusNums.map(n => n === bonus ? `<span class="matched">${n}</span>` : n).join(', ') || '없음';
+            const outHtml = compressedOut3.map(n => winSet.has(n) ? `<span class="matched">${n}</span>` : n).join(', ') || '없음';
 
             reviewAIInfo.innerHTML = `
                 <div><span class="highlight-blue">생존자 ${survivors.length}수:</span> ${survivorsHtml}</div>
                 <div><span class="highlight-gold">AI 추천 11수:</span> ${basketHtml}</div>
                 <div><span class="highlight-blue">📦 B bag ${middle.length}개:</span> ${middleHtml}</div>
                 <div><span class="highlight-blue">🎯 보너스 번호 ${bonusNums.length}개:</span> ${bonusNumsHtml}</div>
+                <div><span class="highlight-blue">🔻 14수에서 빠진 3개:</span> ${outHtml}</div>
             `;
         }
     }
