@@ -131,7 +131,7 @@
     </div>
 
     <div id="console"></div>
-    <div class="small-note">※ 10조합: 1~5조합 special[0] + 10수 랜덤, 6~10조합 special[1] + 10수 랜덤 | 🎯 <span id="targetRound">1213</span>회차 예상</div>
+    <div class="small-note">※ 10조합: 빠진 4개 중 1개 랜덤 + 10수 랜덤 | 🎯 <span id="targetRound">1213</span>회차 예상</div>
 </div>
 
 <!-- 토스트 메시지 -->
@@ -256,7 +256,6 @@
     let middle = []; // B bag (사용 안 함)
     let bonusNums = []; // 보너스 번호 목록
     let compressedOut4 = []; // 14수에서 10수로 줄면서 빠진 4개 번호
-    let specialTwo = []; // compressedOut4 중 가중치 상위 2개
 
     // ===== 사용자 관리 =====
     function updateUserDisplay() {
@@ -508,14 +507,6 @@
         weightedScore = result.weightedScore || {};
         compressedOut4 = result.compressedOut || []; // 빠진 4개 번호
         machineFixed = basket.slice(0, 3);
-
-        // compressedOut4 중 가중치 높은 상위 2개 선정
-        if (compressedOut4.length > 0) {
-            let sortedDesc = [...compressedOut4].sort((a, b) => (weightedScore[b] || 0) - (weightedScore[a] || 0));
-            specialTwo = sortedDesc.slice(0, 2);
-        } else {
-            specialTwo = [];
-        }
         
         // 합계 계산 (참고용)
         let sums = [];
@@ -543,7 +534,6 @@
             <div>생존자 ${survivors.length}수: ${survivors.join(', ')}</div>
             <div>AI 추천 10수: ${basket.join(', ')}</div>
             <div>🔻 14수에서 빠진 4개: ${compressedOut4.join(', ') || '없음'}</div>
-            <div>✨ 연관 상위 2개: ${specialTwo.join(', ') || '없음'}</div>
             <div><span class="highlight-blue">📊 기준 합계 (4회차 평균):</span> ${dynamicAvgSum} (참고용)</div>
             <div style="margin-top:4px; border-top:1px solid #333; padding-top:3px; font-size:9px; white-space:nowrap; overflow-x:auto; -webkit-overflow-scrolling:touch;">
                 📦 B bag: ${middle.join(', ') || '없음'} | 🎯 보너스: ${bonusNums.join(', ') || '없음'}
@@ -562,7 +552,6 @@
                 <div><span class="highlight-blue">📦 B bag ${middle.length}개:</span> ${middle.join(', ') || '없음'}</div>
                 <div><span class="highlight-blue">🎯 보너스 번호 ${bonusNums.length}개:</span> ${bonusNums.join(', ') || '없음'}</div>
                 <div><span class="highlight-blue">🔻 14수에서 빠진 4개:</span> ${compressedOut4.join(', ') || '없음'}</div>
-                <div><span class="highlight-blue">✨ 연관 상위 2개:</span> ${specialTwo.join(', ') || '없음'}</div>
             `;
         }
     }
@@ -585,27 +574,27 @@
         let used = new Set();
         
         if (limit === 10) {
-            // 10조합 생성: 슬라이딩 없음, specialTwo를 각각 1~5, 6~10조합에 고정 배치
+            // 10조합 생성: 각 조합에 compressedOut4 중 랜덤 1개 포함 + 10수에서 나머지 5개 랜덤
             let b10 = [...basket];
+            let out4 = [...compressedOut4];
             
             for (let i = 0; i < limit; i++) {
                 let combo = new Set();
                 
-                // specialTwo 배치: 0~4 인덱스는 specialTwo[0], 5~9 인덱스는 specialTwo[1]
-                if (i < 5) {
-                    if (specialTwo.length > 0) combo.add(specialTwo[0]);
-                } else {
-                    if (specialTwo.length > 1) combo.add(specialTwo[1]);
+                // 1. out4에서 랜덤 1개 선택
+                if (out4.length > 0) {
+                    let pick = out4[Math.floor(Math.random() * out4.length)];
+                    combo.add(pick);
                 }
                 
-                // 나머지 5개를 10수에서 랜덤 선택 (이미 있는 번호 제외)
+                // 2. 나머지 5개를 10수에서 랜덤 선택 (이미 있는 번호 제외)
                 let available = b10.filter(n => !combo.has(n));
                 let shuffled = [...available].sort(() => Math.random() - 0.5);
                 for (let n of shuffled) {
                     if (combo.size < 6) combo.add(n);
                 }
                 
-                // 부족하면 생존자에서 랜덤 보충 (비상용)
+                // 3. 부족하면 생존자에서 랜덤 보충 (비상용)
                 while (combo.size < 6) {
                     let rand = survivors[Math.floor(Math.random() * survivors.length)];
                     combo.add(rand);
@@ -1060,7 +1049,6 @@
             const middleHtml = middle.map(n => winSet.has(n) ? `<span class="matched">${n}</span>` : n).join(', ') || '없음';
             const bonusNumsHtml = bonusNums.map(n => n === bonus ? `<span class="matched">${n}</span>` : n).join(', ') || '없음';
             const outHtml = compressedOut4.map(n => winSet.has(n) ? `<span class="matched">${n}</span>` : n).join(', ') || '없음';
-            const specialHtml = specialTwo.map(n => winSet.has(n) ? `<span class="matched">${n}</span>` : n).join(', ') || '없음';
 
             reviewAIInfo.innerHTML = `
                 <div><span class="highlight-blue">생존자 ${survivors.length}수:</span> ${survivorsHtml}</div>
@@ -1068,7 +1056,6 @@
                 <div><span class="highlight-blue">📦 B bag ${middle.length}개:</span> ${middleHtml}</div>
                 <div><span class="highlight-blue">🎯 보너스 번호 ${bonusNums.length}개:</span> ${bonusNumsHtml}</div>
                 <div><span class="highlight-blue">🔻 14수에서 빠진 4개:</span> ${outHtml}</div>
-                <div><span class="highlight-blue">✨ 연관 상위 2개:</span> ${specialHtml}</div>
             `;
         }
     }
