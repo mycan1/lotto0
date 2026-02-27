@@ -815,19 +815,21 @@
             bonusNum = winData[7];
         }
 
-        // 1. 데이터 수집
+        // 1. 데이터 수집 - startRound는 제외하고 그 이전 회차만 수집
         let allMain = [];
         let allBonus = [];
         let mainWithRound = [];
-        for (let i = 0; i < count; i++) {
-            const round = startRound - i;
+        
+        // i=1부터 시작해서 startRound 이전 회차만 수집
+        for (let i = 1; i <= count; i++) {
+            const round = startRound - i; // startRound-1, startRound-2, ...
             const row = FULL_DATA.find(x => x[0] === round);
             if (row) {
                 const mainNums = row.slice(1, 7);
                 const bonus = row[7];
                 mainNums.forEach(n => {
                     allMain.push(n);
-                    const weight = 1.6 - i * 0.1;
+                    const weight = 1.6 - (i-1) * 0.1; // i=1일때 1.6, i=2일때 1.5, ...
                     mainWithRound.push({ num: n, round: round, weight: Math.max(0.1, weight) });
                 });
                 allBonus.push(bonus);
@@ -839,10 +841,13 @@
             return;
         }
 
-        // 2. 미출수 계산
+        // 2. 미출수 계산 (최근 22회차 - startRound 제외)
         let freq22 = {};
         for(let i=1; i<=45; i++) freq22[i] = 0;
-        FULL_DATA.slice(0,22).forEach(row => {
+        
+        // startRound 이후의 데이터는 제외하고 최근 22회차 계산
+        const recentData = FULL_DATA.filter(row => row[0] < startRound).slice(0, 22);
+        recentData.forEach(row => {
             for(let j=1; j<=7; j++) if(row[j]) freq22[row[j]]++;
         });
         let zeroFreq = Object.keys(freq22).filter(n => freq22[n]===0).map(Number);
@@ -1279,10 +1284,11 @@
 
     // ===== 복기 함수 =====
     function openReviewPopup() {
-        const targetRound = currentBaseRound;
+        analyze(); // 데이터 로드 - 이거 추가!
         
-        // 현재 회차의 실제 당첨번호 가져오기
+        const targetRound = currentBaseRound;
         const winData = FULL_DATA.find(row => row[0] === targetRound);
+        const winningDisplay = document.getElementById('winningDisplay');
         
         // reviewAIInfo 업데이트 - 현재 상태 반영
         const reviewAIInfo = document.getElementById('reviewAIInfo');
@@ -1303,18 +1309,19 @@
             `;
         }
 
-        document.getElementById('reviewTitle').innerHTML = `📊 ${targetRound}회 복기`;
-        document.getElementById('reviewDesc').innerHTML = `${targetRound}회 당첨번호 6개 + 보너스 번호를 입력하세요`;
-        
-        // 당첨번호 자동 입력 (데이터가 있는 경우)
         if (winData) {
-            for(let i=1; i<=6; i++) {
+            const nums = winData.slice(1, 7).join(', ');
+            const bonus = winData[7];
+            winningDisplay.innerHTML = `📌 ${targetRound}회 당첨번호: ${nums} + 보너스 ${bonus}`;
+            
+            // 당첨번호 자동 입력
+            for (let i = 1; i <= 6; i++) {
                 document.getElementById(`win${i}`).value = winData[i];
             }
             document.getElementById('bonus').value = winData[7];
         } else {
-            // 데이터가 없으면 빈칸으로
-            for(let i=1; i<=6; i++) {
+            winningDisplay.innerHTML = `📌 ${targetRound}회 데이터가 없습니다.`;
+            for (let i = 1; i <= 6; i++) {
                 document.getElementById(`win${i}`).value = '';
             }
             document.getElementById('bonus').value = '';
@@ -1377,11 +1384,17 @@
             const nums = key.split(',').map(Number);
             const matchCount = nums.filter(n => winSet.has(n)).length;
             const hasBonus = nums.includes(bonus);
+            let rankInfo = '';
+            if (matchCount === 6) rankInfo = '🥇 1등';
+            else if (matchCount === 5 && hasBonus) rankInfo = '🥈 2등';
+            else if (matchCount === 5) rankInfo = '🥉 3등';
+            else if (matchCount === 4) rankInfo = '4등';
+            else if (matchCount === 3) rankInfo = '5등';
             
             if(matchCount > 0 || hasBonus) {
                 matchHtml += `<div class="combo-item">`;
                 matchHtml += `<span>조합 ${idx+1}: ${nums.join(',')}</span>`;
-                matchHtml += `<span style="color:${matchCount >= 3 ? '#00ff00' : '#ffd700'}"> ${matchCount}개 일치</span>`;
+                matchHtml += `<span style="color:${matchCount >= 3 ? '#00ff00' : '#ffd700'}"> ${matchCount}개 ${rankInfo}</span>`;
                 if(hasBonus) matchHtml += `<span style="color:#00ccff"> +보너스</span>`;
                 matchHtml += `</div>`;
             }
@@ -1391,6 +1404,26 @@
             savedMatchDiv.innerHTML = '일치하는 조합이 없습니다.';
         } else {
             savedMatchDiv.innerHTML = matchHtml;
+        }
+
+        // AI 정보 영역 업데이트 (일치하는 번호 하이라이트)
+        const reviewAIInfo = document.getElementById('reviewAIInfo');
+        if (reviewAIInfo) {
+            const survivorsHtml = survivors.map(n => winSet.has(n) ? `<span class="matched">${n}</span>` : n).join(', ');
+            const basketHtml = basket.map(n => winSet.has(n) ? `<span class="matched">${n}</span>` : n).join(', ');
+            const middleHtml = middle.map(n => winSet.has(n) ? `<span class="matched">${n}</span>` : n).join(', ') || '없음';
+            const outHtml = compressedOut4.map(n => winSet.has(n) ? `<span class="matched">${n}</span>` : n).join(', ') || '없음';
+            const replacedInHtml = replacedIn.map(n => winSet.has(n) ? `<span class="matched">${n}</span>` : n).join(', ') || '없음';
+            const replacedOutHtml = replacedOut.map(n => winSet.has(n) ? `<span class="matched">${n}</span>` : n).join(', ') || '없음';
+
+            reviewAIInfo.innerHTML = `
+                <div><span class="highlight-blue">생존자 ${survivors.length}수:</span> ${survivorsHtml}</div>
+                <div><span class="highlight-gold">AI 추천 ${basket.length}수:</span> ${basketHtml}</div>
+                <div><span class="highlight-blue">🔻 14수에서 빠진 ${compressedOut4.length}개 (교체 후 남은):</span> ${outHtml}</div>
+                <div><span style="color:#ff6666;">▶ 교체된 번호: ${replacedInHtml}</span></div>
+                <div><span style="color:#66aaff;">◀ 교체당한 번호: ${replacedOutHtml}</span></div>
+                <div><span style="color:#aaa;">📦 B bag: ${middleHtml}</span></div>
+            `;
         }
     }
 
