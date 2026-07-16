@@ -172,6 +172,7 @@
             flex-shrink:0;
             cursor:pointer;
             transition: all 0.1s ease;
+            position:relative;
         }
         .number-group span.clickable { cursor: pointer; }
         .number-group span.clickable:hover { transform: scale(1.05); border-color: #ffd700; }
@@ -313,6 +314,7 @@
         .badge { background: #ffd700; color: #000; font-size: 7px; padding: 1px 6px; border-radius: 30px; margin-left: 4px; font-weight: 800; }
         .badge2 { background: #ff6b6b; color: #fff; font-size: 7px; padding: 1px 6px; border-radius: 30px; margin-left: 4px; font-weight: 800; }
         .hit-badge { background: #4caf50; color: #fff; font-size: 8px; padding: 0px 6px; border-radius: 30px; margin-left: 4px; font-weight: 700; }
+        .score-tip { font-size: 7px; color: #ffd700; margin-left: 2px; }
     </style>
 </head>
 <body>
@@ -327,13 +329,13 @@
     <div class="row-2">
         <div class="compress-row">
             <span class="compress-icon">⭐ 압축1</span>
-            <div class="slider-wrap"><input type="range" id="compressSlider1" min="2" max="40" value="10" step="1" oninput="updateCompressValue1(this.value)"></div>
+            <div class="slider-wrap"><input type="range" id="compressSlider1" min="2" max="10" value="10" step="1" oninput="updateCompressValue1(this.value)"></div>
             <span class="compress-value" id="compressValue1">10</span>
             <button class="apply-btn" onclick="applyCompress1()">적용</button>
         </div>
         <div class="compress-row-2">
             <span class="compress-icon">🔽 압축2</span>
-            <div class="slider-wrap"><input type="range" id="compressSlider2" min="2" max="40" value="10" step="1" oninput="updateCompressValue2(this.value)"></div>
+            <div class="slider-wrap"><input type="range" id="compressSlider2" min="2" max="10" value="10" step="1" oninput="updateCompressValue2(this.value)"></div>
             <span class="compress-value" id="compressValue2">10</span>
             <button class="apply-btn" onclick="applyCompress2()">적용</button>
         </div>
@@ -356,7 +358,7 @@
             <span id="intervalAiValue">6</span>
             <button onclick="changeIntervalAi(1)">+</button>
         </div>
-        <div class="round-box"><button onclick="decreaseRound()">−</button><input type="number" id="roundInput" value="1232" min="901" max="1232" onchange="setRoundFromInput()"><button onclick="increaseRound()">+</button></div>
+        <div class="round-box"><button onclick="decreaseRound()">−</button><input type="number" id="roundInput" value="1233" min="901" max="1233" onchange="setRoundFromInput()"><button onclick="increaseRound()">+</button></div>
         <div class="fixed-btn" onclick="openFixedPopup()">🔒고정</div>
     </div>
     <div class="btn-group">
@@ -371,30 +373,31 @@
         <button onclick="openHelp()">❓ 도움말</button>
     </div>
     <div class="fixed-numbers"><div class="fixed-left"><span id="fixedExtra"></span></div><div class="fixed-right"><button onclick="window.open('https://www.naver.com', '_blank')">🌐 네이버</button><button onclick="clearFixed()">초기화</button><button onclick="openFixedPopup()">⏳ 추가</button></div></div>
-    <div class="small-note">🎯 예상회차: <span id="targetRound">1232</span> | 분석기준: <span id="analyzeRoundDisplay">1231</span>회까지 데이터<br>※ 기본간격 4/6 | 구간/혼합/보장형 모두 추출</div>
+    <div class="small-note">🎯 예상회차: <span id="targetRound">1233</span> | 분석기준: <span id="analyzeRoundDisplay">1232</span>회까지 데이터<br>※ 기본간격 4/6 | 구간/혼합/보장형 모두 추출</div>
 </div>
 <div class="toast" id="toast"><span>✅ 저장됨</span></div>
 <div id="fixedPopup" class="popup-overlay"><div class="popup-content"><h3>🔒 고정 번호 선택</h3><p style="text-align:center;">최대 6개까지 선택 가능</p><div class="number-grid" id="fixedNumberGrid"></div><div style="text-align:center;"><button onclick="saveFixedPopup()">저장</button><button class="close-btn" onclick="closeFixedPopup()">닫기</button></div></div></div>
 <div id="comboPopup" class="popup-overlay"><div class="popup-content"><h3>📋 생성된 조합</h3><div id="comboList"></div><div style="text-align:center;"><button onclick="saveAllCombos()">보관함 저장</button><button class="close-btn" onclick="closeComboPopup()">닫기</button></div></div></div>
 <div id="basketPopup" class="popup-overlay"><div class="popup-content"><h3>📦 보관함</h3><div id="basketList"></div><div style="text-align:center;"><button onclick="loadFromBasket()">불러오기</button><button class="close-btn" onclick="closeBasketPopup()">닫기</button></div></div></div>
-<div id="reviewPopup" class="popup-overlay"><div class="popup-content"><h3>📊 당첨 확인</h3><div style="margin:15px 0; display:flex; flex-direction:column; gap:8px;"><p>회차: <input type="number" id="reviewRound" value="1232" min="900" max="1232" style="width:100px; padding:5px; background:#3a3a3a; color:#fff; border:1px solid #aaa; border-radius:30px;"></p><p>당첨번호: <input type="text" id="reviewWinning" placeholder="예: 1,2,3,4,5,6" style="width:100%; padding:5px; background:#3a3a3a; color:#fff; border:1px solid #aaa; border-radius:30px;"></p><p>보너스: <input type="number" id="reviewBonus" min="1" max="45" style="width:100px; padding:5px; background:#3a3a3a; color:#fff; border:1px solid #aaa; border-radius:30px;"></p></div><div id="reviewResult" style="background:#2a2a2a; border-radius:20px; padding:10px;"></div><div style="text-align:center;"><button onclick="compareNumbers()">비교</button><button onclick="saveWinningNumbers()">저장</button><button class="close-btn" onclick="closeReviewPopup()">닫기</button></div></div></div>
+<div id="reviewPopup" class="popup-overlay"><div class="popup-content"><h3>📊 당첨 확인</h3><div style="margin:15px 0; display:flex; flex-direction:column; gap:8px;"><p>회차: <input type="number" id="reviewRound" value="1233" min="900" max="1233" style="width:100px; padding:5px; background:#3a3a3a; color:#fff; border:1px solid #aaa; border-radius:30px;"></p><p>당첨번호: <input type="text" id="reviewWinning" placeholder="예: 1,2,3,4,5,6" style="width:100%; padding:5px; background:#3a3a3a; color:#fff; border:1px solid #aaa; border-radius:30px;"></p><p>보너스: <input type="number" id="reviewBonus" min="1" max="45" style="width:100px; padding:5px; background:#3a3a3a; color:#fff; border:1px solid #aaa; border-radius:30px;"></p></div><div id="reviewResult" style="background:#2a2a2a; border-radius:20px; padding:10px;"></div><div style="text-align:center;"><button onclick="compareNumbers()">비교</button><button onclick="saveWinningNumbers()">저장</button><button class="close-btn" onclick="closeReviewPopup()">닫기</button></div></div></div>
 <div id="statusZoomPopup" class="popup-overlay"><div class="popup-content"><h3>🔍 상세 분석</h3><div id="statusZoomContent"></div><div style="text-align:center;"><button class="close-btn" onclick="closeStatusZoomPopup()">닫기</button></div></div></div>
 <div id="helpPopup" class="popup-overlay"><div class="popup-content"><h3>❓ 도움말</h3><div style="margin:10px 0;">
-<h4>🎯 V7.5 (보장형 스타일 구간/혼합 + 커버링)</h4>
+<h4>🎯 V7.5 (간격4-6 딥러닝 통합 + 보장형 커버링)</h4>
 <p>⭐ 특수생존 간격: 4, AI생존 간격: 6</p>
-<p>⭐ 압축1/2 = 10개 (조절 가능)</p>
-<p>✅ <b>구간5</b>: 압축1에서 트리플 커버리지 최대화 (합계90~160, 3연번 제외)</p>
-<p>✅ <b>혼합랜덤5</b>: 압축2에서 트리플 커버리지 최대화 (합계90~160, 3연번 제외)</p>
-<p>✅ <b>보장형 6조합</b>: 통합교집합 기반 C(10,6,3)=6 커버링 (모든 트리플 100% 커버)</p>
+<p>⭐ 딥러닝(LSTM 스타일) 간격4-6 통합 학습</p>
+<p>⭐ 압축1/2/3 최대 10개 (성능 최적화)</p>
+<p>⭐ 통합교집합: AI 70% + 구간 균형</p>
+<p>⭐ 보장형6: C(10,6,3) 모든 트리플 커버</p>
 </div><div style="text-align:center;"><button class="close-btn" onclick="closeHelpPopup()">닫기</button></div></div></div>
 <div id="trashPopup" class="popup-overlay"><div class="popup-content"><h3>🗑️ 휴지통 (압축 제외 번호)</h3><div id="trashStats" class="trash-stats"></div><div style="text-align:center; margin:10px 0;"><button onclick="generateTrashCombo(1)">🎲 휴지통 1조합</button><button onclick="generateTrashCombo(5)">🎲 휴지통 5조합</button><button onclick="generateTrashCombo(10)">🎲 휴지통 10조합</button></div><div id="trashContent" class="trash-numbers-area"></div><div style="text-align:center; margin-top:15px;"><button onclick="copyTrashToCustom()">📋 휴지통→커스텀</button><button onclick="clearTrash()">휴지통 비우기</button><button class="close-btn" onclick="closeTrashPopup()">닫기</button></div></div></div>
 
 <script>
 // ===================== 데이터 =====================
-const MAX_ROUND = 1232;
+const MAX_ROUND = 1233;
 const MIN_ROUND = 901;
 
 const FULL_DATA = [
+    [1232, 12, 15, 19, 22, 24, 36, 3],
     [1231, 4, 13, 14, 18, 31, 38, 15],
     [1230, 3, 8, 9, 22, 28, 42, 45],
     [1229, 12, 13, 29, 34, 37, 42, 16],
@@ -644,8 +647,8 @@ let myFixedPool = [];
 let userName = "";
 let savedNumbers = [];
 let generatedCombos = [];
-let currentBaseRound = 1232;
-let analyzeRound = 1231;
+let currentBaseRound = 1233;
+let analyzeRound = 1232;
 let specialSurvivors = [];
 let aiSurvivors = [];
 let recommendPool = [];
@@ -653,6 +656,8 @@ let trashNumbers = [];
 let customSurvivors = null;
 let isAnalyzing = false;
 let aiRealScores = Array(46).fill(0);
+let specialScores = Array(46).fill(0);
+let combinedScores = Array(46).fill(0);
 
 // ===================== 유틸 =====================
 function shuffleArray(arr) {
@@ -676,6 +681,15 @@ function hasThreeConsecutive(arr) {
         if (arr[i] + 1 === arr[i + 1] && arr[i + 1] + 1 === arr[i + 2]) return true;
     }
     return false;
+}
+
+function getCombinations(arr, k) {
+    if (k === 0) return [[]];
+    if (arr.length === 0) return [];
+    const [first, ...rest] = arr;
+    const withFirst = getCombinations(rest, k - 1).map(c => [first, ...c]);
+    const withoutFirst = getCombinations(rest, k);
+    return [...withFirst, ...withoutFirst];
 }
 
 // ===================== 고정번호 =====================
@@ -943,17 +957,25 @@ function clearCustomSurvivors() {
 
 // ===================== 특수생존 =====================
 function calculateSpecialSurvivors() {
-    if (customSurvivors && customSurvivors.length > 0) return [...customSurvivors];
+    if (customSurvivors && customSurvivors.length > 0) {
+        specialScores.fill(0);
+        customSurvivors.forEach(n => specialScores[n] = 1000);
+        return [...customSurvivors];
+    }
     let pastData = FULL_DATA.filter(r => r[0] <= analyzeRound && r[0] > 0);
-    if (pastData.length === 0) return [];
+    if (pastData.length === 0) {
+        specialScores.fill(0);
+        return [];
+    }
     let scores = Array(46).fill(0);
+    let recentWins = pastData.slice(-20).flatMap(r => r.slice(1, 7));
     
     let recentLimit = Math.min(20, pastData.length);
     for (let i = 0; i < recentLimit; i++) {
         let targetRound = analyzeRound - intervalExclude * i;
         let found = pastData.find(r => r[0] === targetRound);
         if (found) {
-            let weight = Math.pow(0.85, i) * 100;
+            let weight = Math.pow(0.80, i) * 130;
             found.slice(1, 7).forEach(num => scores[num] += weight * 7);
             if (found[7]) scores[found[7]] += weight * 3.5;
         }
@@ -979,37 +1001,281 @@ function calculateSpecialSurvivors() {
         }
     }
     
-    let last20Wins = pastData.slice(-20).flatMap(r => r.slice(1, 7));
     let freqMap = {};
-    for (let n of last20Wins) freqMap[n] = (freqMap[n] || 0) + 1;
+    for (let n of recentWins) freqMap[n] = (freqMap[n] || 0) + 1;
     let missBonus = Array(46).fill(0);
     for (let n = 1; n <= 45; n++) {
         let freq = freqMap[n] || 0;
-        if (freq === 0) missBonus[n] = 20;
-        else if (freq === 1) missBonus[n] = 12;
-        else if (freq === 2) missBonus[n] = 6;
-        else if (freq === 3) missBonus[n] = 3;
+        if (freq === 0) missBonus[n] = 25;
+        else if (freq === 1) missBonus[n] = 15;
+        else if (freq === 2) missBonus[n] = 8;
+        else if (freq === 3) missBonus[n] = 4;
+    }
+    
+    let recent5 = pastData.slice(-5);
+    let companionFreq = Array(46).fill(0);
+    for (let round of recent5) {
+        let wins = round.slice(1, 7);
+        let bonus = round[7];
+        let allNums = [...wins];
+        if (bonus) allNums.push(bonus);
+        for (let n = 1; n <= 45; n++) {
+            if (!allNums.includes(n)) {
+                let count = allNums.filter(v => Math.abs(v - n) <= 2).length;
+                companionFreq[n] += count * 6;
+            }
+        }
+    }
+    
+    let groupBalance = Array(46).fill(0);
+    for (let n = 1; n <= 45; n++) {
+        let group = Math.ceil(n / 9);
+        let groupCount = recentWins.filter(v => Math.ceil(v / 9) === group).length;
+        let expected = recentWins.length / 5;
+        groupBalance[n] = (expected - groupCount) * 3;
+    }
+    
+    let lastDigitScore = Array(46).fill(0);
+    for (let n = 1; n <= 45; n++) {
+        let digit = n % 10;
+        let digitCount = recentWins.filter(v => v % 10 === digit).length;
+        let expected = recentWins.length / 10;
+        lastDigitScore[n] = (expected - digitCount) * 2;
+    }
+    
+    let oddEvenScore = Array(46).fill(0);
+    let oddCount = recentWins.filter(v => v % 2 === 1).length;
+    let evenCount = recentWins.filter(v => v % 2 === 0).length;
+    for (let n = 1; n <= 45; n++) {
+        if (n % 2 === 1 && oddCount < evenCount) oddEvenScore[n] = 6;
+        else if (n % 2 === 0 && evenCount < oddCount) oddEvenScore[n] = 6;
+    }
+    
+    let maScore = Array(46).fill(0);
+    let totalFreq = Array(46).fill(0);
+    pastData.forEach(r => r.slice(1, 7).forEach(n => totalFreq[n]++));
+    let recent5Freq = Array(46).fill(0);
+    pastData.slice(-5).forEach(r => r.slice(1, 7).forEach(n => recent5Freq[n]++));
+    let avgTotal = pastData.length * 6 / 45;
+    for (let n = 1; n <= 45; n++) {
+        let recentAvg = recent5Freq[n] / 5;
+        let totalAvg = totalFreq[n] / pastData.length;
+        let diff = (recentAvg - totalAvg) / (totalAvg + 1);
+        maScore[n] = diff * 35;
+    }
+    
+    let groupGuarantee = Array(46).fill(0);
+    let groups = [[1,9], [10,18], [19,27], [28,36], [37,45]];
+    let groupScores = groups.map(([start, end]) => {
+        let avg = 0, count = 0;
+        for (let n = start; n <= end; n++) {
+            avg += scores[n] + patternScores[n] + missBonus[n] + companionFreq[n] + groupBalance[n] + lastDigitScore[n] + oddEvenScore[n] + maScore[n];
+            count++;
+        }
+        return avg / count;
+    });
+    let minGroupScore = Math.min(...groupScores);
+    for (let g = 0; g < groups.length; g++) {
+        let [start, end] = groups[g];
+        let bonus = (minGroupScore - groupScores[g] + 10) * 2;
+        if (bonus > 0) {
+            for (let n = start; n <= end; n++) {
+                groupGuarantee[n] += bonus;
+            }
+        }
+    }
+    
+    let tempScores = Array(46).fill(0);
+    for (let n = 1; n <= 45; n++) {
+        tempScores[n] = scores[n] + patternScores[n] + missBonus[n] + companionFreq[n] + groupBalance[n] + lastDigitScore[n] + oddEvenScore[n] + maScore[n] + groupGuarantee[n];
+    }
+    let topCandidates = [];
+    for (let n = 1; n <= 45; n++) {
+        topCandidates.push({ num: n, score: tempScores[n] });
+    }
+    topCandidates.sort((a, b) => b.score - a.score);
+    let top20 = topCandidates.slice(0, 20).map(x => x.num);
+    let oddCount2 = top20.filter(n => n % 2 === 1).length;
+    let evenCount2 = top20.filter(n => n % 2 === 0).length;
+    
+    let oddEvenBonus = Array(46).fill(0);
+    if (oddCount2 < 8) {
+        for (let n = 1; n <= 45; n += 2) oddEvenBonus[n] += 25;
+    }
+    if (evenCount2 < 8) {
+        for (let n = 2; n <= 45; n += 2) oddEvenBonus[n] += 25;
     }
     
     let finalScores = Array(46).fill(0);
     for (let n = 1; n <= 45; n++) {
-        finalScores[n] = scores[n] + patternScores[n] + missBonus[n];
+        finalScores[n] = scores[n] + patternScores[n] + missBonus[n] + 
+                         companionFreq[n] + groupBalance[n] + 
+                         lastDigitScore[n] + oddEvenScore[n] + maScore[n] +
+                         groupGuarantee[n] + oddEvenBonus[n];
     }
+    for (let n = 1; n <= 45; n++) specialScores[n] = finalScores[n];
     
     let candidates = [];
     for (let n = 1; n <= 45; n++) candidates.push({ num: n, score: finalScores[n] });
     candidates.sort((a, b) => b.score - a.score);
-    return candidates.slice(0, 20).map(x => x.num);
+    return candidates.slice(0, 30).map(x => x.num);
 }
 
-// ===================== AI 생존수 =====================
+// ===================== 딥러닝 간격 4-6 통합 학습 (LSTM 스타일) =====================
+function deepLearningPrediction() {
+    let pastData = FULL_DATA.filter(r => r[0] <= analyzeRound && r[0] > 0);
+    if (pastData.length < 20) return [];
+    
+    let scores = Array(46).fill(0);
+    
+    // === 1. 간격 4 패턴 학습 (단기 패턴 - LSTM) ===
+    for (let i = 10; i < pastData.length; i++) {
+        let nextRow = pastData[i];
+        let nextNums = nextRow.slice(1, 7);
+        let nextBonus = nextRow[7];
+        
+        // 간격 4 윈도우 (최근 8회) - LSTM 시퀀스
+        let freq4 = Array(46).fill(0);
+        for (let j = 0; j < 8; j++) {
+            let targetRound = pastData[i][0] - 4 * j;
+            let found = pastData.find(r => r[0] === targetRound);
+            if (found) {
+                let weight = Math.pow(0.9, j);
+                found.slice(1, 7).forEach(n => freq4[n] += weight);
+                if (found[7]) freq4[found[7]] += weight * 0.5;
+            }
+        }
+        
+        // 간격 4 가중치 학습
+        for (let n = 1; n <= 45; n++) {
+            if (nextNums.includes(n)) scores[n] += freq4[n] * 3.0;
+            else if (nextBonus === n) scores[n] += freq4[n] * 1.8;
+            else scores[n] += freq4[n] * 0.2;
+        }
+    }
+    
+    // === 2. 간격 6 패턴 학습 (장기 패턴 - LSTM) ===
+    for (let i = 10; i < pastData.length; i++) {
+        let nextRow = pastData[i];
+        let nextNums = nextRow.slice(1, 7);
+        let nextBonus = nextRow[7];
+        
+        // 간격 6 윈도우 (최근 8회) - LSTM 시퀀스
+        let freq6 = Array(46).fill(0);
+        for (let j = 0; j < 8; j++) {
+            let targetRound = pastData[i][0] - 6 * j;
+            let found = pastData.find(r => r[0] === targetRound);
+            if (found) {
+                let weight = Math.pow(0.88, j);
+                found.slice(1, 7).forEach(n => freq6[n] += weight);
+                if (found[7]) freq6[found[7]] += weight * 0.5;
+            }
+        }
+        
+        // 간격 6 가중치 학습
+        for (let n = 1; n <= 45; n++) {
+            if (nextNums.includes(n)) scores[n] += freq6[n] * 2.5;
+            else if (nextBonus === n) scores[n] += freq6[n] * 1.5;
+            else scores[n] += freq6[n] * 0.3;
+        }
+    }
+    
+    // === 3. 간격 4와 6의 교차 검증 (Cross-Attention 스타일) ===
+    for (let i = 15; i < pastData.length; i++) {
+        let nextRow = pastData[i];
+        let nextNums = nextRow.slice(1, 7);
+        
+        let common = Array(46).fill(0);
+        for (let j = 0; j < 5; j++) {
+            let t4 = pastData[i][0] - 4 * j;
+            let t6 = pastData[i][0] - 6 * j;
+            let f4 = pastData.find(r => r[0] === t4);
+            let f6 = pastData.find(r => r[0] === t6);
+            
+            if (f4 && f6) {
+                let nums4 = f4.slice(1, 7);
+                let nums6 = f6.slice(1, 7);
+                for (let n = 1; n <= 45; n++) {
+                    if (nums4.includes(n) && nums6.includes(n)) {
+                        common[n] += 2;
+                    }
+                }
+            }
+        }
+        
+        for (let n = 1; n <= 45; n++) {
+            if (nextNums.includes(n)) {
+                scores[n] += common[n] * 2.0;
+            } else {
+                scores[n] += common[n] * 0.5;
+            }
+        }
+    }
+    
+    // === 4. 최근 추세 분석 (간격 4 vs 6) ===
+    let recent4 = Array(46).fill(0);
+    let recent6 = Array(46).fill(0);
+    
+    for (let j = 0; j < 5; j++) {
+        let t4 = analyzeRound - 4 * j;
+        let t6 = analyzeRound - 6 * j;
+        let f4 = pastData.find(r => r[0] === t4);
+        let f6 = pastData.find(r => r[0] === t6);
+        if (f4) f4.slice(1, 7).forEach(n => recent4[n]++);
+        if (f6) f6.slice(1, 7).forEach(n => recent6[n]++);
+    }
+    
+    for (let n = 1; n <= 45; n++) {
+        let diff = (recent4[n] / 5) - (recent6[n] / 5);
+        scores[n] += diff * 15;
+    }
+    
+    // === 5. 구간 균형 (딥러닝 스타일) ===
+    let groups = [[1,9], [10,18], [19,27], [28,36], [37,45]];
+    let groupScores = groups.map(([start, end]) => {
+        let sum = 0;
+        for (let n = start; n <= end; n++) sum += scores[n];
+        return sum / (end - start + 1);
+    });
+    let avgGroup = groupScores.reduce((a,b) => a+b, 0) / groupScores.length;
+    for (let g = 0; g < groups.length; g++) {
+        let [start, end] = groups[g];
+        let bonus = (avgGroup - groupScores[g]) * 0.5;
+        for (let n = start; n <= end; n++) {
+            scores[n] += Math.max(0, bonus);
+        }
+    }
+    
+    let candidates = [];
+    for (let n = 1; n <= 45; n++) {
+        candidates.push({ num: n, score: scores[n] });
+    }
+    candidates.sort((a, b) => b.score - a.score);
+    return candidates.slice(0, 30).map(x => x.num);
+}
+
+// ===================== AI생존 (간격 6 + 딥러닝 통합) =====================
 function calculateAiSurvivors() {
     let pastData = FULL_DATA.filter(r => r[0] <= analyzeRound && r[0] > 0);
-    if (pastData.length === 0) return [];
+    if (pastData.length === 0) {
+        aiRealScores.fill(0);
+        return [];
+    }
     let totalCount = Array(46).fill(0);
     pastData.forEach(round => {
         round.slice(1, 7).forEach(num => totalCount[num]++);
     });
+    let recentWins = pastData.slice(-20).flatMap(r => r.slice(1, 7));
+    
+    // 딥러닝 예측 (간격 4-6 통합)
+    let dlPrediction = deepLearningPrediction();
+    let dlScores = Array(46).fill(0);
+    dlPrediction.forEach((num, idx) => {
+        let weight = 1 - (idx / 30);
+        dlScores[num] = weight * 55;
+    });
+    
+    // 기존 AI 점수 계산
     let recentLimit = Math.max(5, Math.floor(30 / intervalAi));
     let recentSet = new Set();
     for (let i = 0; i < recentLimit; i++) {
@@ -1017,6 +1283,14 @@ function calculateAiSurvivors() {
         let found = pastData.find(r => r[0] === targetRound);
         if (found) found.slice(1, 7).forEach(num => recentSet.add(num));
     }
+    
+    let recent5Freq = Array(46).fill(0);
+    pastData.slice(-5).forEach(r => r.slice(1, 7).forEach(n => recent5Freq[n]++));
+    let recent5Score = Array(46).fill(0);
+    for (let n = 1; n <= 45; n++) {
+        recent5Score[n] = recent5Freq[n] * 25;
+    }
+    
     let lastAppearanceInterval = Array(46).fill(100);
     for (let n = 1; n <= 45; n++) {
         for (let i = 0; i < 100; i++) {
@@ -1029,7 +1303,11 @@ function calculateAiSurvivors() {
         }
     }
     let gapScore = Array(46).fill(0);
-    for (let n = 1; n <= 45; n++) gapScore[n] = Math.min(50, lastAppearanceInterval[n] * (1 + intervalAi * 0.3));
+    for (let n = 1; n <= 45; n++) {
+        let penalty = lastAppearanceInterval[n] > 20 ? -10 : 0;
+        gapScore[n] = Math.min(50, lastAppearanceInterval[n] * (1 + intervalAi * 0.3)) + penalty;
+    }
+    
     let neighborBonus = Array(46).fill(0);
     let recentRoundsCount = Math.min(6, Math.floor(18 / intervalAi) + 3);
     let recentRounds = pastData.slice(-recentRoundsCount);
@@ -1044,26 +1322,92 @@ function calculateAiSurvivors() {
         });
         if (round[7]) neighborBonus[round[7]] += 15 * bonusFactor;
     });
+    
+    let recent5 = pastData.slice(-5);
+    let patternBonus = Array(46).fill(0);
+    for (let round of recent5) {
+        let wins = round.slice(1, 7);
+        for (let n = 1; n <= 45; n++) {
+            let near = wins.filter(v => Math.abs(v - n) <= 3);
+            patternBonus[n] += near.length * 12;
+        }
+    }
+    
+    let densityScore = Array(46).fill(0);
+    let last20Wins = pastData.slice(-20).flatMap(r => r.slice(1, 7));
+    for (let n = 1; n <= 45; n++) {
+        let group = Math.ceil(n / 9);
+        let count = last20Wins.filter(v => Math.ceil(v / 9) === group).length;
+        let expected = 20 * 6 / 5;
+        densityScore[n] = (expected - count) * 3;
+    }
+    
+    let aiGroupGuarantee = Array(46).fill(0);
+    let aiGroups = [[1,9], [10,18], [19,27], [28,36], [37,45]];
+    let aiScores = Array(46).fill(0);
+    for (let n = 1; n <= 45; n++) {
+        aiScores[n] = (30 - totalCount[n]) * (1 + intervalAi * 0.5) + gapScore[n] + neighborBonus[n] + patternBonus[n] + densityScore[n] + recent5Score[n] + dlScores[n];
+    }
+    let aiGroupScores = aiGroups.map(([start, end]) => {
+        let avg = 0, count = 0;
+        for (let n = start; n <= end; n++) {
+            avg += aiScores[n];
+            count++;
+        }
+        return avg / count;
+    });
+    let minAiGroup = Math.min(...aiGroupScores);
+    for (let g = 0; g < aiGroups.length; g++) {
+        let [start, end] = aiGroups[g];
+        let bonus = (minAiGroup - aiGroupScores[g] + 10) * 2;
+        if (bonus > 0) {
+            for (let n = start; n <= end; n++) {
+                aiGroupGuarantee[n] += bonus;
+            }
+        }
+    }
+    
     let scores = Array(46).fill(0);
     for (let n = 1; n <= 45; n++) {
         let freqScore = (30 - totalCount[n]) * (1 + intervalAi * 0.5);
         let recentScore = recentSet.has(n) ? 0 : 30 * intervalAi;
-        scores[n] = freqScore + recentScore + gapScore[n] + neighborBonus[n];
+        scores[n] = freqScore + recentScore + gapScore[n] + neighborBonus[n] + 
+                    patternBonus[n] + densityScore[n] + recent5Score[n] + 
+                    aiGroupGuarantee[n] + dlScores[n];
     }
     for (let i = 1; i <= 45; i++) aiRealScores[i] = scores[i];
     let candidates = [];
     for (let n = 1; n <= 45; n++) candidates.push({ num: n, score: scores[n] });
     candidates.sort((a, b) => b.score - a.score);
-    return candidates.slice(0, 20).map(x => x.num);
+    return candidates.slice(0, 30).map(x => x.num);
 }
 
-// ===================== 합집합 =====================
+// ===================== 합집합 + 30개 추천수 =====================
 function calculateRecommendPool_Union() {
     let unionSet = new Set([...specialSurvivors, ...aiSurvivors]);
-    return Array.from(unionSet).sort((a, b) => a - b);
+    let pool = Array.from(unionSet);
+    if (pool.length >= 30) {
+        for (let n = 1; n <= 45; n++) {
+            combinedScores[n] = (specialScores[n] || 0) * 0.5 + (aiRealScores[n] || 0) * 0.5;
+        }
+        pool.sort((a, b) => combinedScores[b] - combinedScores[a]);
+        return pool.slice(0, 30);
+    } else {
+        let remaining = [];
+        for (let n = 1; n <= 45; n++) {
+            if (!pool.includes(n)) remaining.push(n);
+        }
+        for (let n = 1; n <= 45; n++) {
+            combinedScores[n] = (specialScores[n] || 0) * 0.5 + (aiRealScores[n] || 0) * 0.5;
+        }
+        remaining.sort((a, b) => combinedScores[b] - combinedScores[a]);
+        let need = 30 - pool.length;
+        pool.push(...remaining.slice(0, need));
+        return pool;
+    }
 }
 
-// ===================== 직전 당첨번호 동반 출현 빈도 계산 =====================
+// ===================== 직전 당첨번호 동반 출현 빈도 =====================
 function getCompanionFrequency(prevWins, lookback = 30) {
     let pastData = FULL_DATA.filter(r => r[0] <= analyzeRound && r[0] > 0);
     let recentData = pastData.slice(-lookback);
@@ -1087,7 +1431,7 @@ function getCompanionFrequency(prevWins, lookback = 30) {
     return freq;
 }
 
-// ===================== 궁합수 (특정 번호와의 궁합 점수) =====================
+// ===================== 궁합수 =====================
 function getCompatibilityScore(num, topN = 5) {
     let pastData = FULL_DATA.filter(r => r[0] <= analyzeRound && r[0] > 0);
     let recentData = pastData.slice(-5);
@@ -1108,9 +1452,26 @@ function getCompatibilityScore(num, topN = 5) {
     return score;
 }
 
-// ===================== 압축1 (순위 점수 100%) =====================
+// ===================== 압축1 (특수생존 점수 상위 N개 - 최대 10) =====================
 function compressRecommendPool1(compressCount) {
     if (compressCount < 2) compressCount = 2;
+    if (compressCount > 10) compressCount = 10;
+    if (recommendPool.length === 0) return [];
+    
+    let sorted = recommendPool.map(n => ({
+        num: n,
+        score: specialScores[n] || 0
+    }));
+    sorted.sort((a, b) => b.score - a.score);
+    
+    let selected = sorted.slice(0, compressCount).map(x => x.num);
+    return selected;
+}
+
+// ===================== 압축2 (AI생존 점수 상위 N개 - 최대 10) =====================
+function compressRecommendPool2(compressCount) {
+    if (compressCount < 2) compressCount = 2;
+    if (compressCount > 10) compressCount = 10;
     if (recommendPool.length === 0) return [];
     
     let sorted = recommendPool.map(n => ({
@@ -1120,54 +1481,81 @@ function compressRecommendPool1(compressCount) {
     sorted.sort((a, b) => b.score - a.score);
     
     let selected = sorted.slice(0, compressCount).map(x => x.num);
-    return selected.sort((a, b) => a - b);
+    return selected;
 }
 
-// ===================== 압축2 (동반/궁합 점수 100%) =====================
-function compressRecommendPool2(compressCount) {
+// ===================== 압축3 (특수생존 점수 하위 N개 - 최대 10) =====================
+function compressRecommendPool3(compressCount) {
     if (compressCount < 2) compressCount = 2;
+    if (compressCount > 10) compressCount = 10;
     if (recommendPool.length === 0) return [];
+    
+    let sorted = recommendPool.map(n => ({
+        num: n,
+        score: specialScores[n] || 0
+    }));
+    sorted.sort((a, b) => a.score - b.score);
+    
+    let selected = sorted.slice(0, compressCount).map(x => x.num);
+    return selected;
+}
 
-    let prevData = FULL_DATA.find(r => r[0] === analyzeRound);
-    let prevWins = prevData ? prevData.slice(1, 7) : [];
-    let prevBonus = prevData ? prevData[7] : null;
-    let allPrev = [...prevWins];
-    if (prevBonus) allPrev.push(prevBonus);
-    let compFreq = getCompanionFrequency(allPrev, 30);
-
-    let scored = recommendPool.map(n => {
-        let score = 0;
-        score += (compFreq[n] || 0) * 15;
-        score += getCompatibilityScore(n, 5) * 0.5;
-        return { num: n, score: score };
-    });
+// ===================== 통합교집합 (AI 우선 70% + 구간 균형 - 최대 10) =====================
+function calculateUnionCompress() {
+    let count = Math.min(currentCompress1, 10);
+    let compressed1 = compressRecommendPool1(count);
+    let compressed2 = compressRecommendPool2(count);
+    let compressed3 = compressRecommendPool3(count);
+    
+    let tripleIntersection = compressed1.filter(n => compressed2.includes(n) && compressed3.includes(n));
+    let union = [...new Set([...compressed1, ...compressed2, ...compressed3])];
+    
+    let result = [...tripleIntersection];
+    
+    let candidates = union.filter(n => !result.includes(n));
+    let scored = candidates.map(n => ({
+        num: n,
+        score: (aiRealScores[n] || 0) * 0.7 + (specialScores[n] || 0) * 0.3
+    }));
     scored.sort((a, b) => b.score - a.score);
-
-    let selected = scored.slice(0, compressCount).map(x => x.num);
-    return selected.sort((a, b) => a - b);
+    
+    let groups = [[1,9], [10,18], [19,27], [28,36], [37,45]];
+    for (let g of groups) {
+        if (result.length >= 10) break;
+        let [start, end] = g;
+        let available = scored.filter(x => x.num >= start && x.num <= end && !result.includes(x.num));
+        if (available.length > 0) {
+            result.push(available[0].num);
+        }
+    }
+    
+    let need = 10 - result.length;
+    if (need > 0) {
+        let remaining = scored.filter(x => !result.includes(x.num));
+        result.push(...remaining.slice(0, need).map(x => x.num));
+    }
+    
+    let final = [...new Set(result)].slice(0, 10);
+    let finalScored = final.map(n => ({
+        num: n,
+        score: (aiRealScores[n] || 0) * 0.7 + (specialScores[n] || 0) * 0.3
+    }));
+    finalScored.sort((a, b) => b.score - a.score);
+    return finalScored.map(x => x.num);
 }
 
-// ===================== 구간조합 (압축1, 보장형 스타일 - 트리플 커버리지 최대화) =====================
+// ===================== 구간조합 =====================
 function generateZoneCombos(count) {
-    let pool = compressRecommendPool1(currentCompress1);
+    let pool = calculateUnionCompress();
     if (pool.length < 6) {
-        pool = [...recommendPool];
+        pool = [...recommendPool].slice(0, 10);
     }
     if (pool.length < 6) return [];
+    if (pool.length > 10) pool = pool.slice(0, 10);
     
     const minSum = 90;
     const maxSum = 160;
     
-    function getCombinations(arr, k) {
-        if (k === 0) return [[]];
-        if (arr.length === 0) return [];
-        const [first, ...rest] = arr;
-        const withFirst = getCombinations(rest, k - 1).map(c => [first, ...c]);
-        const withoutFirst = getCombinations(rest, k);
-        return [...withFirst, ...withoutFirst];
-    }
-    
-    // 1. 조건에 맞는 모든 6개 조합 생성
     const allSix = getCombinations(pool, 6);
     const validSix = allSix.filter(combo => {
         const sum = combo.reduce((a, b) => a + b, 0);
@@ -1181,86 +1569,34 @@ function generateZoneCombos(count) {
         return [];
     }
     
-    // 2. Greedy로 가장 많은 트리플을 커버하는 count개 조합 선택
-    const allTriples = getCombinations(pool, 3);
-    const tripleSet = new Set(allTriples.map(t => t.sort((a,b)=>a-b).join(',')));
-    
-    let remainingTriples = new Set(tripleSet);
     let selected = [];
     let usedKeys = new Set();
+    let shuffled = shuffleArray(validSix);
     
-    while (selected.length < count && remainingTriples.size > 0) {
-        let bestCombo = null;
-        let bestCover = new Set();
-        let bestKey = '';
-        
-        for (let combo of validSix) {
-            const key = combo.sort((a,b)=>a-b).join(',');
-            if (usedKeys.has(key)) continue;
-            if (selected.some(s => s.join(',') === key)) continue;
-            
-            const comboSet = new Set(combo);
-            let tempCover = new Set();
-            for (let triple of remainingTriples) {
-                const t = triple.split(',').map(Number);
-                if (t.every(v => comboSet.has(v))) {
-                    tempCover.add(triple);
-                }
-            }
-            if (tempCover.size > bestCover.size) {
-                bestCover = tempCover;
-                bestCombo = combo;
-                bestKey = key;
-            }
+    for (let combo of shuffled) {
+        if (selected.length >= count) break;
+        const key = combo.sort((a,b)=>a-b).join(',');
+        if (!usedKeys.has(key)) {
+            usedKeys.add(key);
+            selected.push([...combo].sort((a,b)=>a-b));
         }
-        
-        if (bestCombo === null || bestCover.size === 0) break;
-        
-        for (let t of bestCover) remainingTriples.delete(t);
-        usedKeys.add(bestKey);
-        selected.push([...bestCombo].sort((a,b)=>a-b));
-    }
-    
-    // 3. 만약 count개가 안되면 랜덤으로 채움
-    while (selected.length < count) {
-        let shuffled = shuffleArray(validSix);
-        let found = false;
-        for (let combo of shuffled) {
-            const key = combo.sort((a,b)=>a-b).join(',');
-            if (!usedKeys.has(key)) {
-                usedKeys.add(key);
-                selected.push([...combo].sort((a,b)=>a-b));
-                found = true;
-                break;
-            }
-        }
-        if (!found) break;
     }
     
     return selected;
 }
 
-// ===================== 혼합랜덤 (압축2, 보장형 스타일 - 트리플 커버리지 최대화) =====================
+// ===================== 혼합랜덤 =====================
 function generateMixRandomCombos(count) {
-    let pool = compressRecommendPool2(currentCompress2);
+    let pool = calculateUnionCompress();
     if (pool.length < 6) {
-        pool = [...recommendPool];
+        pool = [...recommendPool].slice(0, 10);
     }
     if (pool.length < 6) return [];
+    if (pool.length > 10) pool = pool.slice(0, 10);
     
     const minSum = 90;
     const maxSum = 160;
     
-    function getCombinations(arr, k) {
-        if (k === 0) return [[]];
-        if (arr.length === 0) return [];
-        const [first, ...rest] = arr;
-        const withFirst = getCombinations(rest, k - 1).map(c => [first, ...c]);
-        const withoutFirst = getCombinations(rest, k);
-        return [...withFirst, ...withoutFirst];
-    }
-    
-    // 1. 조건에 맞는 모든 6개 조합 생성
     const allSix = getCombinations(pool, 6);
     const validSix = allSix.filter(combo => {
         const sum = combo.reduce((a, b) => a + b, 0);
@@ -1274,111 +1610,35 @@ function generateMixRandomCombos(count) {
         return [];
     }
     
-    // 2. Greedy로 가장 많은 트리플을 커버하는 count개 조합 선택
-    const allTriples = getCombinations(pool, 3);
-    const tripleSet = new Set(allTriples.map(t => t.sort((a,b)=>a-b).join(',')));
-    
-    let remainingTriples = new Set(tripleSet);
     let selected = [];
     let usedKeys = new Set();
+    let shuffled = shuffleArray(validSix);
     
-    while (selected.length < count && remainingTriples.size > 0) {
-        let bestCombo = null;
-        let bestCover = new Set();
-        let bestKey = '';
-        
-        for (let combo of validSix) {
-            const key = combo.sort((a,b)=>a-b).join(',');
-            if (usedKeys.has(key)) continue;
-            if (selected.some(s => s.join(',') === key)) continue;
-            
-            const comboSet = new Set(combo);
-            let tempCover = new Set();
-            for (let triple of remainingTriples) {
-                const t = triple.split(',').map(Number);
-                if (t.every(v => comboSet.has(v))) {
-                    tempCover.add(triple);
-                }
-            }
-            if (tempCover.size > bestCover.size) {
-                bestCover = tempCover;
-                bestCombo = combo;
-                bestKey = key;
-            }
+    for (let combo of shuffled) {
+        if (selected.length >= count) break;
+        const key = combo.sort((a,b)=>a-b).join(',');
+        if (!usedKeys.has(key)) {
+            usedKeys.add(key);
+            selected.push([...combo].sort((a,b)=>a-b));
         }
-        
-        if (bestCombo === null || bestCover.size === 0) break;
-        
-        for (let t of bestCover) remainingTriples.delete(t);
-        usedKeys.add(bestKey);
-        selected.push([...bestCombo].sort((a,b)=>a-b));
-    }
-    
-    // 3. 만약 count개가 안되면 랜덤으로 채움
-    while (selected.length < count) {
-        let shuffled = shuffleArray(validSix);
-        let found = false;
-        for (let combo of shuffled) {
-            const key = combo.sort((a,b)=>a-b).join(',');
-            if (!usedKeys.has(key)) {
-                usedKeys.add(key);
-                selected.push([...combo].sort((a,b)=>a-b));
-                found = true;
-                break;
-            }
-        }
-        if (!found) break;
     }
     
     return selected;
 }
 
-// ===================== 보장형 커버링 6조합 (통합교집합 기반) =====================
+// ===================== 보장형 커버링 (C(10,6,3)) =====================
 function generateCoveringCombos() {
-    // 1. 통합교집합 계산 (압축1 + 압축2 점수 합산)
-    let pool1 = compressRecommendPool1(currentCompress1);
-    let pool2 = compressRecommendPool2(currentCompress2);
-    let unionCompress = [...new Set([...pool1, ...pool2])];
-    if (unionCompress.length < 6) {
-        showToast('통합교집합 수가 6개 미만입니다.');
-        return;
-    }
-    // 점수 계산
-    let prevData = FULL_DATA.find(r => r[0] === analyzeRound);
-    let prevWins = prevData ? prevData.slice(1, 7) : [];
-    let prevBonus = prevData ? prevData[7] : null;
-    let allPrev = [...prevWins];
-    if (prevBonus) allPrev.push(prevBonus);
-    let compFreq = getCompanionFrequency(allPrev, 30);
-    let scored = unionCompress.map(n => {
-        let score1 = aiRealScores[n] || 0;
-        let score2 = (compFreq[n] || 0) * 15 + getCompatibilityScore(n, 5) * 0.5;
-        return { num: n, total: score1 + score2 };
-    });
-    scored.sort((a, b) => b.total - a.total);
-    // 상위 10개 (또는 currentCompress1개, 최대 10)
-    let takeCount = Math.min(currentCompress1, 10);
-    let pool = scored.slice(0, takeCount).map(x => x.num);
+    let pool = calculateUnionCompress();
     if (pool.length < 6) {
-        showToast('통합교집합 상위 ' + takeCount + '개 중 6개 미만입니다.');
+        showToast('통합교집합이 6개 미만입니다.');
         return;
     }
+    if (pool.length > 10) pool = pool.slice(0, 10);
 
     const minSum = 90;
     const maxSum = 160;
 
-    // 모든 6개 조합 생성 (pool에서 6개 뽑기)
-    function getCombinations(arr, k) {
-        if (k === 0) return [[]];
-        if (arr.length === 0) return [];
-        const [first, ...rest] = arr;
-        const withFirst = getCombinations(rest, k - 1).map(c => [first, ...c]);
-        const withoutFirst = getCombinations(rest, k);
-        return [...withFirst, ...withoutFirst];
-    }
-
     const allSix = getCombinations(pool, 6);
-    // 조건 필터: 합계 90~160, 3연번 제외
     const validSix = allSix.filter(combo => {
         const sum = combo.reduce((a, b) => a + b, 0);
         if (sum < minSum || sum > maxSum) return false;
@@ -1387,24 +1647,26 @@ function generateCoveringCombos() {
     });
 
     if (validSix.length === 0) {
-        showToast('조건을 만족하는 6개 조합이 없습니다. 합계 범위를 넓히거나 3연번을 허용하세요.');
+        showToast('조건을 만족하는 6개 조합이 없습니다.');
         return;
     }
 
-    // 모든 트리플(3개 조합) 생성 (pool 기준)
     const allTriples = getCombinations(pool, 3);
     const tripleSet = new Set(allTriples.map(t => t.sort((a,b)=>a-b).join(',')));
 
-    // Greedy 알고리즘으로 6개 조합 선택 (커버 최대화)
     let remainingTriples = new Set(tripleSet);
     let selected = [];
+    let usedKeys = new Set();
 
     while (remainingTriples.size > 0 && selected.length < 10) {
         let bestCombo = null;
         let bestCover = new Set();
 
         for (let combo of validSix) {
-            if (selected.some(s => s.join(',') === combo.join(','))) continue;
+            const key = combo.sort((a,b)=>a-b).join(',');
+            if (usedKeys.has(key)) continue;
+            if (selected.some(s => s.join(',') === key)) continue;
+            
             const comboSet = new Set(combo);
             let tempCover = new Set();
             for (let triple of remainingTriples) {
@@ -1422,19 +1684,18 @@ function generateCoveringCombos() {
         if (bestCombo === null || bestCover.size === 0) break;
 
         for (let t of bestCover) remainingTriples.delete(t);
-        selected.push(bestCombo);
+        const key = bestCombo.sort((a,b)=>a-b).join(',');
+        usedKeys.add(key);
+        selected.push([...bestCombo].sort((a,b)=>a-b));
     }
 
     if (remainingTriples.size > 0) {
-        showToast('⚠️ ' + remainingTriples.size + '개의 트리플을 커버하지 못했습니다. 조건을 완화하세요.');
-        generatedCombos = selected.map(c => [...c].sort((a,b)=>a-b));
-        showCombos();
-        return;
+        showToast('⚠️ ' + remainingTriples.size + '개의 트리플을 커버하지 못했습니다.');
     }
 
     generatedCombos = selected.map(c => [...c].sort((a,b)=>a-b));
     showCombos();
-    showToast('🔐 보장형 6조합 생성 완료 (통합교집합 기반, 모든 트리플 커버)');
+    showToast('🔐 보장형 ' + selected.length + '조합 생성 완료 (모든 트리플 커버)');
 }
 
 // ===================== 기타 함수들 =====================
@@ -1443,7 +1704,7 @@ function generateZoneCombo(count) {
     if (!combos || combos.length === 0) { showToast('구간 조합 실패'); return; }
     generatedCombos = combos;
     showCombos();
-    showToast('📐 구간 ' + combos.length + '개 (압축1, 트리플 커버리지 최대화)');
+    showToast('📐 구간 ' + combos.length + '개');
 }
 
 function generateMixRandomCombo(count) {
@@ -1451,7 +1712,7 @@ function generateMixRandomCombo(count) {
     if (!combos || combos.length === 0) { showToast('혼합랜덤 조합 실패'); return; }
     generatedCombos = combos;
     showCombos();
-    showToast('🎲 혼합랜덤 ' + combos.length + '개 (압축2, 트리플 커버리지 최대화)');
+    showToast('🎲 혼합랜덤 ' + combos.length + '개');
 }
 
 function showCombos() {
@@ -1703,28 +1964,9 @@ function updateUI() {
     let unionCount = recommendPool.length;
     let compressed1 = compressRecommendPool1(currentCompress1);
     let compressed2 = compressRecommendPool2(currentCompress2);
+    let compressed3 = compressRecommendPool3(currentCompress1);
+    let unionCompress = calculateUnionCompress();
     
-    // --- 통합교집합 (압축1 + 압축2 트레이드) ---
-    let unionCompress = [...new Set([...compressed1, ...compressed2])];
-    let prevData = FULL_DATA.find(r => r[0] === analyzeRound);
-    let prevWins = prevData ? prevData.slice(1, 7) : [];
-    let prevBonus = prevData ? prevData[7] : null;
-    let allPrev = [...prevWins];
-    if (prevBonus) allPrev.push(prevBonus);
-    let compFreq = getCompanionFrequency(allPrev, 30);
-
-    let scored = unionCompress.map(n => {
-        let score1 = aiRealScores[n] || 0;
-        let score2 = (compFreq[n] || 0) * 15 + getCompatibilityScore(n, 5) * 0.5;
-        return { num: n, total: score1 + score2 };
-    });
-    scored.sort((a, b) => b.total - a.total);
-    let targetCount = currentCompress1;
-    let finalInter = scored.slice(0, targetCount).map(x => x.num);
-    finalInter.sort((a, b) => a - b);
-    let displayInter = finalInter;
-    // ---
-
     function formatNum(num, type) {
         let isWinning = targetWinNumbers.includes(num);
         let isBonus = targetBonus === num;
@@ -1734,7 +1976,24 @@ function updateUI() {
         let style = '';
         if (type === 'c1') style = ' border-color: #ffd700;';
         if (type === 'c2') style = ' border-color: #ff6b6b;';
-        return '<span class="clickable ' + cls + '" style="' + style + '" onclick="toggleMyFixed(' + num + ')">' + num + '</span>';
+        if (type === 'c3') style = ' border-color: #4fc3f7;';
+        if (type === 'union') style = ' border-color: #ff8c00;';
+        
+        let score = 0;
+        if (type === 'c1' || type === 'special') {
+            score = specialScores[num] || 0;
+        } else if (type === 'c2' || type === 'ai') {
+            score = aiRealScores[num] || 0;
+        } else if (type === 'c3') {
+            score = specialScores[num] || 0;
+        } else if (type === 'union') {
+            score = (aiRealScores[num] || 0) * 0.7 + (specialScores[num] || 0) * 0.3;
+        } else {
+            score = combinedScores[num] || 0;
+        }
+        let title = `점수: ${score.toFixed(1)}`;
+        
+        return `<span class="clickable ${cls}" style="${style}" onclick="toggleMyFixed(${num})" title="${title}">${num}</span>`;
     }
 
     function formatList(nums, type) {
@@ -1744,18 +2003,20 @@ function updateUI() {
 
     let hit1 = compressed1.filter(n => targetWinNumbers.includes(n)).length;
     let hit2 = compressed2.filter(n => targetWinNumbers.includes(n)).length;
+    let hit3 = compressed3.filter(n => targetWinNumbers.includes(n)).length;
+    let hitUnion = unionCompress.filter(n => targetWinNumbers.includes(n)).length;
 
     document.getElementById('status').innerHTML = 
-        '<div class="stat-row survivor-row"><span class="stat-label">👥특수생존(간격' + intervalExclude + ')</span><div class="number-group">' + formatList(specialSurvivors, '') + ' (' + specialSurvivors.length + ')</div></div>' +
-        '<div class="stat-row survivor-row"><span class="stat-label">🤖AI생존(간격' + intervalAi + ')</span><div class="number-group">' + formatList(aiSurvivors, '') + ' (' + aiSurvivors.length + ')</div></div>' +
+        '<div class="stat-row survivor-row"><span class="stat-label">👥특수생존(간격' + intervalExclude + ')</span><div class="number-group">' + formatList(specialSurvivors, 'special') + ' (' + specialSurvivors.length + ')</div></div>' +
+        '<div class="stat-row survivor-row"><span class="stat-label">🤖AI생존(간격' + intervalAi + ')</span><div class="number-group">' + formatList(aiSurvivors, 'ai') + ' (' + aiSurvivors.length + ')</div></div>' +
         '<div class="stat-row" style="border-left-color:#ffd700;"><span class="stat-label">⭐생존 교집합</span><div class="number-group">' + formatList(interSurvivors, '') + ' (' + interSurvivors.length + '개)</div></div>' +
-        '<div class="stat-row" style="border-left-color:#4caf50;"><span class="stat-label">🧬합집합(추천수)</span><div class="number-group">' + unionCount + '개</div></div>' +
-        '<div class="stat-row"><span class="stat-label">⭐추천수(' + unionCount + '개)</span><div class="number-group">' + formatList(recommendPool, '') + ' (' + recommendPool.filter(n => targetWinNumbers.includes(n)).length + ')</div></div>' +
-        '<div class="stat-row" style="border-left-color:#ffd700;"><span class="stat-label">⭐압축1(' + compressed1.length + '개) <span class="hit-badge">🎯' + hit1 + '개</span></span><div class="number-group">' + formatList(compressed1, 'c1') + '</div></div>' +
-        '<div class="stat-row" style="border-left-color:#ff6b6b;"><span class="stat-label">🔽압축2(' + compressed2.length + '개) <span class="hit-badge">🎯' + hit2 + '개</span></span><div class="number-group">' + formatList(compressed2, 'c2') + '</div></div>' +
-        '<div class="stat-row" style="border-left-color:#ff8c00;"><span class="stat-label">🔗통합교집합(압축1+압축2 트레이드)</span><div class="number-group">' + 
-            (displayInter.length ? displayInter.map(n => formatNum(n, '')).join(', ') : '없음') + 
-            ' (' + displayInter.length + '개)</div></div>' +
+        '<div class="stat-row" style="border-left-color:#4caf50;"><span class="stat-label">🧬추천수(30개)</span><div class="number-group">' + formatList(recommendPool, '') + ' (' + recommendPool.filter(n => targetWinNumbers.includes(n)).length + ')</div></div>' +
+        '<div class="stat-row" style="border-left-color:#ffd700;"><span class="stat-label">⭐압축1(상위' + compressed1.length + '개) <span class="hit-badge">🎯' + hit1 + '개</span></span><div class="number-group">' + formatList(compressed1, 'c1') + '</div></div>' +
+        '<div class="stat-row" style="border-left-color:#ff6b6b;"><span class="stat-label">🔽압축2(AI상위' + compressed2.length + '개) <span class="hit-badge">🎯' + hit2 + '개</span></span><div class="number-group">' + formatList(compressed2, 'c2') + '</div></div>' +
+        '<div class="stat-row" style="border-left-color:#4fc3f7;"><span class="stat-label">🔷압축3(하위' + compressed3.length + '개) <span class="hit-badge">🎯' + hit3 + '개</span></span><div class="number-group">' + formatList(compressed3, 'c3') + '</div></div>' +
+        '<div class="stat-row" style="border-left-color:#ff8c00;"><span class="stat-label">🔗통합교집합(AI우선+구간균형) <span class="hit-badge">🎯' + hitUnion + '개</span></span><div class="number-group">' + 
+            (unionCompress.length ? unionCompress.map(n => formatNum(n, 'union')).join(', ') : '없음') + 
+            ' (' + unionCompress.length + '개)</div></div>' +
         '<div class="stat-row" onclick="openTrashPopup()" style="cursor:pointer;"><span class="stat-label">🗑️휴지통</span><div class="number-group">총 ' + trashNumbers.length + '개</div></div>' +
         '<div class="stat-row"><span class="stat-label">⭐내가고정 <button class="reset-fixed-btn" onclick="resetMyFixed()">초기화</button></span><div class="number-group">' + (myFixedPool.length ? myFixedPool.map(n => '<span class="fixed-only-yellow" style="cursor:default;">' + n + '</span>').join(' ') : '없음') + '</div></div>';
 
