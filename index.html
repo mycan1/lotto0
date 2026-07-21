@@ -2,905 +2,481 @@
 <html lang="ko">
 <head>
     <meta charset="UTF-8">
-    <title>📊 만능 분석 + 백테스트 (어떤 데이터든 OK)</title>
+    <title>📊 유사회차 다음회차 (1234 예측)</title>
     <style>
         * { box-sizing: border-box; margin: 0; padding: 0; }
-        body { background: #0a0a0a; color: #fff; font-family: 'Segoe UI', sans-serif; padding: 20px; max-width: 1400px; margin: 0 auto; }
-        h1 { color: #ffd700; text-align: center; margin-bottom: 20px; border-bottom: 3px solid #ffd700; padding-bottom: 10px; }
-        .main-container { display: grid; grid-template-columns: 1fr 2fr; gap: 20px; }
-        @media (max-width: 900px) { .main-container { grid-template-columns: 1fr; } }
-        .input-section { background: #1a1a1a; border: 3px solid #ffd700; border-radius: 20px; padding: 15px; }
-        .section-title { color: #ffd700; font-size: 16px; font-weight: bold; margin-bottom: 10px; }
-        textarea { width: 100%; height: 200px; background: #2a2a2a; color: #fff; border: 2px solid #ffd700; border-radius: 15px; padding: 15px; font-size: 13px; font-family: 'Consolas', monospace; margin-bottom: 10px; resize: vertical; }
-        .button-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 5px; margin-bottom: 10px; }
-        button { background: #ffd700; color: #000; border: none; border-radius: 30px; padding: 10px 5px; font-weight: bold; font-size: 12px; cursor: pointer; transition: all 0.2s; }
-        button:hover { background: #00e6b8; transform: scale(1.02); box-shadow: 0 0 15px #00e6b8; }
-        button.secondary { background: #333; color: #ffd700; border: 1px solid #ffd700; }
-        button.secondary:hover { background: #444; color: #00e6b8; border-color: #00e6b8; }
-        .filter-panel, .backtest-panel { background: #222; border-radius: 15px; padding: 12px; margin: 10px 0; border: 1px solid #ffd700; }
-        .filter-group { display: flex; flex-wrap: wrap; gap: 10px; margin: 8px 0; }
-        .filter-item { display: flex; align-items: center; gap: 5px; background: #333; padding: 5px 10px; border-radius: 20px; font-size: 11px; }
-        .filter-item input[type="number"] { width: 60px; background: #444; border: 1px solid #ffd700; color: #ffd700; border-radius: 15px; padding: 3px 5px; text-align: center; }
-        .filter-item input[type="text"] { width: 150px; background: #444; border: 1px solid #ffd700; color: #ffd700; border-radius: 15px; padding: 3px 8px; }
-        .result-section { background: #1a1a1a; border: 3px solid #ffd700; border-radius: 20px; padding: 15px; min-height: 600px; }
-        .tab-menu { display: flex; gap: 5px; margin-bottom: 15px; border-bottom: 2px solid #ffd700; padding-bottom: 5px; }
-        .tab { padding: 8px 15px; background: #333; color: #aaa; border-radius: 30px 30px 0 0; cursor: pointer; font-size: 12px; font-weight: bold; }
-        .tab.active { background: #ffd700; color: #000; }
-        .tab-content { display: none; }
-        .tab-content.active { display: block; }
-        .stats-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(150px, 1fr)); gap: 10px; margin: 15px 0; }
-        .stat-card { background: linear-gradient(145deg, #222, #111); border: 1px solid #ffd700; border-radius: 15px; padding: 15px; text-align: center; }
-        .stat-value { font-size: 32px; font-weight: bold; color: #ffd700; text-shadow: 0 0 10px #ffd700; }
-        .stat-label { font-size: 11px; color: #aaa; margin-top: 5px; }
-        .groups-container { display: grid; grid-template-columns: repeat(auto-fill, minmax(200px, 1fr)); gap: 10px; margin: 15px 0; max-height: 400px; overflow-y: auto; padding: 5px; }
-        .group-card { background: #222; border-left: 5px solid #ffd700; border-radius: 10px; padding: 10px; }
-        .group-header { display: flex; justify-content: space-between; margin-bottom: 5px; font-size: 11px; color: #ffd700; }
-        .group-numbers { display: flex; flex-wrap: wrap; gap: 3px; }
-        .number-badge { display: inline-flex; width: 24px; height: 24px; background: #333; border: 1px solid #ffd700; border-radius: 50%; justify-content: center; align-items: center; font-size: 10px; font-weight: bold; }
-        .analysis-table { width: 100%; border-collapse: collapse; font-size: 12px; }
-        .analysis-table th { background: #ffd700; color: #000; padding: 10px; position: sticky; top: 0; }
-        .analysis-table td { padding: 8px; border-bottom: 1px solid #444; }
-        .analysis-table tr:hover { background: #333; }
-        .rank-1 { background: rgba(255,215,0,0.15); }
-        .rank-2 { background: rgba(46,204,113,0.15); }
-        .rank-3 { background: rgba(52,152,219,0.15); }
-        .score-bar { width: 100%; height: 4px; background: #333; border-radius: 2px; margin-top: 3px; }
-        .score-fill { height: 100%; background: #ffd700; border-radius: 2px; }
-        .recommend-box { background: linear-gradient(145deg, #1a1a1a, #000); border: 3px solid #ffd700; border-radius: 20px; padding: 20px; margin-top: 20px; }
-        .level-badge { display: inline-block; padding: 5px 15px; border-radius: 30px; font-weight: bold; font-size: 12px; margin-right: 10px; }
-        .big-number { display: inline-flex; width: 45px; height: 45px; border-radius: 50%; justify-content: center; align-items: center; font-weight: bold; font-size: 16px; margin: 3px; border: 2px solid white; transition: transform 0.2s; }
-        .big-number:hover { transform: scale(1.1); box-shadow: 0 0 15px currentColor; }
-        .big-number.level-1 { background: #ffd700; color: #000; }
-        .big-number.level-2 { background: #2ecc71; color: #000; }
-        .big-number.level-3 { background: #3498db; color: #fff; }
-        .chart-container { height: 200px; display: flex; align-items: flex-end; gap: 2px; margin: 20px 0; }
-        .chart-bar { flex: 1; background: #ffd700; min-height: 2px; border-radius: 3px 3px 0 0; transition: height 0.3s; position: relative; }
-        .chart-bar:hover::after { content: attr(data-value); position: absolute; top: -20px; left: 50%; transform: translateX(-50%); background: #000; color: #ffd700; padding: 2px 5px; border-radius: 10px; font-size: 9px; white-space: nowrap; }
-        .loading { text-align: center; padding: 40px; color: #ffd700; font-size: 14px; }
-        .loading::after { content: ''; display: inline-block; width: 20px; height: 20px; border: 3px solid #ffd700; border-top-color: transparent; border-radius: 50%; animation: spin 1s linear infinite; margin-left: 10px; }
-        @keyframes spin { to { transform: rotate(360deg); } }
-        .backtest-result { background: #1a1a1a; border: 2px solid #2ecc71; border-radius: 15px; padding: 15px; margin-top: 15px; }
-        .match-badge { display: inline-block; background: #2ecc71; color: #000; padding: 5px 12px; border-radius: 30px; font-weight: bold; font-size: 14px; }
-        .match-badge.zero { background: #e74c3c; }
-        .drop-hint { font-size: 10px; color: #666; text-align: center; margin-top: 5px; }
-        .backtest-mode { background: #2a2a2a; border-radius: 10px; padding: 8px; margin-top: 5px; font-size: 11px; color: #aaa; }
-        .backtest-mode .highlight { color: #ffd700; font-weight: bold; }
+        body { background: #0a0a0a; color: #fff; font-family: 'Segoe UI', sans-serif; padding: 20px; max-width: 1100px; margin: 0 auto; }
+        h1 { color: #ffd700; text-align: center; border-bottom: 3px solid #ffd700; padding-bottom: 10px; margin-bottom: 20px; }
+        .filters { background: #1a1a1a; border: 2px solid #ffd700; border-radius: 15px; padding: 15px 20px; margin-bottom: 20px; display: flex; flex-wrap: wrap; gap: 15px; align-items: flex-end; }
+        .filter-group { display: flex; flex-direction: column; gap: 3px; }
+        .filter-group label { color: #ffd700; font-size: 12px; font-weight: bold; }
+        .filter-group input, .filter-group select { padding: 6px 12px; border-radius: 8px; border: 1px solid #555; background: #2a2a2a; color: #fff; font-size: 14px; width: 100%; }
+        .filter-group input[type="number"] { width: 100px; }
+        button { background: #ffd700; color: #000; border: none; border-radius: 30px; padding: 8px 20px; font-weight: bold; font-size: 14px; cursor: pointer; transition: all 0.2s; }
+        button:hover { background: #00e6b8; transform: scale(1.02); box-shadow: 0 0 20px #00e6b8; }
+        button.secondary { background: #555; color: #fff; }
+        button.secondary:hover { background: #777; }
+        .result-area { background: #1a1a1a; border: 2px solid #ffd700; border-radius: 15px; padding: 20px; margin-top: 20px; overflow-x: auto; }
+        .section-title { color: #ffd700; font-size: 18px; font-weight: bold; margin: 15px 0 10px 0; }
+        .winning-info { background: #2a2a2a; border-left: 4px solid #ff6b6b; padding: 10px 15px; border-radius: 8px; margin: 10px 0; }
+        .winning-info span { color: #ff6b6b; font-weight: bold; font-size: 18px; }
+        .info-box { background: #1a2a2a; border-left: 4px solid #3498db; padding: 8px 15px; border-radius: 8px; margin: 5px 0; font-size: 13px; color: #88ccff; }
+        .pool-box { background: #1a2a1a; border: 2px solid #2ecc71; padding: 10px; border-radius: 8px; margin: 10px 0; }
+        .combo-box { background: #1a2a1a; border: 1px solid #2ecc71; border-radius: 10px; padding: 10px 15px; margin: 5px 0; display: flex; flex-wrap: wrap; align-items: center; }
+        .combo-box span { display: inline-block; background: #333; padding: 2px 10px; border-radius: 20px; margin: 2px 4px; font-size: 13px; }
+        .match-hit { color: #ffd700; font-weight: bold; background: rgba(255,215,0,0.25); border-radius: 4px; padding: 2px 6px; }
+        .match-bonus { color: #ff6b6b; font-weight: bold; background: rgba(255,107,107,0.25); border-radius: 4px; padding: 2px 6px; }
+        .loading { text-align: center; padding: 40px; color: #aaa; }
+        .note { font-size: 11px; color: #666; margin-top: 5px; }
+        .freq-container { display: flex; flex-wrap: wrap; gap: 8px; margin-top: 5px; }
+        .freq-item { display: inline-flex; align-items: center; gap: 5px; background: #1a1a1a; padding: 3px 12px; border-radius: 20px; border: 1px solid #333; font-size: 14px; }
+        .freq-item .num { font-weight: bold; min-width: 24px; text-align: center; color: #fff; }
+        .freq-item .count { color: #ffd700; font-size: 12px; }
+        .freq-item .bar { display: inline-block; width: 30px; height: 4px; background: #333; border-radius: 2px; margin-left: 4px; }
+        .freq-item .bar-inner { display: block; height: 100%; background: #ffd700; border-radius: 2px; }
+        .winner-main { color: #2ecc71 !important; }
+        .winner-bonus { color: #ff6b6b !important; }
+        .freq-section { margin-top: 15px; }
+        .freq-section-title { color: #ffd700; font-size: 15px; font-weight: bold; margin-bottom: 5px; }
+        .badge { display: inline-block; padding: 2px 10px; border-radius: 30px; font-weight: bold; font-size: 11px; }
+        .badge-4 { background: #ffd700; color: #000; }
+        .badge-5 { background: #2ecc71; color: #000; }
+        table { width: 100%; border-collapse: collapse; font-size: 12px; margin: 10px 0; }
+        th { background: #ffd700; color: #000; padding: 6px 4px; text-align: center; }
+        td { padding: 5px 4px; border-bottom: 1px solid #333; text-align: center; }
+        .round-col { color: #ffd700; font-weight: bold; }
+        .bonus-col { color: #ff6b6b; font-weight: bold; }
+        .no-data { color: #f39c12; font-style: italic; }
     </style>
 </head>
 <body>
-    <h1>📊 만능 분석 + 백테스트 (어떤 데이터든 OK)</h1>
-    
-    <div class="main-container">
-        <div class="input-section">
-            <div class="section-title">📋 데이터 입력 <span style="font-size:10px; color:#aaa;">(아무 형식이나 OK)</span></div>
-            <textarea id="dataInput" placeholder="여기에 아무 형식의 데이터나 붙여넣으세요."></textarea>
-            
-            <div class="button-grid">
-                <button onclick="analyzeData()">🔍 고급 분석</button>
-                <button onclick="clearData()" class="secondary">🗑️ 지우기</button>
-                <button onclick="showSample()" class="secondary">📌 샘플</button>
-                <button onclick="exportData()" class="secondary">💾 내보내기</button>
-                <button onclick="copyResult()" class="secondary">📋 복사</button>
-                <button onclick="printReport()" class="secondary">🖨️ 인쇄</button>
-            </div>
-            
-            <div class="filter-panel">
-                <div style="color:#ffd700; margin-bottom:8px;">⚙️ 분석 옵션</div>
-                <div class="filter-group">
-                    <div class="filter-item"><span>최소 그룹 수</span><input type="number" id="minGroups" value="2" min="1" max="10"></div>
-                    <div class="filter-item"><span>최대 추천 개수</span><input type="number" id="maxRecommend" value="20" min="5" max="45"></div>
-                </div>
-                <div class="filter-group">
-                    <label class="filter-item"><input type="checkbox" id="weightBySize" checked> 그룹 크기 가중치</label>
-                    <label class="filter-item"><input type="checkbox" id="showCorrelation" checked> 연관성 분석</label>
-                    <label class="filter-item"><input type="checkbox" id="showChart" checked> 분포 차트</label>
-                </div>
-                <div class="filter-group">
-                    <label class="filter-item"><input type="radio" name="sortMethod" id="sortByCount" checked> 그룹 수 순</label>
-                    <label class="filter-item"><input type="radio" name="sortMethod" id="sortByScore"> 종합 점수 순</label>
-                    <label class="filter-item"><input type="radio" name="sortMethod" id="sortByNumber"> 숫자 순</label>
-                </div>
-            </div>
-            
-            <div class="backtest-panel">
-                <div style="color:#ffd700; margin-bottom:8px;">🔁 백테스트 설정</div>
-                <div class="filter-group">
-                    <div class="filter-item">
-                        <span>회차</span>
-                        <input type="number" id="backtestRound" value="1233" min="1001" max="1233" onchange="autoFillBacktest()">
-                    </div>
-                    <div class="filter-item">
-                        <span>실제 번호</span>
-                        <input type="text" id="backtestNumbers" placeholder="자동" style="width:130px;">
-                    </div>
-                    <div class="filter-item">
-                        <span>보너스</span>
-                        <input type="number" id="backtestBonus" value="" min="1" max="45">
-                    </div>
-                </div>
-                <div class="filter-group">
-                    <button onclick="runBacktest()" style="flex:1;">🔬 백테스트 실행</button>
-                </div>
-                <div id="backtestModeInfo" class="backtest-mode">
-                    📌 현재 모드: <span class="highlight" id="modeDisplay">대기 중</span>
-                </div>
-                <div id="backtestResult" style="margin-top:10px; font-size:12px; color:#aaa;">
-                    백테스트 결과가 여기에 표시됩니다.
-                </div>
-            </div>
-            
-            <div class="drop-hint">📂 텍스트 파일을 드래그하거나 붙여넣기(Ctrl+V)로 데이터를 입력하세요.</div>
+    <h1>📊 유사회차 다음회차 (1234 예측)</h1>
+
+    <div class="filters">
+        <div class="filter-group">
+            <label>📅 기준 회차 (예측 대상)</label>
+            <input type="number" id="baseRound" value="1234" min="2" max="1234">
         </div>
-        
-        <div class="result-section">
-            <div class="tab-menu">
-                <div class="tab active" onclick="switchTab('overview')">📊 종합</div>
-                <div class="tab" onclick="switchTab('analysis')">🔍 상세분석</div>
-                <div class="tab" onclick="switchTab('groups')">📦 그룹별</div>
-                <div class="tab" onclick="switchTab('correlation')">🔄 연관성</div>
-                <div class="tab" onclick="switchTab('stats')">📈 통계</div>
-            </div>
-            
-            <div id="tab-overview" class="tab-content active"><div id="overview-content"><div class="loading">분석을 시작하려면 데이터를 입력하세요</div></div></div>
-            <div id="tab-analysis" class="tab-content"><div id="analysis-content"></div></div>
-            <div id="tab-groups" class="tab-content"><div id="groups-content"></div></div>
-            <div id="tab-correlation" class="tab-content"><div id="correlation-content"></div></div>
-            <div id="tab-stats" class="tab-content"><div id="stats-content"></div></div>
+        <div class="filter-group">
+            <label>🔢 시작 회차</label>
+            <input type="number" id="startRound" value="757" min="1" max="1233">
+        </div>
+        <div class="filter-group">
+            <label>🎯 최소 일치 개수</label>
+            <select id="minMatch">
+                <option value="4">4개 (4등)</option>
+                <option value="5">5개 (3등)</option>
+                <option value="3" selected>3개 (5등)</option>
+            </select>
+        </div>
+        <div class="filter-group">
+            <label>&nbsp;</label>
+            <button onclick="runAnalysis()">🚀 분석 실행</button>
+        </div>
+        <div class="filter-group">
+            <label>&nbsp;</label>
+            <button onclick="generateCombos()" style="background:#2ecc71; color:#000;">🎯 조합 생성</button>
+        </div>
+        <div class="filter-group">
+            <label>&nbsp;</label>
+            <button onclick="resetAll()" class="secondary">🗑️ 초기화</button>
         </div>
     </div>
 
+    <div class="result-area" id="resultArea">
+        <div class="loading">분석 결과가 여기에 표시됩니다.</div>
+    </div>
+
     <script>
-        // ========== LOTTO DATA (1001~1232) ==========
-        const LOTTO_DATA = [
-            [1232,12,15,19,22,24,36,3],[1231,4,13,14,18,31,38,15],[1230,3,8,9,22,28,42,45],
-            [1229,12,13,29,34,37,42,16],[1228,24,29,30,31,35,44,1],[1227,1,14,16,34,41,44,13],
-            [1226,4,6,13,17,26,28,41],[1225,8,9,19,25,41,42,33],[1224,9,18,21,27,44,45,28],
-            [1223,16,18,20,32,33,39,26],[1222,4,11,17,22,32,41,34],[1221,6,13,18,28,30,36,9],
-            [1220,2,22,25,28,34,43,16],[1219,1,2,15,28,39,45,31],[1218,3,28,31,32,42,45,25],
-            [1217,8,10,15,20,29,31,41],[1216,3,10,14,15,23,24,25],[1215,13,15,19,21,44,45,39],
-            [1214,10,15,19,27,30,33,14],[1213,5,11,25,27,36,38,2],[1212,5,8,25,31,41,44,45],
-            [1211,23,26,27,35,38,40,10],[1210,1,7,9,17,27,38,31],[1209,2,17,20,35,37,39,24],
-            [1208,6,27,30,36,38,42,25],[1207,10,22,24,27,38,45,11],[1206,1,3,17,26,27,42,23],
-            [1205,1,4,16,23,31,41,2],[1204,8,16,28,30,31,44,27],[1203,3,6,18,29,35,39,24],
-            [1202,5,12,21,33,37,40,7],[1201,7,9,24,27,35,36,37],[1200,1,2,4,16,20,32,45],
-            [1199,16,24,25,30,31,32,7],[1198,26,30,33,38,39,41,21],[1197,1,5,7,26,28,43,30],
-            [1196,8,12,15,29,40,45,14],[1195,3,15,27,33,34,36,37],[1194,3,13,15,24,33,37,2],
-            [1193,6,9,16,19,24,28,17],[1192,10,16,23,36,39,40,11],[1191,1,4,11,12,20,41,2],
-            [1190,7,9,19,23,26,45,33],[1189,9,19,29,35,37,38,31],[1188,3,4,12,19,22,27,9],
-            [1187,5,13,26,29,37,40,42],[1186,2,8,13,16,23,28,35],[1185,6,17,22,28,29,32,38],
-            [1184,14,16,23,25,31,37,42],[1183,4,15,17,23,27,36,31],[1182,1,13,21,25,28,31,22],
-            [1181,8,10,14,20,33,41,28],[1180,6,12,18,37,40,41,3],[1179,3,16,18,24,40,44,21],
-            [1178,5,6,11,27,43,44,17],[1177,3,7,15,16,19,43,21],[1176,7,9,11,21,30,35,29],
-            [1175,3,4,6,8,32,42,31],[1174,8,11,14,17,36,39,22],[1173,1,5,18,20,30,35,3],
-            [1172,7,9,24,40,42,44,45],[1171,3,13,28,34,38,42,25],[1170,5,12,24,26,39,42,20],
-            [1169,9,21,24,30,33,37,29],[1168,8,23,31,35,39,40,24],[1167,14,23,25,27,29,42,16],
-            [1166,6,7,27,29,38,45,17],[1165,17,18,23,25,38,39,22],[1164,2,13,15,16,33,43,4],
-            [1163,20,21,22,25,28,29,6],[1162,2,12,20,24,34,42,37],[1161,7,13,18,36,39,45,19],
-            [1160,3,9,27,28,38,39,7],[1159,21,25,27,32,37,38,20],[1158,5,7,12,20,25,26,28],
-            [1157,30,31,34,39,41,45,7],[1156,10,16,19,27,37,38,13],[1155,4,8,22,26,32,38,27],
-            [1154,1,9,10,13,35,44,5],[1153,30,31,32,35,36,37,5],[1152,2,3,9,15,27,29,8],
-            [1151,8,9,18,35,39,45,25],[1150,8,15,19,21,32,36,38],[1149,3,6,13,15,16,22,32],
-            [1148,7,11,24,26,27,37,32],[1147,6,11,17,19,40,43,28],[1146,2,11,31,33,37,44,32],
-            [1145,3,4,12,15,26,34,6],[1144,10,16,17,27,28,36,6],[1143,2,8,28,30,37,41,22],
-            [1142,7,11,12,21,26,35,20],[1141,7,10,22,29,31,38,15],[1140,5,12,15,30,37,40,18],
-            [1139,14,16,19,20,29,34,35],[1138,4,9,12,15,33,45,26],[1137,21,33,35,38,42,44,1],
-            [1136,1,6,13,19,21,33,4],[1135,3,7,9,13,19,24,23],[1134,13,14,20,28,29,34,23],
-            [1133,6,7,19,28,34,41,5],[1132,1,2,6,14,27,38,33],[1131,15,19,21,25,27,28,40],
-            [1130,5,10,11,17,28,34,22],[1129,1,5,8,16,28,33,45],[1128,10,15,24,30,31,37,32],
-            [1127,4,5,9,11,37,40,7],[1126,6,14,25,33,40,44,30],[1125,3,8,17,30,33,34,28],
-            [1124,13,19,21,24,34,35,26],[1123,3,6,21,30,34,35,22],[1122,6,24,31,32,38,44,8],
-            [1121,2,19,26,31,38,41,34],[1120,1,9,12,13,20,45,3],[1119,11,13,14,15,16,45,3],
-            [1118,3,4,9,30,33,36,7],[1117,15,16,17,25,30,31,32],[1116,7,12,23,32,34,36,8],
-            [1115,10,16,19,32,33,38,3],[1114,11,13,20,21,32,44,8],[1113,16,20,26,36,42,44,24],
-            [1112,3,13,30,33,43,45,4],[1111,3,7,11,20,22,41,24],[1110,10,12,13,19,33,40,2],
-            [1109,7,19,26,37,39,44,27],[1108,6,14,30,31,40,41,29],[1107,1,3,4,29,42,45,36],
-            [1106,6,16,34,37,39,40,11],[1105,1,7,21,30,35,38,2],[1104,10,12,29,31,40,44,2],
-            [1103,13,14,22,26,37,38,20],[1102,6,7,13,28,36,42,41],[1101,17,26,29,30,31,43,12],
-            [1100,3,20,28,38,40,43,4],[1099,12,16,21,24,41,43,15],[1098,14,33,34,35,37,40,4],
-            [1097,1,12,16,19,23,43,34],[1096,8,14,28,29,34,40,12],[1095,6,7,15,22,26,40,41],
-            [1094,10,17,22,30,35,43,44],[1093,7,18,19,26,33,45,37],[1092,6,20,23,24,28,30,44],
-            [1091,12,19,21,29,40,45,1],[1090,4,18,31,37,42,43,40],[1089,11,21,22,30,39,44,31],
-            [1088,13,14,18,21,34,44,16],[1087,11,16,25,27,35,36,37],[1086,4,7,17,18,38,44,36],
-            [1085,8,12,13,29,33,42,5],[1084,3,7,14,15,22,38,17],[1083,21,26,27,32,34,42,31],
-            [1082,1,9,16,23,24,38,17],[1081,13,16,23,31,36,44,38],[1080,4,8,18,24,37,45,6],
-            [1079,6,10,11,14,36,38,43],[1078,4,8,17,30,40,43,34],[1077,3,7,9,33,36,37,10],
-            [1076,1,23,24,35,44,45,10],[1075,1,6,20,27,28,41,15],[1074,6,18,28,30,32,38,15],
-            [1073,16,18,20,23,32,43,27],[1072,1,2,11,21,30,35,39],[1071,3,6,14,22,30,41,36],
-            [1070,1,10,18,22,28,31,44],[1069,4,7,19,26,33,35,3],[1068,7,10,19,23,28,33,18],
-            [1067,6,11,16,19,21,32,45],[1066,3,18,19,23,32,45,24],[1065,3,6,9,18,22,35,14],
-            [1064,3,6,22,23,24,38,30],[1063,20,31,32,40,41,45,12],[1062,4,24,27,35,37,45,15],
-            [1061,3,10,24,33,38,45,36],[1060,7,10,22,25,34,40,27],[1059,11,23,25,30,32,40,42],
-            [1058,8,13,19,27,40,45,12],[1057,13,20,24,32,36,45,29],[1056,4,7,12,14,22,33,31],
-            [1055,14,19,27,28,30,45,33],[1054,22,26,29,30,34,45,15],[1053,5,17,26,27,35,38,1],
-            [1052,21,26,30,32,33,35,44],[1051,6,12,31,35,38,43,17],[1050,3,5,13,20,21,37,17],
-            [1049,6,12,17,21,32,39,30],[1048,2,20,33,40,42,44,32],[1047,7,16,25,29,35,36,28],
-            [1046,6,14,15,19,21,41,37],[1045,12,17,20,26,28,36,4],[1044,3,5,12,22,26,31,19],
-            [1043,5,14,15,23,34,43,4],[1042,6,7,9,11,17,18,45],[1041,8,16,26,29,31,36,11],
-            [1040,2,3,6,19,36,39,26],[1039,7,16,24,27,37,44,2],[1038,2,14,15,22,27,33,31],
-            [1037,2,5,22,32,34,45,39],[1036,9,14,34,35,41,42,2],[1035,26,31,32,33,38,40,11],
-            [1034,3,11,15,20,35,44,10],[1033,1,6,12,19,36,42,28],[1032,6,7,22,32,35,36,19],
-            [1031,2,5,11,17,24,29,9],[1030,12,30,32,37,39,41,24],[1029,5,7,12,13,18,35,23],
-            [1028,14,16,27,35,39,45,5],[1027,5,12,13,31,32,41,34],[1026,8,9,20,25,29,33,7],
-            [1025,9,18,20,22,38,44,10],[1024,10,14,16,18,29,35,25],[1023,5,6,11,29,42,45,28],
-            [1022,12,15,17,24,29,45,16],[1021,12,27,29,38,41,45,6],[1020,1,4,13,17,34,39,6],
-            [1019,3,19,21,25,37,45,35],[1018,12,18,22,23,30,34,32],[1017,15,26,28,34,41,42,44],
-            [1016,14,23,31,33,37,40,44],[1015,3,11,14,18,26,27,21],[1014,21,22,26,34,36,41,32],
-            [1013,5,11,18,20,35,45,3],[1012,1,9,12,26,35,38,42],[1011,9,12,15,25,34,36,3],
-            [1010,15,23,29,34,40,44,20],[1009,9,11,30,31,41,44,33],[1008,8,11,16,19,21,25,40],
-            [1007,8,11,15,16,17,37,36],[1006,8,13,18,24,27,29,17],[1005,7,15,30,37,39,44,18],
-            [1004,1,4,29,39,43,45,31],[1003,17,25,33,35,38,45,15],[1002,6,10,12,14,20,42,15],
-            [1001,2,8,19,22,32,42,39]
+        // ========================================================================
+        // 1. 데이터 (757~1233회) - 1234회는 없음
+        // ========================================================================
+        const DATA = [
+            [1233,2,7,20,25,37,40,29],[1232,12,15,19,22,24,36,3],[1231,4,13,14,18,31,38,15],
+            [1230,3,8,9,22,28,42,45],[1229,12,13,29,34,37,42,16],[1228,24,29,30,31,35,44,1],
+            [1227,1,14,16,34,41,44,13],[1226,4,6,13,17,26,28,41],[1225,8,9,19,25,41,42,33],
+            [1224,9,18,21,27,44,45,28],[1223,16,18,20,32,33,39,26],[1222,4,11,17,22,32,41,34],
+            [1221,6,13,18,28,30,36,9],[1220,2,22,25,28,34,43,16],[1219,1,2,15,28,39,45,31],
+            [1218,3,28,31,32,42,45,25],[1217,8,10,15,20,29,31,41],[1216,3,10,14,15,23,24,25],
+            [1215,13,15,19,21,44,45,39],[1214,10,15,19,27,30,33,14],[1213,5,11,25,27,36,38,2],
+            [1212,5,8,25,31,41,44,45],[1211,23,26,27,35,38,40,10],[1210,1,7,9,17,27,38,31],
+            [1209,2,17,20,35,37,39,24],[1208,6,27,30,36,38,42,25],[1207,10,22,24,27,38,45,11],
+            [1206,1,3,17,26,27,42,23],[1205,1,4,16,23,31,41,2],[1204,8,16,28,30,31,44,27],
+            [1203,3,6,18,29,35,39,24],[1202,5,12,21,33,37,40,7],[1201,7,9,24,27,35,36,37],
+            [1200,1,2,4,16,20,32,45],[1199,16,24,25,30,31,32,7],[1198,26,30,33,38,39,41,21],
+            [1197,1,5,7,26,28,43,30],[1196,8,12,15,29,40,45,14],[1195,3,15,27,33,34,36,37],
+            [1194,3,13,15,24,33,37,2],[1193,6,9,16,19,24,28,17],[1192,10,16,23,36,39,40,11],
+            [1191,1,4,11,12,20,41,2],[1190,7,9,19,23,26,45,33],[1189,9,19,29,35,37,38,31],
+            [1188,3,4,12,19,22,27,9],[1187,5,13,26,29,37,40,42],[1186,2,8,13,16,23,28,35],
+            [1185,6,17,22,28,29,32,38],[1184,14,16,23,25,31,37,42],[1183,4,15,17,23,27,36,31],
+            [1182,1,13,21,25,28,31,22],[1181,8,10,14,20,33,41,28],[1180,6,12,18,37,40,41,3],
+            [1179,3,16,18,24,40,44,21],[1178,5,6,11,27,43,44,17],[1177,3,7,15,16,19,43,21],
+            [1176,7,9,11,21,30,35,29],[1175,3,4,6,8,32,42,31],[1174,8,11,14,17,36,39,22],
+            [1173,1,5,18,20,30,35,3],[1172,7,9,24,40,42,44,45],[1171,3,6,7,11,12,17,19],
+            [1170,3,13,28,34,38,42,25],[1169,5,12,24,26,39,42,20],[1168,9,21,24,30,33,37,29],
+            [1167,8,23,31,35,39,40,24],[1166,14,23,25,27,29,42,16],[1165,6,7,27,29,38,45,17],
+            [1164,17,18,23,25,38,39,22],[1163,2,13,15,16,33,43,4],[1162,20,21,22,25,28,29,6],
+            [1161,2,12,20,24,34,42,37],[1160,7,13,18,36,39,45,19],[1159,3,9,27,28,38,39,7],
+            [1158,21,25,27,32,37,38,20],[1157,5,7,12,20,25,26,28],[1156,30,31,34,39,41,45,7],
+            [1155,10,16,19,27,37,38,13],[1154,4,8,22,26,32,38,27],[1153,1,9,10,13,35,44,5],
+            [1152,30,31,32,35,36,37,5],[1151,2,3,9,15,27,29,8],[1150,8,9,18,35,39,45,25],
+            [1149,8,15,19,21,32,36,38],[1148,3,6,13,15,16,22,32],[1147,7,11,24,26,27,37,32],
+            [1146,6,11,17,19,40,43,28],[1145,2,11,31,33,37,44,32],[1144,3,4,12,15,26,34,6],
+            [1143,10,16,17,27,28,36,6],[1142,2,8,28,30,37,41,22],[1141,7,11,12,21,26,35,20],
+            [1140,7,10,22,29,31,38,15],[1139,5,12,15,30,37,40,18],[1138,14,16,19,20,29,34,35],
+            [1137,4,9,12,15,33,45,26],[1136,21,33,35,38,42,44,1],[1135,1,6,13,19,21,33,4],
+            [1134,3,7,9,13,19,24,23],[1133,13,14,20,28,29,34,23],[1132,6,7,19,28,34,41,5],
+            [1131,1,2,6,14,27,38,33],[1130,15,19,21,25,27,28,40],[1129,5,10,11,17,28,34,22],
+            [1128,1,5,8,16,28,33,45],[1127,10,15,24,30,31,37,32],[1126,4,5,9,11,37,40,7],
+            [1125,6,14,25,33,40,44,30],[1124,3,8,17,30,33,34,28],[1123,13,19,21,24,34,35,26],
+            [1122,3,6,21,30,34,35,22],[1121,6,24,31,32,38,44,8],[1120,2,19,26,31,38,41,34],
+            [1119,1,9,12,13,20,45,3],[1118,11,13,14,15,16,45,3],[1117,3,4,9,30,33,36,7],
+            [1116,15,16,17,25,30,31,32],[1115,7,12,23,32,34,36,8],[1114,10,16,19,32,33,38,3],
+            [1113,11,13,20,21,32,44,8],[1112,16,20,26,36,42,44,24],[1111,3,13,30,33,43,45,4],
+            [1110,3,7,11,20,22,41,24],[1109,10,12,13,19,33,40,2],[1108,7,19,26,37,39,44,27],
+            [1107,6,14,30,31,40,41,29],[1106,1,3,4,29,42,45,36],[1105,6,16,34,37,39,40,11],
+            [1104,1,7,21,30,35,38,2],[1103,10,12,29,31,40,44,2],[1102,13,14,22,26,37,38,20],
+            [1101,6,7,13,28,36,42,41],[1100,17,26,29,30,31,43,12],[1099,3,20,28,38,40,43,4],
+            [1098,12,16,21,24,41,43,15],[1097,14,33,34,35,37,40,4],[1096,1,12,16,19,23,43,34],
+            [1095,8,14,28,29,34,40,12],[1094,6,7,15,22,26,40,41],[1093,10,17,22,30,35,43,44],
+            [1092,7,18,19,26,33,45,37],[1091,6,20,23,24,28,30,44],[1090,12,19,21,29,40,45,1],
+            [1089,4,18,31,37,42,43,40],[1088,11,21,22,30,39,44,31],[1087,13,14,18,21,34,44,16],
+            [1086,11,16,25,27,35,36,37],[1085,4,7,17,18,38,44,36],[1084,8,12,13,29,33,42,5],
+            [1083,3,7,14,15,22,38,17],[1082,21,26,27,32,34,42,31],[1081,1,9,16,23,24,38,17],
+            [1080,13,16,23,31,36,44,38],[1079,4,8,18,24,37,45,6],[1078,6,10,11,14,36,38,43],
+            [1077,4,8,17,30,40,43,34],[1076,3,7,9,33,36,37,10],[1075,1,23,24,35,44,45,10],
+            [1074,1,6,20,27,28,41,15],[1073,6,18,28,30,32,38,15],[1072,16,18,20,23,32,43,27],
+            [1071,1,2,11,21,30,35,39],[1070,3,6,14,22,30,41,36],[1069,1,10,18,22,28,31,44],
+            [1068,4,7,19,26,33,35,3],[1067,7,10,19,23,28,33,18],[1066,6,11,16,19,21,32,45],
+            [1065,3,18,19,23,32,45,24],[1064,3,6,9,18,22,35,14],[1063,3,6,22,23,24,38,30],
+            [1062,20,31,32,40,41,45,12],[1061,4,24,27,35,37,45,15],[1060,3,10,24,33,38,45,36],
+            [1059,7,10,22,25,34,40,27],[1058,11,23,25,30,32,40,42],[1057,8,13,19,27,40,45,12],
+            [1056,13,20,24,32,36,45,29],[1055,4,7,12,14,22,33,31],[1054,14,19,27,28,30,45,33],
+            [1053,22,26,29,30,34,45,15],[1052,5,17,26,27,35,38,1],[1051,21,26,30,32,33,35,44],
+            [1050,6,12,31,35,38,43,17],[1049,3,5,13,20,21,37,17],[1048,6,12,17,21,32,39,30],
+            [1047,2,20,33,40,42,44,32],[1046,7,16,25,29,35,36,28],[1045,6,14,15,19,21,41,37],
+            [1044,12,17,20,26,28,36,4],[1043,3,5,12,22,26,31,19],[1042,5,14,15,23,34,43,4],
+            [1041,6,7,9,11,17,18,45],[1040,8,16,26,29,31,36,11],[1039,2,3,6,19,36,39,26],
+            [1038,7,16,24,27,37,44,2],[1037,2,14,15,22,27,33,31],[1036,2,5,22,32,34,45,39],
+            [1035,9,14,34,35,41,42,2],[1034,26,31,32,33,38,40,11],[1033,3,11,15,20,35,44,10],
+            [1032,1,6,12,19,36,42,28],[1031,6,7,22,32,35,36,19],[1030,2,5,11,17,24,29,9],
+            [1029,12,30,32,37,39,41,24],[1028,5,7,12,13,18,35,23],[1027,14,16,27,35,39,45,5],
+            [1026,5,12,13,31,32,41,34],[1025,8,9,20,25,29,33,7],[1024,9,18,20,22,38,44,10],
+            [1023,10,14,16,18,29,35,25],[1022,5,6,11,29,42,45,28],[1021,12,15,17,24,29,45,16],
+            [1020,12,27,29,38,41,45,6],[1019,1,4,13,17,34,39,6],[1018,3,19,21,25,37,45,35],
+            [1017,12,18,22,23,30,34,32],[1016,15,26,28,34,41,42,44],[1015,14,23,31,33,37,40,44],
+            [1014,3,11,14,18,26,27,21],[1013,21,22,26,34,36,41,32],[1012,5,11,18,20,35,45,3],
+            [1011,1,9,12,26,35,38,42],[1010,9,12,15,25,34,36,3],[1009,15,23,29,34,40,44,20],
+            [1008,9,11,30,31,41,44,33],[1007,8,11,16,19,21,25,40],[1006,8,11,15,16,17,37,36],
+            [1005,8,13,18,24,27,29,17],[1004,7,15,30,37,39,44,18],[1003,1,4,29,39,43,45,31],
+            [1002,17,25,33,35,38,45,15],[1001,6,10,12,14,20,42,15]
         ];
 
-        // ========== 전역 변수 ==========
-        let currentAnalysis = null;
-        let currentGroups = null;
-
-        // ========== 탭 전환 ==========
-        function switchTab(tab) {
-            document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
-            document.querySelectorAll('.tab-content').forEach(c => c.classList.remove('active'));
-            document.querySelector(`.tab[onclick="switchTab('${tab}')"]`).classList.add('active');
-            document.getElementById(`tab-${tab}`).classList.add('active');
-            if (currentAnalysis && currentGroups) renderTabContent(tab);
+        // ========================================================================
+        // 2. 핵심 함수
+        // ========================================================================
+        function getWinning(round) {
+            const row = DATA.find(r => r[0] === round);
+            return row ? { main: row.slice(1, 7), bonus: row[7] } : null;
         }
 
-        // ========== 만능 파싱 (어떤 형식이든 OK) ==========
-        function parseAdvancedData(text) {
-            if (!text.trim()) return null;
-
-            const lines = text.split('\n');
-            const groups = {};
-            let currentGroup = '📊 기본 그룹';
-            let currentNumbers = [];
-
-            for (let line of lines) {
-                line = line.trim();
-                if (!line) continue;
-
-                // 1️⃣ 구분자(: - 등)로 그룹명과 숫자부 분리
-                let separatorMatch = line.match(/^([^0-9]*?)\s*[:：\-–—]\s*(.*)$/);
-                let groupName = null;
-                let numberPart = line;
-
-                if (separatorMatch) {
-                    groupName = separatorMatch[1].trim();
-                    numberPart = separatorMatch[2].trim();
-                } else {
-                    // 구분자가 없으면 숫자만 추출해서 현재 그룹에 추가
-                    let nums = line.match(/\d+/g)?.map(Number) || [];
-                    if (nums.length > 0) {
-                        currentNumbers.push(...nums);
-                        continue;
-                    } else {
-                        // 숫자가 없으면 새로운 그룹명으로 인식
-                        groupName = line;
-                        numberPart = '';
-                    }
-                }
-
-                // 2️⃣ 숫자부에서 모든 숫자 추출
-                let numbers = numberPart.match(/\d+/g)?.map(Number) || [];
-
-                // 3️⃣ 그룹명이 있으면 이전 그룹 저장 후 새 그룹 시작
-                if (groupName && groupName.length > 0) {
-                    if (currentNumbers.length > 0) {
-                        if (!groups[currentGroup]) groups[currentGroup] = [];
-                        groups[currentGroup] = [...new Set([...groups[currentGroup], ...currentNumbers])];
-                    }
-                    currentGroup = groupName;
-                    currentNumbers = numbers;
-                } else if (numbers.length > 0) {
-                    currentNumbers.push(...numbers);
+        function findSimilar(baseRound, startRound, minMatch) {
+            const prev = getWinning(baseRound - 1);
+            if (!prev) return { similar: [], prevNums: [] };
+            const baseNums = prev.main;
+            const result = [];
+            for (const row of DATA) {
+                const r = row[0];
+                if (r >= baseRound || r < startRound) continue;
+                const nums = row.slice(1, 7);
+                const matched = nums.filter(n => baseNums.includes(n));
+                if (matched.length >= minMatch) {
+                    const next = getWinning(r + 1);
+                    result.push({
+                        round: r,
+                        nums: nums,
+                        bonus: row[7],
+                        matched: matched,
+                        matchCount: matched.length,
+                        nextNums: next ? next.main : [],
+                        nextBonus: next ? next.bonus : null
+                    });
                 }
             }
-
-            // 마지막 그룹 저장
-            if (currentNumbers.length > 0) {
-                if (!groups[currentGroup]) groups[currentGroup] = [];
-                groups[currentGroup] = [...new Set([...groups[currentGroup], ...currentNumbers])];
-            }
-
-            // 그룹이 없으면 전체를 하나로
-            if (Object.keys(groups).length === 0) {
-                let allNumbers = text.match(/\d+/g)?.map(Number) || [];
-                if (allNumbers.length > 0) {
-                    groups['📊 전체 데이터'] = [...new Set(allNumbers)];
-                } else {
-                    return null;
-                }
-            }
-
-            // 그룹명 정리
-            let cleanedGroups = {};
-            for (let [name, numbers] of Object.entries(groups)) {
-                let cleanName = name.replace(/[:：\-–—]\s*$/, '').trim();
-                if (cleanName.length > 30) cleanName = cleanName.substring(0, 30) + '...';
-                if (cleanName === '') cleanName = '📊 그룹';
-                cleanedGroups[cleanName] = numbers;
-            }
-
-            return cleanedGroups;
+            result.sort((a, b) => b.matchCount - a.matchCount);
+            return { similar: result, prevNums: baseNums };
         }
 
-        // ========== 분석 엔진 ==========
-        function calculateWeights(groups) {
-            let weights = {};
-            let totalSize = 0;
-            for (let [name, numbers] of Object.entries(groups)) {
-                weights[name] = numbers.length;
-                totalSize += numbers.length;
+        function calcFreq(similar) {
+            const f = {};
+            for (let i = 1; i <= 45; i++) f[i] = 0;
+            for (const s of similar) {
+                for (const n of s.nextNums) f[n] = (f[n] || 0) + 1;
+                if (s.nextBonus !== null) f[s.nextBonus] = (f[s.nextBonus] || 0) + 1;
             }
-            if (totalSize > 0) {
-                for (let name in weights) weights[name] = weights[name] / totalSize;
-            }
-            return weights;
+            return f;
         }
 
-        function calculateComprehensiveScore(number, groups, groupWeights, options) {
-            let groupCount = number.groups.length;
-            let baseScore = groupCount;
-            if (options.weightBySize) {
-                let weightSum = number.groups.reduce((sum, g) => sum + (groupWeights[g] || 1), 0);
-                baseScore += weightSum * 2;
-            }
-            let diversityBonus = 0;
-            let groupTypes = new Set(number.groups.map(g => {
-                if (g.includes('AI') || g.includes('인공지능')) return 'ai';
-                if (g.includes('통계') || g.includes('분석')) return 'stat';
-                if (g.includes('전문가') || g.includes('전문')) return 'expert';
-                if (g.includes('추천') || g.includes('최종')) return 'recommend';
-                return 'other';
-            })).size;
-            diversityBonus = (groupTypes - 1) * 0.5;
-            let frequencyScore = groupCount / Object.keys(groups).length * 3;
-            return baseScore + diversityBonus + frequencyScore;
+        function getTop(freq, n) {
+            return Object.entries(freq).sort((a, b) => b[1] - a[1]).slice(0, n).map(([k]) => parseInt(k));
         }
 
-        function analyzeCorrelation(groups) {
-            let numbers = new Set();
-            let pairs = {};
-            for (let nums of Object.values(groups)) nums.forEach(n => numbers.add(n));
-            let numList = Array.from(numbers).sort((a,b) => a-b);
-            for (let i = 0; i < numList.length; i++) {
-                for (let j = i+1; j < numList.length; j++) {
-                    let a = numList[i], b = numList[j];
-                    let count = 0;
-                    for (let nums of Object.values(groups)) {
-                        if (nums.includes(a) && nums.includes(b)) count++;
-                    }
-                    if (count > 0) pairs[`${a},${b}`] = count;
-                }
-            }
-            return { numbers: numList, pairs };
+        function getLow(freq, n) {
+            return Object.entries(freq).sort((a, b) => a[1] - b[1]).slice(0, n).map(([k]) => parseInt(k));
         }
 
-        function performAnalysis(groups, options) {
-            if (!groups || Object.keys(groups).length === 0) return null;
+        function getAbove2(freq) {
+            return Object.entries(freq).filter(([k, v]) => v >= 2).map(([k]) => parseInt(k)).sort((a, b) => a - b);
+        }
 
-            let groupWeights = calculateWeights(groups);
-            let numberGroups = {};
-            for (let [groupName, numbers] of Object.entries(groups)) {
-                numbers.forEach(n => {
-                    if (!numberGroups[n]) numberGroups[n] = [];
-                    numberGroups[n].push(groupName);
-                });
+        // ========================================================================
+        // 3. 상태
+        // ========================================================================
+        let similarData = null, freqData = null, top10 = [], low10 = [], pool = [], winData = null;
+
+        // ========================================================================
+        // 4. 분석 실행 (runAnalysis)
+        // ========================================================================
+        function runAnalysis() {
+            const base = parseInt(document.getElementById('baseRound').value) || 1234;
+            const start = parseInt(document.getElementById('startRound').value) || 757;
+            const min = parseInt(document.getElementById('minMatch').value) || 3;
+
+            const result = findSimilar(base, start, min);
+            if (result.similar.length === 0) {
+                document.getElementById('resultArea').innerHTML = `<div style="color:#f39c12; padding:20px; text-align:center;">
+                    ⚠️ 유사회차 없음 (최소 일치 개수 ${min}개)
+                </div>`;
+                return;
             }
 
-            let analysis = [];
-            for (let [num, grps] of Object.entries(numberGroups)) {
-                let uniqueGroups = [...new Set(grps)];
-                analysis.push({
-                    number: parseInt(num),
-                    groups: uniqueGroups,
-                    count: uniqueGroups.length,
-                    score: calculateComprehensiveScore(
-                        {number: parseInt(num), groups: uniqueGroups}, 
-                        groups, 
-                        groupWeights, 
-                        options
-                    )
-                });
-            }
+            similarData = result.similar;
+            const freq = calcFreq(result.similar);
+            freqData = freq;
+            top10 = getTop(freq, 10);
+            low10 = getLow(freq, 10);
+            pool = getAbove2(freq);
+            winData = getWinning(base);
 
-            if (options.sortMethod === 'sortByCount') {
-                analysis.sort((a, b) => {
-                    if (a.count !== b.count) return b.count - a.count;
-                    return b.score - a.score;
-                });
-            } else if (options.sortMethod === 'sortByScore') {
-                analysis.sort((a, b) => b.score - a.score);
+            let html = '';
+
+            // 기준 패턴
+            html += `<div class="winning-info">🎯 기준 패턴 (${base-1}회): <span>${result.prevNums.join(', ')}</span></div>`;
+
+            // 당첨 정보
+            if (winData) {
+                html += `<div class="winning-info" style="border-left-color:#2ecc71;">🔮 ${base}회 당첨 (검증용): <span style="color:#2ecc71;">${winData.main.join(', ')}</span> | 보너스: <span style="color:#ff6b6b;">${winData.bonus}</span></div>`;
             } else {
-                analysis.sort((a, b) => a.number - b.number);
+                html += `<div class="winning-info" style="border-left-color:#f39c12;">🔮 ${base}회 당첨 (예측 대상): <span class="no-data">아직 미정 (데이터 없음)</span></div>`;
             }
 
-            let correlation = analyzeCorrelation(groups);
-            let stats = {
-                totalGroups: Object.keys(groups).length,
-                totalNumbers: analysis.length,
-                maxGroupCount: Math.max(...analysis.map(a => a.count)),
-                avgGroupCount: (analysis.reduce((sum, a) => sum + a.count, 0) / analysis.length).toFixed(2),
-                groupSizes: Object.fromEntries(Object.entries(groups).map(([k,v]) => [k, v.length]))
-            };
+            // 유사회차
+            html += `<div class="info-box">🔹 유사회차 ${result.similar.length}개: ${result.similar.map(s => s.round).join(', ')}</div>`;
 
-            return { groups, analysis, correlation, stats, options };
-        }
-
-        // ========== 메인 분석 ==========
-        function analyzeData() {
-            let input = document.getElementById('dataInput').value;
-            if (!input.trim()) {
-                alert('⚠️ 데이터를 입력해주세요!');
-                return;
+            // 유사회차 테이블
+            html += `<table><tr><th>회차</th><th>번호</th><th>보너스</th><th>일치</th><th>👉 다음회차</th><th>다음 보너스</th></tr>`;
+            for (const s of result.similar) {
+                html += `<tr>
+                    <td class="round-col">${s.round}</td>
+                    <td>${s.nums.join(', ')}</td>
+                    <td class="bonus-col">${s.bonus}</td>
+                    <td><span class="badge badge-4">${s.matchCount}개</span></td>
+                    <td class="round-col" style="color:#2ecc71;">${s.round+1}</td>
+                    <td>${s.nextNums.join(', ')}</td>
+                    <td class="bonus-col">${s.nextBonus !== null ? s.nextBonus : '-'}</td>
+                </tr>`;
             }
+            html += `</table>`;
 
-            document.getElementById('overview-content').innerHTML = '<div class="loading">분석 중...</div>';
+            // 2회 이상 풀
+            const poolColored = pool.map(n => {
+                let cls = '';
+                if (winData && winData.main.includes(n)) cls = 'winner-main';
+                else if (winData && n === winData.bonus) cls = 'winner-bonus';
+                return `<span class="${cls}">${n}</span>`;
+            }).join(', ');
+            html += `<div class="pool-box">✅ <strong>2회 이상 등장 (${pool.length}개):</strong> ${poolColored}</div>`;
 
-            setTimeout(() => {
-                try {
-                    let groups = parseAdvancedData(input);
-                    if (!groups || Object.keys(groups).length === 0) {
-                        alert('⚠️ 숫자를 찾을 수 없습니다. 데이터에 숫자가 포함되어 있는지 확인하세요.');
-                        document.getElementById('overview-content').innerHTML = 
-                            '<div style="color:#e74c3c; padding:20px; text-align:center;">❌ 분석 실패<br><span style="font-size:12px; color:#aaa;">숫자가 포함된 데이터를 입력해주세요.</span></div>';
-                        return;
-                    }
-
-                    currentGroups = groups;
-
-                    let options = {
-                        minGroups: parseInt(document.getElementById('minGroups').value) || 2,
-                        maxRecommend: parseInt(document.getElementById('maxRecommend').value) || 20,
-                        weightBySize: document.getElementById('weightBySize').checked,
-                        showCorrelation: document.getElementById('showCorrelation').checked,
-                        showChart: document.getElementById('showChart').checked,
-                        sortMethod: document.querySelector('input[name="sortMethod"]:checked')?.id || 'sortByCount'
-                    };
-
-                    let result = performAnalysis(groups, options);
-                    if (!result) {
-                        alert('⚠️ 분석에 실패했습니다.');
-                        return;
-                    }
-
-                    currentAnalysis = result;
-                    renderTabContent('overview');
-                    document.getElementById('modeDisplay').textContent = '✅ 사용자 데이터 기반 (분석 완료)';
-                    document.getElementById('modeDisplay').style.color = '#2ecc71';
-
-                } catch (error) {
-                    console.error('❌ 분석 오류:', error);
-                    alert('⚠️ 분석 중 오류가 발생했습니다:\n' + error.message);
-                    document.getElementById('overview-content').innerHTML = 
-                        `<div style="color:#e74c3c; padding:20px; text-align:center;">❌ 오류 발생<br><span style="font-size:12px; color:#aaa;">${error.message}</span></div>`;
-                }
-            }, 100);
-        }
-
-        // ========== 회차 자동 채우기 ==========
-        function autoFillBacktest() {
-            const round = parseInt(document.getElementById('backtestRound').value);
-            if (!round || round < 1001 || round > 1233) {
-                document.getElementById('backtestNumbers').value = '';
-                document.getElementById('backtestBonus').value = '';
-                return;
+            // 고빈도 TOP10
+            const maxF = Math.max(...Object.values(freq));
+            html += `<div class="freq-section"><div class="freq-section-title">📊 고빈도 TOP 10</div><div class="freq-container">`;
+            for (const n of top10) {
+                const c = freq[n] || 0;
+                const pct = (c / maxF * 100).toFixed(0);
+                let cls = '';
+                if (winData && winData.main.includes(n)) cls = 'winner-main';
+                else if (winData && n === winData.bonus) cls = 'winner-bonus';
+                html += `<div class="freq-item"><span class="num ${cls}">${n}</span><span class="count">${c}</span><span class="bar"><span class="bar-inner" style="width:${pct}%;"></span></span></div>`;
             }
-            const found = LOTTO_DATA.find(row => row[0] === round);
-            if (!found) {
-                document.getElementById('backtestNumbers').value = '';
-                document.getElementById('backtestBonus').value = '';
-                return;
-            }
-            document.getElementById('backtestNumbers').value = found.slice(1, 7).join(' ');
-            document.getElementById('backtestBonus').value = found[7];
-        }
-
-        // ========== 백테스트 실행 ==========
-        function runBacktest() {
-            const round = parseInt(document.getElementById('backtestRound').value);
-            const numbersInput = document.getElementById('backtestNumbers').value.trim();
-            const bonus = parseInt(document.getElementById('backtestBonus').value);
-
-            if (!round || round < 1001 || round > 1233) {
-                alert('⚠️ 유효한 회차를 입력하세요 (1001~1233)');
-                return;
-            }
-            if (!numbersInput) {
-                alert('⚠️ 실제 번호가 없습니다. 회차를 다시 선택해보세요.');
-                return;
-            }
-            const actualNumbers = numbersInput.split(/\s+/).map(Number).filter(n => !isNaN(n) && n>=1 && n<=45);
-            if (actualNumbers.length !== 6) {
-                alert('⚠️ 정확히 6개의 번호를 입력하세요.');
-                return;
-            }
-            if (isNaN(bonus) || bonus<1 || bonus>45) {
-                alert('⚠️ 보너스 번호는 1~45 사이여야 합니다.');
-                return;
-            }
-
-            // 1️⃣ 사용자 분석 결과가 있으면 우선 사용
-            let topNumbers = [];
-            let mode = '';
-
-            if (currentAnalysis && currentAnalysis.analysis && currentAnalysis.analysis.length > 0) {
-                topNumbers = currentAnalysis.analysis.slice(0, 10).map(a => a.number);
-                mode = '📊 사용자 분석 결과 (상위 10개)';
-                document.getElementById('modeDisplay').textContent = '✅ 사용자 분석 결과 적용 중';
-                document.getElementById('modeDisplay').style.color = '#2ecc71';
-            } else {
-                // 2️⃣ 없으면 내부 데이터로 분석
-                const previousData = LOTTO_DATA.filter(row => row[0] < round);
-                if (previousData.length === 0) {
-                    alert('⚠️ 해당 회차 이전 데이터가 없습니다.');
-                    return;
-                }
-                const allNums = [];
-                previousData.forEach(row => {
-                    for (let i = 1; i < row.length; i++) allNums.push(row[i]);
-                });
-                const groups = { '이전 데이터': allNums };
-                const options = {
-                    minGroups: parseInt(document.getElementById('minGroups').value) || 2,
-                    maxRecommend: parseInt(document.getElementById('maxRecommend').value) || 20,
-                    weightBySize: document.getElementById('weightBySize').checked,
-                    showCorrelation: document.getElementById('showCorrelation').checked,
-                    showChart: document.getElementById('showChart').checked,
-                    sortMethod: document.querySelector('input[name="sortMethod"]:checked')?.id || 'sortByCount'
-                };
-                const result = performAnalysis(groups, options);
-                if (!result) { alert('⚠️ 분석 실패'); return; }
-                topNumbers = result.analysis.slice(0, 10).map(a => a.number);
-                mode = '📦 내부 데이터 분석 (상위 10개)';
-                document.getElementById('modeDisplay').textContent = '⚠️ 내부 데이터 기반';
-                document.getElementById('modeDisplay').style.color = '#f39c12';
-            }
-
-            // 3️⃣ 실제 당첨번호
-            const actualRow = LOTTO_DATA.find(row => row[0] === round);
-            if (!actualRow) {
-                alert('⚠️ 해당 회차의 실제 데이터가 없습니다. 수동으로 번호를 입력하세요.');
-                // 수동 입력된 번호를 사용
-                const actualMain = actualNumbers;
-                const actualBonus = bonus;
-                // 비교
-                const matchedMain = topNumbers.filter(n => actualMain.includes(n));
-                const matchedBonus = topNumbers.filter(n => n === actualBonus);
-                const hitCount = matchedMain.length;
-
-                let html = `<div class="backtest-result">`;
-                html += `<div style="display:flex; justify-content:space-between; align-items:center;">`;
-                html += `<span><strong>회차 ${round} 백테스트 결과 (수동 입력)</strong></span>`;
-                html += `<span class="match-badge ${hitCount === 0 ? 'zero' : ''}">${hitCount}개 일치</span>`;
-                html += `</div>`;
-                html += `<div style="margin-top:5px; font-size:11px; color:#888;">${mode}</div>`;
-                html += `<div style="margin-top:8px;"><span>추천 상위 10개: </span>`;
-                topNumbers.forEach(n => {
-                    const isHit = actualMain.includes(n);
-                    const isBonus = n === actualBonus;
-                    let color = isHit ? '#2ecc71' : (isBonus ? '#f1c40f' : '#aaa');
-                    html += `<span style="display:inline-block; margin:0 3px; padding:2px 8px; background:#333; border-radius:15px; color:${color}; font-weight:bold;">${n}</span>`;
-                });
-                html += `</div>`;
-                html += `<div style="margin-top:5px; font-size:11px; color:#aaa;">`;
-                html += `입력 번호: ${actualMain.join(', ')} (보너스 ${actualBonus})<br>`;
-                html += `맞춘 번호: ${matchedMain.length > 0 ? matchedMain.join(', ') : '없음'}`;
-                if (matchedBonus.length > 0) html += ` (보너스 ${actualBonus} 포함)`;
-                html += `</div></div>`;
-                document.getElementById('backtestResult').innerHTML = html;
-                return;
-            }
-
-            const actualMain = actualRow.slice(1, 7);
-            const actualBonus = actualRow[7];
-
-            // 4️⃣ 비교
-            const matchedMain = topNumbers.filter(n => actualMain.includes(n));
-            const matchedBonus = topNumbers.filter(n => n === actualBonus);
-            const hitCount = matchedMain.length;
-
-            // 5️⃣ 결과 표시
-            let html = `<div class="backtest-result">`;
-            html += `<div style="display:flex; justify-content:space-between; align-items:center;">`;
-            html += `<span><strong>회차 ${round} 백테스트 결과</strong></span>`;
-            html += `<span class="match-badge ${hitCount === 0 ? 'zero' : ''}">${hitCount}개 일치</span>`;
-            html += `</div>`;
-            html += `<div style="margin-top:5px; font-size:11px; color:#888;">${mode}</div>`;
-            html += `<div style="margin-top:8px;"><span>추천 상위 10개: </span>`;
-            topNumbers.forEach(n => {
-                const isHit = actualMain.includes(n);
-                const isBonus = n === actualBonus;
-                let color = isHit ? '#2ecc71' : (isBonus ? '#f1c40f' : '#aaa');
-                html += `<span style="display:inline-block; margin:0 3px; padding:2px 8px; background:#333; border-radius:15px; color:${color}; font-weight:bold;">${n}</span>`;
-            });
-            html += `</div>`;
-            html += `<div style="margin-top:5px; font-size:11px; color:#aaa;">`;
-            html += `실제 번호: ${actualMain.join(', ')} (보너스 ${actualBonus})<br>`;
-            html += `맞춘 번호: ${matchedMain.length > 0 ? matchedMain.join(', ') : '없음'}`;
-            if (matchedBonus.length > 0) html += ` (보너스 ${actualBonus} 포함)`;
             html += `</div></div>`;
 
-            document.getElementById('backtestResult').innerHTML = html;
-        }
-
-        // ========== 탭 렌더링 ==========
-        function renderTabContent(tab) {
-            if (!currentAnalysis) return;
-            switch(tab) {
-                case 'overview': renderOverview(); break;
-                case 'analysis': renderAnalysis(); break;
-                case 'groups': renderGroups(); break;
-                case 'correlation': renderCorrelation(); break;
-                case 'stats': renderStats(); break;
+            // 저빈도 TOP10
+            html += `<div class="freq-section"><div class="freq-section-title">📊 저빈도 TOP 10</div><div class="freq-container">`;
+            for (const n of low10) {
+                const c = freq[n] || 0;
+                const pct = (c / maxF * 100).toFixed(0);
+                let cls = '';
+                if (winData && winData.main.includes(n)) cls = 'winner-main';
+                else if (winData && n === winData.bonus) cls = 'winner-bonus';
+                html += `<div class="freq-item"><span class="num ${cls}">${n}</span><span class="count">${c}</span><span class="bar"><span class="bar-inner" style="width:${pct}%;"></span></span></div>`;
             }
+            html += `</div></div>`;
+
+            html += `<div class="note">${winData ? '초록색 = 본번호 | 빨간색 = 보너스' : '🔮 1234회는 예측 대상 (아직 데이터 없음)'}</div>`;
+
+            document.getElementById('resultArea').innerHTML = html;
         }
 
-        function renderOverview() {
-            let { analysis, stats, options } = currentAnalysis;
-            let level1 = analysis.filter(a => a.count >= 3);
-            let level2 = analysis.filter(a => a.count === 2);
-            let level3 = analysis.filter(a => a.count === 1);
+        // ========================================================================
+        // 5. 조합 생성 (TOP10만 사용, 5개 순차 + 1개 TOP10 내 랜덤)
+        // ========================================================================
+        function generateCombos() {
+            // 1. TOP10 데이터가 없으면 경고
+            if (top10.length === 0) {
+                alert('⚠️ TOP10 데이터가 없습니다. 먼저 분석을 실행하세요.');
+                return;
+            }
 
-            let html = `
-                <div class="stats-grid">
-                    <div class="stat-card"><div class="stat-value">${stats.totalGroups}</div><div class="stat-label">전체 그룹</div></div>
-                    <div class="stat-card"><div class="stat-value">${stats.totalNumbers}</div><div class="stat-label">분석 숫자</div></div>
-                    <div class="stat-card"><div class="stat-value">${level1.length}</div><div class="stat-label">3+ 그룹</div></div>
-                    <div class="stat-card"><div class="stat-value">${level2.length}</div><div class="stat-label">2개 그룹</div></div>
-                    <div class="stat-card"><div class="stat-value">${stats.maxGroupCount}</div><div class="stat-label">최대 그룹 수</div></div>
-                    <div class="stat-card"><div class="stat-value">${stats.avgGroupCount}</div><div class="stat-label">평균 그룹 수</div></div>
-                </div>
-            `;
-
-            if (options.showChart) {
-                let buckets = {};
-                analysis.forEach(a => { buckets[a.count] = (buckets[a.count] || 0) + 1; });
-                html += '<div style="margin:20px 0;"><div style="color:#ffd700; margin-bottom:5px;">📊 그룹 수 분포</div><div class="chart-container">';
-                for (let i = 1; i <= stats.maxGroupCount; i++) {
-                    let count = buckets[i] || 0;
-                    let height = (count / analysis.length) * 180;
-                    html += `<div class="chart-bar" style="height:${height}px;" data-value="${i}개 그룹: ${count}개 숫자"></div>`;
+            // 2. 기본 재료: TOP10 (보통 10개)
+            const basePool = [...top10];
+            
+            // (안전장치) 혹시 TOP10이 6개 미만이면 pool에서 보충 (거의 발생 안 함)
+            let usePool = [...basePool];
+            if (usePool.length < 6) {
+                const extra = pool.filter(n => !usePool.includes(n));
+                while (usePool.length < 6 && extra.length > 0) {
+                    usePool.push(extra.shift());
                 }
-                html += '</div><div style="display:flex; justify-content:space-between; font-size:9px; color:#666;">';
-                for (let i = 1; i <= stats.maxGroupCount; i++) html += `<span>${i}</span>`;
-                html += '</div></div>';
             }
 
-            html += '<div class="recommend-box"><h3 style="color:#ffd700; margin-bottom:15px;">🎯 종합 추천 순위 (TOP 10)</h3>';
-            let displayCount = Math.min(10, analysis.length);
-            for (let i = 0; i < displayCount; i++) {
-                let item = analysis[i];
-                let levelClass = item.count >= 3 ? 'level-1' : (item.count === 2 ? 'level-2' : 'level-3');
-                let levelText = item.count >= 3 ? '⭐ 최우선' : (item.count === 2 ? '🔸 차순위' : '🔹 참고');
-                html += `
-                    <div style="display:flex; align-items:center; margin:5px 0; padding:5px; background:#222; border-radius:30px;">
-                        <span style="width:30px; text-align:center; font-weight:bold;">${i+1}</span>
-                        <span class="big-number ${levelClass}" style="width:35px; height:35px; font-size:14px;">${item.number}</span>
-                        <span style="width:60px; margin-left:10px; font-size:11px;">${levelText}</span>
-                        <div style="flex:1; margin-left:10px;">
-                            <div style="display:flex; gap:5px; font-size:10px; color:#aaa;">
-                                <span>📦 ${item.count}개 그룹</span>
-                                <span>📊 점수 ${item.score.toFixed(1)}</span>
-                            </div>
-                            <div class="score-bar"><div class="score-fill" style="width:${(item.score / 10) * 100}%;"></div></div>
-                            <div style="font-size:8px; color:#666; margin-top:2px;">${item.groups.join(' · ')}</div>
-                        </div>
-                    </div>
-                `;
+            // 3. 🔥 조합 생성: TOP10에서 5개 순차적 + 나머지 1개는 TOP10 내에서 랜덤
+            const combos = [];
+            const usedSet = new Set();
+
+            for (let i = 0; i < 10; i++) {
+                // ① TOP10에서 5개를 순차적으로 선택 (슬라이딩 윈도우: i, i+1, i+2, i+3, i+4)
+                const selectedFive = [];
+                const fixedIndices = [];
+                for (let j = 0; j < 5; j++) {
+                    const idx = (i + j) % basePool.length;
+                    fixedIndices.push(idx);
+                    selectedFive.push(basePool[idx]);
+                }
+
+                // ② TOP10에서 위에서 고른 5개를 제외한 나머지 5개의 인덱스 구하기
+                const remainingIndices = [];
+                for (let k = 0; k < basePool.length; k++) {
+                    if (!fixedIndices.includes(k)) {
+                        remainingIndices.push(k);
+                    }
+                }
+
+                // ③ 나머지 5개 중에서 1개를 랜덤으로 선택
+                const randomIndex = remainingIndices[Math.floor(Math.random() * remainingIndices.length)];
+                let selectedOne = basePool[randomIndex];
+
+                // ④ 합쳐서 6개 조합 생성 후 오름차순 정렬
+                let combo = [...selectedFive, selectedOne].sort((a, b) => a - b);
+                let key = combo.join(',');
+
+                // ⑤ 중복 체크: 만약 중복되면 나머지 5개 중에서 다른 숫자로 재시도 (최대 10번)
+                let attempts = 0;
+                while (usedSet.has(key) && attempts < 10) {
+                    attempts++;
+                    const newRandomIndex = remainingIndices[Math.floor(Math.random() * remainingIndices.length)];
+                    const newOne = basePool[newRandomIndex];
+                    combo = [...selectedFive, newOne].sort((a, b) => a - b);
+                    key = combo.join(',');
+                }
+
+                // ⑥ 중복이 해결되었으면 저장
+                if (!usedSet.has(key)) {
+                    usedSet.add(key);
+                    combos.push(combo);
+                } else {
+                    // 극히 드문 경우지만, 그래도 중복이면 남은 것 중 첫 번째로 강제 저장 (방어코드)
+                    const fallbackOne = basePool[remainingIndices[0]];
+                    const fallbackCombo = [...selectedFive, fallbackOne].sort((a, b) => a - b);
+                    const fallbackKey = fallbackCombo.join(',');
+                    if (!usedSet.has(fallbackKey)) {
+                        usedSet.add(fallbackKey);
+                        combos.push(fallbackCombo);
+                    }
+                }
             }
-            html += '</div>';
-            document.getElementById('overview-content').innerHTML = html;
-        }
 
-        function renderAnalysis() {
-            let { analysis } = currentAnalysis;
-            let html = `<table class="analysis-table"><tr><th>순위</th><th>숫자</th><th>그룹 수</th><th>종합 점수</th><th>포함 그룹</th><th>비중</th></tr>`;
-            analysis.slice(0, 30).forEach((item, idx) => {
-                let rowClass = item.count >= 3 ? 'rank-1' : (item.count === 2 ? 'rank-2' : 'rank-3');
-                let percentage = ((item.count / currentAnalysis.stats.totalGroups) * 100).toFixed(1);
-                html += `<tr class="${rowClass}">
-                    <td style="text-align:center;">${idx+1}</td>
-                    <td style="font-weight:bold; font-size:16px;">${item.number}</td>
-                    <td style="text-align:center;"><span class="level-badge" style="padding:2px 8px;">${item.count}</span></td>
-                    <td style="text-align:center;">${item.score.toFixed(2)}</td>
-                    <td style="max-width:200px;">${item.groups.join(', ')}</td>
-                    <td style="text-align:center;">${percentage}%</td>
-                </tr>`;
-            });
-            html += '</table>';
-            document.getElementById('analysis-content').innerHTML = html;
-        }
-
-        function renderGroups() {
-            let { groups, analysis } = currentAnalysis;
-            let html = '<div class="groups-container">';
-            for (let [name, numbers] of Object.entries(groups)) {
-                let sorted = numbers.sort((a,b) => a-b);
-                let groupStats = analysis.filter(a => sorted.includes(a.number));
-                let avgScore = (groupStats.reduce((sum, a) => sum + a.score, 0) / groupStats.length).toFixed(1);
-                let maxCount = Math.max(...groupStats.map(a => a.count));
-                html += `<div class="group-card"><div class="group-header"><span>${name}</span><span>${sorted.length}개</span></div><div class="group-numbers">`;
-                sorted.forEach(n => {
-                    let item = analysis.find(a => a.number === n);
-                    let highlight = item && item.count >= 3;
-                    html += `<span class="number-badge" style="${highlight ? 'background:#ffd700; color:#000;' : ''}">${n}</span>`;
-                });
-                html += `</div><div style="margin-top:5px; font-size:8px; color:#aaa;">평균 점수: ${avgScore} | 최대 그룹수: ${maxCount}</div></div>`;
+            // 4. 혹시 모자란 게 있으면 (거의 없음) 순수 TOP10 앞에서부터 채우기
+            while (combos.length < 10) {
+                const startIdx = combos.length % basePool.length;
+                const fallbackCombo = [];
+                for (let j = 0; j < 6; j++) {
+                    fallbackCombo.push(basePool[(startIdx + j) % basePool.length]);
+                }
+                fallbackCombo.sort((a, b) => a - b);
+                const key = fallbackCombo.join(',');
+                if (!usedSet.has(key)) {
+                    usedSet.add(key);
+                    combos.push(fallbackCombo);
+                } else {
+                    break;
+                }
             }
-            html += '</div>';
-            document.getElementById('groups-content').innerHTML = html;
-        }
 
-        function renderCorrelation() {
-            let { correlation, groups } = currentAnalysis;
-            let { numbers, pairs } = correlation;
-            let html = '<h3 style="color:#ffd700;">🔄 숫자 간 연관성</h3>';
-            let topPairs = Object.entries(pairs)
-                .map(([key, count]) => ({ key, count, numbers: key.split(',').map(Number) }))
-                .sort((a, b) => b.count - a.count)
-                .slice(0, 20);
-            html += '<div style="margin:15px 0;"><div style="color:#aaa; margin-bottom:5px;">🔝 가장 많이 함께 등장한 쌍</div>';
-            topPairs.forEach(p => {
-                let percentage = ((p.count / Object.keys(groups).length) * 100).toFixed(1);
-                html += `<div style="display:flex; align-items:center; margin:5px 0; padding:5px; background:#222; border-radius:30px;">
-                    <span class="big-number level-1" style="width:30px; height:30px; font-size:12px;">${p.numbers[0]}</span>
-                    <span style="margin:0 5px;">↔</span>
-                    <span class="big-number level-2" style="width:30px; height:30px; font-size:12px;">${p.numbers[1]}</span>
-                    <div style="margin-left:10px; flex:1;">
-                        <div style="font-size:11px;">${p.count}개 그룹에서 동시 등장</div>
-                        <div class="score-bar"><div class="score-fill" style="width:${percentage}%;"></div></div>
-                    </div>
+            // 5. UI에 결과 출력
+            const base = parseInt(document.getElementById('baseRound').value) || 1234;
+            const win = getWinning(base);
+            
+            let html = document.getElementById('resultArea').innerHTML || '';
+            html += `<div class="section-title" style="margin-top:20px;">🎯 추천 조합 (TOP10: ${basePool.join(', ')})</div>`;
+            html += `<div style="display:grid; grid-template-columns:1fr 1fr; gap:10px;">`;
+            
+            let hitCounts = { 3: 0, 4: 0, 5: 0 };
+            
+            for (let i = 0; i < combos.length; i++) {
+                const combo = combos[i];
+                const display = combo.map(n => {
+                    let cls = '';
+                    if (win && win.main.includes(n)) cls = 'match-hit';
+                    else if (win && n === win.bonus) cls = 'match-bonus';
+                    return `<span class="${cls}">${n}</span>`;
+                }).join(' ');
+                
+                const cnt = win ? combo.filter(n => win.main.includes(n)).length : 0;
+                const hasBonus = win ? combo.includes(win.bonus) : false;
+                
+                let label = '';
+                if (cnt >= 5) label = '🔥🔥 2등!';
+                else if (cnt === 4) { label = '🔥 4등!'; hitCounts[4]++; }
+                else if (cnt === 3) { label = '✅ 5등!'; hitCounts[3]++; }
+                else if (cnt > 0) label = `${cnt}개 일치`;
+                
+                if (hasBonus && cnt === 3) label = '✅ 5등 + 보너스!';
+                else if (hasBonus && cnt === 4) label = '🔥🔥 3등! (4+보너스)';
+                
+                html += `<div class="combo-box">
+                    <span style="color:#ffd700; font-weight:bold; margin-right:8px;">#${i+1}</span>
+                    ${display}
+                    ${label ? `<span style="color:#2ecc71; margin-left:10px; font-size:12px; font-weight:bold;">${label}</span>` : ''}
                 </div>`;
-            });
-            html += '</div>';
-
-            html += '<div style="margin-top:20px;"><div style="color:#aaa; margin-bottom:5px;">🗺️ 연관성 히트맵 (상위 10개 숫자)</div>';
-            let topNumbers = numbers.slice(0, 10);
-            html += '<div style="overflow-x:auto;"><table style="border-collapse:collapse;"><tr><th style="background:#333;"></th>';
-            topNumbers.forEach(n => html += `<th style="background:#333; padding:5px;">${n}</th>`);
-            html += '</tr>';
-            for (let a of topNumbers) {
-                html += `<tr><th style="background:#333; padding:5px;">${a}</th>`;
-                for (let b of topNumbers) {
-                    if (a === b) { html += '<td style="background:#111;"></td>'; continue; }
-                    let key1 = `${Math.min(a,b)},${Math.max(a,b)}`;
-                    let key2 = `${Math.max(a,b)},${Math.min(a,b)}`;
-                    let count = pairs[key1] || pairs[key2] || 0;
-                    html += `<td style="background:rgba(255,215,0,${count/10}); text-align:center; padding:5px; border:1px solid #333;">${count}</td>`;
-                }
-                html += '</tr>';
             }
-            html += '</table></div></div>';
-            document.getElementById('correlation-content').innerHTML = html;
+            html += `</div>`;
+            
+            // 통계 요약
+            html += `<div style="margin-top:10px; padding:10px; background:#222; border-radius:8px; text-align:center; color:#aaa; font-size:13px;">
+                📊 조합 통계: 5등(3개) ${hitCounts[3]}개 | 4등(4개) ${hitCounts[4]}개 
+                ${hitCounts[4] > 0 ? '🎉 4등 이상 당첨 가능성이 매우 높습니다!' : '🤔 그래도 5등은 안정적입니다!'}
+            </div>`;
+            
+            html += `<div class="note">🟡 노란색 = 본번호 | 🔴 빨간색 = 보너스 (모든 숫자는 TOP10 내에서만 선택됨)</div>`;
+            document.getElementById('resultArea').innerHTML = html;
         }
 
-        function renderStats() {
-            let { stats, groups, analysis } = currentAnalysis;
-            let groupNames = Object.keys(groups);
-            let groupSizes = Object.values(stats.groupSizes);
-            let html = `
-                <div class="stats-grid">
-                    <div class="stat-card"><div class="stat-value">${stats.totalGroups}</div><div class="stat-label">전체 그룹</div></div>
-                    <div class="stat-card"><div class="stat-value">${stats.totalNumbers}</div><div class="stat-label">고유 숫자</div></div>
-                    <div class="stat-card"><div class="stat-value">${Math.max(...groupSizes)}</div><div class="stat-label">최대 그룹 크기</div></div>
-                    <div class="stat-card"><div class="stat-value">${Math.min(...groupSizes)}</div><div class="stat-label">최소 그룹 크기</div></div>
-                    <div class="stat-card"><div class="stat-value">${(groupSizes.reduce((a,b)=>a+b,0)/groupSizes.length).toFixed(1)}</div><div class="stat-label">평균 그룹 크기</div></div>
-                    <div class="stat-card"><div class="stat-value">${analysis.filter(a => a.count >= 3).length}</div><div class="stat-label">핵심 숫자(3+그룹)</div></div>
-                </div>
-            `;
-            html += '<div style="margin:20px 0;"><div style="color:#ffd700;">📊 그룹별 숫자 분포</div>';
-            groupNames.forEach(name => {
-                let size = stats.groupSizes[name];
-                let percentage = (size / stats.totalNumbers * 100).toFixed(1);
-                html += `<div style="margin:5px 0;"><div style="display:flex; justify-content:space-between; font-size:11px;"><span>${name}</span><span>${size}개 (${percentage}%)</span></div><div class="score-bar"><div class="score-fill" style="width:${percentage}%;"></div></div></div>`;
-            });
-            html += '</div>';
-
-            html += '<div style="margin:20px 0;"><div style="color:#ffd700;">🔄 그룹 간 중복도</div>';
-            let overlapMatrix = [];
-            for (let i = 0; i < groupNames.length; i++) {
-                for (let j = i+1; j < groupNames.length; j++) {
-                    let set1 = new Set(groups[groupNames[i]]);
-                    let set2 = new Set(groups[groupNames[j]]);
-                    let overlap = [...set1].filter(x => set2.has(x)).length;
-                    let union = new Set([...set1, ...set2]).size;
-                    let jaccard = (overlap / union * 100).toFixed(1);
-                    if (overlap > 0) overlapMatrix.push({ g1: groupNames[i], g2: groupNames[j], overlap, jaccard });
-                }
-            }
-            overlapMatrix.sort((a,b) => b.overlap - a.overlap).slice(0, 10).forEach(item => {
-                html += `<div style="margin:5px 0; padding:5px; background:#222; border-radius:10px;"><div style="display:flex; justify-content:space-between; font-size:11px;"><span>${item.g1} ↔ ${item.g2}</span><span>${item.overlap}개 중복 (${item.jaccard}%)</span></div></div>`;
-            });
-            html += '</div>';
-            document.getElementById('stats-content').innerHTML = html;
+        function resetAll() {
+            document.getElementById('resultArea').innerHTML = '<div class="loading">분석 결과가 여기에 표시됩니다.</div>';
+            similarData = null; freqData = null; top10 = []; low10 = []; pool = []; winData = null;
         }
 
-        // ========== 유틸리티 ==========
-        function clearData() {
-            document.getElementById('dataInput').value = '';
-            currentAnalysis = null; currentGroups = null;
-            document.getElementById('overview-content').innerHTML = '<div class="loading">분석을 시작하려면 데이터를 입력하세요</div>';
-            document.getElementById('analysis-content').innerHTML = '';
-            document.getElementById('groups-content').innerHTML = '';
-            document.getElementById('correlation-content').innerHTML = '';
-            document.getElementById('stats-content').innerHTML = '';
-            document.getElementById('backtestResult').innerHTML = '백테스트 결과가 여기에 표시됩니다.';
-            document.getElementById('modeDisplay').textContent = '대기 중';
-            document.getElementById('modeDisplay').style.color = '#aaa';
-        }
-
-        function showSample() {
-            const total = LOTTO_DATA.length;
-            const recent30 = LOTTO_DATA.slice(Math.max(0, total - 30), total);
-            const recent60 = LOTTO_DATA.slice(Math.max(0, total - 60), total);
-            const flatten = (arr) => { const nums = []; arr.forEach(row => { for (let i = 1; i < row.length; i++) nums.push(row[i]); }); return nums; };
-            const text = `최근 30회: ${flatten(recent30).join(' ')}\n최근 60회: ${flatten(recent60).join(' ')}\n전체: ${flatten(LOTTO_DATA).join(' ')}`;
-            document.getElementById('dataInput').value = text;
-            analyzeData();
-        }
-
-        function copyResult() {
-            if (!currentAnalysis) { alert('분석 결과가 없습니다.'); return; }
-            let text = `=== 교집합 분석 결과 ===\n전체 그룹: ${currentAnalysis.stats.totalGroups}개\n분석 숫자: ${currentAnalysis.stats.totalNumbers}개\n\n=== 추천 순위 (TOP 10) ===\n`;
-            currentAnalysis.analysis.slice(0, 10).forEach((item, idx) => {
-                text += `${idx+1}. ${item.number} (${item.count}개 그룹, 점수 ${item.score.toFixed(2)})\n`;
-            });
-            navigator.clipboard.writeText(text).then(() => alert('📋 분석 결과가 복사되었습니다!'));
-        }
-
-        function exportData() {
-            if (!currentAnalysis) return;
-            let data = { timestamp: new Date().toISOString(), stats: currentAnalysis.stats, analysis: currentAnalysis.analysis, groups: currentAnalysis.groups, correlation: currentAnalysis.correlation };
-            let blob = new Blob([JSON.stringify(data, null, 2)], {type: 'application/json'});
-            let a = document.createElement('a');
-            a.href = URL.createObjectURL(blob);
-            a.download = `analysis_${new Date().toISOString().slice(0,10)}.json`;
-            a.click();
-        }
-
-        function printReport() { window.print(); }
-
-        // ========== 드래그 앤 드롭 ==========
-        document.addEventListener('DOMContentLoaded', function() {
-            const textarea = document.getElementById('dataInput');
-            textarea.addEventListener('dragover', function(e) {
-                e.preventDefault();
-                this.style.borderColor = '#00e6b8';
-                this.style.boxShadow = '0 0 20px rgba(0,230,184,0.3)';
-            });
-            textarea.addEventListener('dragleave', function(e) {
-                e.preventDefault();
-                this.style.borderColor = '#ffd700';
-                this.style.boxShadow = 'none';
-            });
-            textarea.addEventListener('drop', function(e) {
-                e.preventDefault();
-                this.style.borderColor = '#ffd700';
-                this.style.boxShadow = 'none';
-                const file = e.dataTransfer.files[0];
-                if (!file) {
-                    alert('파일이 아닙니다. 텍스트 파일을 끌어다 놓으세요.');
-                    return;
-                }
-                const reader = new FileReader();
-                reader.onload = function(ev) {
-                    textarea.value = ev.target.result;
-                    alert('✅ 파일이 드래그 앤 드롭으로 로드되었습니다!');
-                };
-                reader.onerror = function() {
-                    alert('파일 읽기에 실패했습니다.');
-                };
-                reader.readAsText(file);
-            });
-
-            autoFillBacktest();
-            document.getElementById('modeDisplay').textContent = '대기 중 (분석 후 백테스트 가능)';
-            document.getElementById('modeDisplay').style.color = '#aaa';
-        });
-
-        document.addEventListener('keydown', function(e) {
-            if (e.key === 'Enter' && e.ctrlKey) analyzeData();
-        });
+        window.onload = runAnalysis;
     </script>
 </body>
 </html>
