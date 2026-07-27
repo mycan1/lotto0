@@ -2,7 +2,7 @@
 <html lang="ko">
 <head>
     <meta charset="UTF-8">
-    <title>📊 통합 9수 → 1수/5수 시스템 (최종 완성)</title>
+    <title>📊 통합 9수/1수/5수 시스템</title>
     <style>
         * { box-sizing: border-box; margin: 0; padding: 0; }
         body { background: #0a0a0a; color: #fff; font-family: 'Segoe UI', sans-serif; padding: 20px; max-width: 1100px; margin: 0 auto; }
@@ -18,72 +18,30 @@
         button:hover { background: #00e6b8; transform: scale(1.02); box-shadow: 0 0 20px #00e6b8; }
         button.secondary { background: #555; color: #fff; }
         button.secondary:hover { background: #777; }
-        button.top5-btn { background: #9b59b6; color: #fff; }
-        button.top5-btn:hover { background: #8e44ad; transform: scale(1.02); box-shadow: 0 0 20px #9b59b6; }
-        button.gunghap-btn { background: #e67e22; color: #fff; }
-        button.gunghap-btn:hover { background: #d35400; transform: scale(1.02); box-shadow: 0 0 20px #e67e22; }
         button.strong-btn { background: #e74c3c; color: #fff; font-size: 14px; padding: 8px 18px; }
         button.strong-btn:hover { background: #c0392b; transform: scale(1.05); box-shadow: 0 0 25px #e74c3c; }
         button.optimize-btn { background: #00b894; color: #fff; font-size: 14px; padding: 8px 18px; }
         button.optimize-btn:hover { background: #00a381; transform: scale(1.05); box-shadow: 0 0 25px #00b894; }
-        button.backtest-btn { background: #8e44ad; color: #fff; font-size: 14px; padding: 8px 18px; }
-        button.backtest-btn:hover { background: #732d91; transform: scale(1.05); box-shadow: 0 0 25px #8e44ad; }
+        button.hybrid-btn { background: #f1c40f; color: #000; font-size: 14px; padding: 8px 18px; border: 2px solid #fff; }
+        button.hybrid-btn:hover { background: #ffd700; transform: scale(1.05); box-shadow: 0 0 30px #f1c40f; }
+        button.gunghap-btn { background: #e67e22; color: #fff; font-size: 14px; padding: 8px 18px; }
+        button.gunghap-btn:hover { background: #d35400; transform: scale(1.05); box-shadow: 0 0 25px #e67e22; }
         .result-area { background: #1a1a1a; border: 2px solid #ffd700; border-radius: 15px; padding: 20px; margin-top: 20px; overflow-x: auto; }
         .section-title { color: #ffd700; font-size: 18px; font-weight: bold; margin: 15px 0 10px 0; }
         .winning-info { background: #2a2a2a; border-left: 4px solid #ff6b6b; padding: 10px 15px; border-radius: 8px; margin: 10px 0; }
         .winning-info span { color: #ff6b6b; font-weight: bold; font-size: 18px; }
-        .info-box { background: #1a2a2a; border-left: 4px solid #3498db; padding: 8px 15px; border-radius: 8px; margin: 5px 0; font-size: 13px; color: #88ccff; }
-        .pool-box { background: #1a2a1a; border: 2px solid #2ecc71; padding: 10px; border-radius: 8px; margin: 10px 0; }
-        .combo-box { background: #1a2a1a; border: 1px solid #2ecc71; border-radius: 10px; padding: 10px 15px; margin: 5px 0; display: flex; flex-wrap: wrap; align-items: center; }
-        .combo-box span { display: inline-block; background: #333; padding: 2px 10px; border-radius: 20px; margin: 2px 4px; font-size: 13px; }
-        .match-hit { color: #2ecc71; font-weight: bold; background: rgba(46, 204, 113, 0.25); border-radius: 4px; padding: 2px 6px; }
-        .match-bonus { color: #ff6b6b; font-weight: bold; background: rgba(255,107,107, 0.25); border-radius: 4px; padding: 2px 6px; }
         .loading { text-align: center; padding: 40px; color: #aaa; }
-        .winner-main { color: #2ecc71 !important; }
-        .winner-bonus { color: #ff6b6b !important; }
-        .badge { display: inline-block; padding: 2px 10px; border-radius: 30px; font-weight: bold; font-size: 11px; }
-        .badge-2 { background: #6c757d; color: #fff; }
-        .badge-3 { background: #17a2b8; color: #fff; }
-        .badge-4 { background: #ffd700; color: #000; }
-        .badge-5 { background: #2ecc71; color: #000; }
-        table { width: 100%; border-collapse: collapse; font-size: 12px; margin: 10px 0; }
-        th { background: #ffd700; color: #000; padding: 6px 4px; text-align: center; }
-        td { padding: 5px 4px; border-bottom: 1px solid #333; text-align: center; }
-        .round-col { color: #ffd700; font-weight: bold; }
-        .bonus-col { color: #ff6b6b; font-weight: bold; }
-        .pair-box { background: #1a1a2a; border: 2px solid #e67e22; padding: 10px 15px; border-radius: 8px; margin: 10px 0; }
-        .pair-box strong { color: #e67e22; }
-        .pair-item { display: inline-block; background: #333; padding: 2px 10px; border-radius: 20px; margin: 2px 4px; font-size: 14px; font-weight: bold; }
-        .pair-item .freq { color: #aaa; font-size: 11px; font-weight: normal; margin-left: 2px; }
-        .pair-item.hit .num { color: #2ecc71; }
-        .pair-item.bonus .num { color: #ff6b6b; }
-        .pair-item.hit { background: rgba(46, 204, 113, 0.15); border: 1px solid #2ecc71; }
-        .pair-item.bonus { background: rgba(255,107,107, 0.15); border: 1px solid #ff6b6b; }
-        .collected-box { background: #1a2a1a; border: 2px solid #2ecc71; padding: 10px 15px; border-radius: 8px; margin: 10px 0; }
-        .collected-box strong { color: #2ecc71; }
+        .pool-box { background: #1a2a1a; border: 2px solid #2ecc71; padding: 10px; border-radius: 8px; margin: 10px 0; }
+        .intersection-box { background: #2a1a2a; border: 2px solid #ff6b6b; padding: 10px 15px; border-radius: 8px; margin: 10px 0; }
+        .intersection-box strong { color: #ff6b6b; }
+        .recent-box { background: #1a1a2a; border: 2px solid #3498db; padding: 10px 15px; border-radius: 8px; margin: 10px 0; }
+        .recent-box strong { color: #3498db; }
         .collected-item { display: inline-block; background: #333; padding: 2px 10px; border-radius: 20px; margin: 2px 4px; font-size: 14px; font-weight: bold; }
         .collected-item .freq { color: #aaa; font-size: 11px; font-weight: normal; margin-left: 2px; }
-        .collected-item .mark { font-size: 12px; margin-left: 1px; }
         .collected-item.hit .num { color: #2ecc71; }
         .collected-item.bonus .num { color: #ff6b6b; }
         .collected-item.hit { background: rgba(46, 204, 113, 0.15); border: 1px solid #2ecc71; }
         .collected-item.bonus { background: rgba(255,107,107, 0.15); border: 1px solid #ff6b6b; }
-        .intersection-box { background: #2a1a2a; border: 2px solid #ff6b6b; padding: 10px 15px; border-radius: 8px; margin: 10px 0; }
-        .intersection-box strong { color: #ff6b6b; }
-        .intersection-item { display: inline-block; background: #333; padding: 2px 10px; border-radius: 20px; margin: 2px 4px; font-size: 14px; font-weight: bold; }
-        .intersection-item .freq { color: #aaa; font-size: 11px; font-weight: normal; margin-left: 2px; }
-        .intersection-item.hit .num { color: #2ecc71; }
-        .intersection-item.bonus .num { color: #ff6b6b; }
-        .intersection-item.hit { background: rgba(46, 204, 113, 0.15); border: 1px solid #2ecc71; }
-        .intersection-item.bonus { background: rgba(255,107,107, 0.15); border: 1px solid #ff6b6b; }
-        .recent-box { background: #1a1a2a; border: 2px solid #3498db; padding: 10px 15px; border-radius: 8px; margin: 10px 0; }
-        .recent-box strong { color: #3498db; }
-        .top5-combo-box { background: #1a1a2a; border: 2px solid #9b59b6; padding: 10px 15px; border-radius: 8px; margin: 10px 0; }
-        .top5-combo-box strong { color: #9b59b6; }
-        .filter-group .btn-group { display: flex; gap: 6px; flex-wrap: wrap; align-items: center; }
-        .filter-group .btn-group button { flex: 0 1 auto; min-width: 70px; font-size: 13px; padding: 6px 14px; }
-        .method-info { color: #88ccff; font-size: 12px; background: #0a1a2a; padding: 4px 10px; border-radius: 4px; display: inline-block; margin-bottom: 8px; }
-        .intersection-highlight { background: rgba(155, 89, 182, 0.3); border: 1px solid #9b59b6; border-radius: 4px; padding: 0 4px; }
         .strong-result { background: #2a1a1a; border: 3px solid #e74c3c; border-radius: 15px; padding: 15px 20px; margin: 10px 0 20px 0; text-align: center; }
         .strong-result .number { font-size: 60px; font-weight: 900; color: #e74c3c; text-shadow: 0 0 30px rgba(231, 76, 60, 0.5); line-height: 1.2; }
         .strong-result .label { font-size: 16px; color: #ffd700; margin-top: 5px; }
@@ -100,34 +58,31 @@
         .optimize-result { background: #0a1a0a; border: 3px solid #00b894; border-radius: 15px; padding: 20px; margin: 10px 0; text-align: center; }
         .optimize-result .number-list { font-size: 32px; font-weight: bold; margin: 15px 0; letter-spacing: 4px; }
         .optimize-result .number-list span { margin: 0 8px; }
-        .gunghap-box { background: #1a2a1a; border: 2px solid #e67e22; padding: 10px 15px; border-radius: 8px; margin: 10px 0; }
-        .gunghap-box strong { color: #e67e22; }
-        .strong5-tag { background: #e74c3c; color: #fff; font-weight: bold; padding: 2px 6px; border-radius: 10px; font-size: 10px; margin-left: 4px; }
+        .hybrid-result-box { margin-top: 20px; border: 3px solid #f1c40f; border-radius: 15px; padding: 20px; background: #1a1a0a; text-align: center; }
+        .hybrid-result-box .grid-combos { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; text-align: left; margin-top: 10px; }
+        .hybrid-result-box .combo-item { background: #222; padding: 8px 12px; border-radius: 8px; border: 1px solid #555; font-size: 14px; }
+        .hybrid-result-box .fixed-num { color: #e74c3c; font-weight: bold; background: #333; padding: 0 6px; border-radius: 4px; }
+        .hybrid-result-box .label-title { font-size: 20px; color: #f1c40f; font-weight: bold; }
+        .hybrid-result-box .info-line { margin: 10px 0; font-size: 14px; color: #aaa; }
         .update-notice { background: #2a1a2a; border: 2px solid #2ecc71; border-radius: 10px; padding: 10px 15px; margin-bottom: 15px; color: #2ecc71; }
         .update-notice strong { color: #ffd700; }
         .range-container { display: flex; align-items: center; gap: 10px; }
         .range-container input[type="range"] { flex: 1; min-width: 120px; }
-        .range-label { color: #aaa; font-size: 12px; }
-        .backtest-result { background: #1a1a3a; border: 3px solid #8e44ad; border-radius: 15px; padding: 20px; margin: 15px 0; }
-        .backtest-result table { width: 100%; border-collapse: collapse; }
-        .backtest-result th { background: #8e44ad; color: #fff; padding: 8px; }
-        .backtest-result td { border-bottom: 1px solid #555; padding: 6px; text-align: center; }
-        .highlight-rank { background: #2ecc71; color: #000; font-weight: bold; border-radius: 4px; padding: 2px 8px; }
-        .tier-badge { display: inline-block; font-size: 10px; padding: 1px 8px; border-radius: 12px; margin-left: 4px; }
-        .tier-1 { background: #e74c3c; color: #fff; }
-        .tier-2 { background: #e67e22; color: #fff; }
-        .tier-3 { background: #f1c40f; color: #000; }
-        .tier-4 { background: #3498db; color: #fff; }
-        .tier-5 { background: #95a5a6; color: #fff; }
+        .filter-group .btn-group { display: flex; gap: 6px; flex-wrap: wrap; align-items: center; }
+        .filter-group .btn-group button { flex: 0 1 auto; min-width: 70px; font-size: 13px; padding: 6px 14px; }
+        .combo-box { background: #1a2a1a; border: 1px solid #2ecc71; border-radius: 10px; padding: 10px 15px; margin: 5px 0; display: flex; flex-wrap: wrap; align-items: center; }
+        .combo-box span { display: inline-block; background: #333; padding: 2px 10px; border-radius: 20px; margin: 2px 4px; font-size: 13px; }
+        .source { display: inline-block; background: #333; padding: 4px 15px; border-radius: 20px; color: #88ccff; font-size: 12px; margin-top: 5px; }
+        .rank-4 { color: #00b894; font-weight: bold; }
+        .rank-5 { color: #2ecc71; font-weight: bold; }
     </style>
 </head>
 <body>
-    <h1>📊 통합 9수 → 1수/5수 시스템 (최종 완성)</h1>
+    <h1>📊 통합 9수/1수/5수 시스템</h1>
     <div class="update-notice">
-        ✅ <strong>2026.07.25 1234회</strong> 당첨번호 반영 완료! (본: 1,15,19,31,35,43 | 보너스: 27)<br>
-        🔄 통합 점수: ⑤(20) + 보너스교집합(10) + ③(25) + ④(10) + ①(30) + 빈도(0.2)<br>
-        🔁 <strong>9수 압축</strong>은 6개 유사회차 기존 로직 유지<br>
-        🏆 <strong>💪 강력 1수</strong>는 <strong>상위 3개 유사회차</strong> (예: 1209,1220,1200)의 당첨번호를 분석하여 추출합니다!
+        ✅ <strong>2026.07.25 1234회</strong> 당첨번호 반영 완료!<br>
+        🔄 <strong>최종 전략</strong>: 보너스 가중치 0.5 + 교집합 점수 체계<br>
+        📌 고정A(1수) + 고정B(강력5수 중 교집합) + 강력5수 2개씩 분배
     </div>
     <div class="filters">
         <div class="filter-group">
@@ -148,7 +103,7 @@
             </select>
         </div>
         <div class="filter-group">
-            <label>📊 유사회차 개수</label>
+            <label>📊 9수 유사회차 개수</label>
             <div class="range-container">
                 <input type="range" id="topCount" min="3" max="20" value="6" step="1">
                 <span class="range-value" id="topCountDisplay">6</span>
@@ -156,15 +111,22 @@
             </div>
         </div>
         <div class="filter-group">
+            <label>📊 1수 유사회차 개수</label>
+            <div class="range-container">
+                <input type="range" id="topCountOne" min="3" max="10" value="3" step="1">
+                <span class="range-value" id="topCountOneDisplay">3</span>
+                <span class="range-label">개</span>
+            </div>
+        </div>
+        <div class="filter-group">
             <label>&nbsp;</label>
             <div class="btn-group">
-                <button onclick="runAnalysis()">🚀 분석 실행</button>
-                <button onclick="recommendStrong1()" class="strong-btn">💪 강력 1수</button>
-                <button onclick="recommendStrong5()" class="strong-btn" style="background:#e67e22;">💪 강력 5수</button>
+                <button onclick="runAnalysis()">🚀 분석 실행 (9수용)</button>
+                <button onclick="recommendStrong1()" class="strong-btn">💪 강력 1수 (3개)</button>
+                <button onclick="recommendStrong5()" class="strong-btn" style="background:#e67e22;">💪 강력 5수 (데이터)</button>
                 <button onclick="generateGungHapCombos()" class="gunghap-btn">🧩 강력5수 포함 조합</button>
-                <button onclick="generateTop5Combos()" class="top5-btn">🔮 상위6 동반수 조합</button>
-                <button onclick="optimizeNine()" class="optimize-btn">🎯 9수 압축</button>
-                <button onclick="backtestWinnerPosition()" class="backtest-btn">🔍 1수 당첨위치 백테스트</button>
+                <button onclick="optimizeNine()" class="optimize-btn">🎯 9수 압축 (6개)</button>
+                <button onclick="runHybrid()" class="hybrid-btn">🤝 하이브리드 10조합</button>
                 <button onclick="resetAll()" class="secondary">🗑️ 초기화</button>
             </div>
         </div>
@@ -172,6 +134,11 @@
     <div class="result-area" id="resultArea"><div class="loading">분석 결과가 여기에 표시됩니다.</div></div>
 
     <script>
+        // ========================================================================
+        // 0. ★★★ 보너스 가중치 설정 ★★★
+        // ========================================================================
+        const BONUS_WEIGHT = 0.5;  // 0.3 ~ 0.7 사이 조절 가능
+
         // ========================================================================
         // 1. DATA (1001~1234회)
         // ========================================================================
@@ -243,7 +210,7 @@
         let activeFreq2 = [], oldNextFreq2 = [];
         let globalIntersectionMap = {}, globalFreqData = {};
         let similarData = null, freqData = null, winData = null, baseNums = [];
-        let topNumsAll = [], lastTopPred = [], lastBonusIntersection = [], lastTop9 = [];
+        let topNumsAll = [], lastTopPred = [], lastBonusIntersection = [], lastTop9 = [], lastStrong5 = [];
         let currentTopN = 6, poolInfo = { baseCount: 0, addedCount: 0 };
 
         // ========================================================================
@@ -280,36 +247,46 @@
             return { similar: result.slice(0, topN), prevNums: baseNums };
         }
 
-        function calcFreq(similar) {
-            const f = {};
-            for (let i = 1; i <= 45; i++) f[i] = 0;
-            for (const s of similar) {
-                for (const n of s.nextNums) f[n] = (f[n] || 0) + 1;
-                if (s.nextBonus !== null) f[s.nextBonus] = (f[s.nextBonus] || 0) + 1;
-                for (const n of s.nums) f[n] = (f[n] || 0) + 1;
-                if (s.bonus !== null) f[s.bonus] = (f[s.bonus] || 0) + 1;
-            }
-            return f;
-        }
-
-        function makeCombos(pool) {
-            const n = pool.length;
-            if (n < 6) return [];
-            const sorted = [...pool].sort((a,b) => (globalFreqData[b]||0) - (globalFreqData[a]||0) || a - b);
-            const combos = [], seen = new Set();
-            for (let i = 0; i < 10; i++) {
-                const combo = [];
-                for (let j = 0; j < 6; j++) combo.push(sorted[(i + j) % n]);
-                combo.sort((a,b)=>a-b);
-                const key = combo.join(',');
-                if (!seen.has(key)) { seen.add(key); combos.push(combo); }
-            }
-            while (combos.length < 10) combos.push([...combos[combos.length - 1]]);
-            return combos;
+        // ========================================================================
+        // 4. ★★★ calcFreq - 보너스 가중치 0.5 적용 ★★★
+        // ========================================================================
+        function calcFreq(similarResults) {
+            const freq = {};
+            similarResults.forEach(s => {
+                // 일반 당첨 번호는 기본 1점
+                s.nextNums.forEach(n => {
+                    freq[n] = (freq[n] || 0) + 1;
+                });
+                // 보너스 번호는 가중치(0.5)만큼만
+                if (s.nextBonus !== null) {
+                    freq[s.nextBonus] = (freq[s.nextBonus] || 0) + BONUS_WEIGHT;
+                }
+                // 현재 회차 번호도 반영 (선택)
+                s.nums.forEach(n => {
+                    freq[n] = (freq[n] || 0) + 0.5;
+                });
+                if (s.bonus !== null) {
+                    freq[s.bonus] = (freq[s.bonus] || 0) + BONUS_WEIGHT * 0.5;
+                }
+            });
+            return freq;
         }
 
         // ========================================================================
-        // 4. 통합 점수 계산기
+        // 5. 조합 생성 함수
+        // ========================================================================
+        function getCombinations(arr, k) {
+            if (k === 0) return [[]];
+            if (arr.length === 0) return [];
+            const result = [];
+            const [first, ...rest] = arr;
+            for (const combo of getCombinations(rest, k - 1)) result.push([first, ...combo]);
+            for (const combo of getCombinations(rest, k)) result.push(combo);
+            return result;
+        }
+
+        // ========================================================================
+        // 6. 통합 점수 계산기
         // ========================================================================
         function getUnifiedScore(n) {
             let s = 0;
@@ -323,52 +300,7 @@
         }
 
         // ========================================================================
-        // 5. ★ 상위 3개 유사회차에서 강력 1수 추출 (강력 1수 전용)
-        // ========================================================================
-        function getStrongOneFromSimilar() {
-            if (!similarData) return 1;
-            const topSimilar = similarData.slice(0, 3);
-            if (topSimilar.length === 0) return 1;
-
-            // 1) 해당 회차들의 모든 번호(본+보너스) 수집
-            const recentNums = [];
-            for (const s of topSimilar) {
-                recentNums.push(...s.nums);
-                if (s.bonus !== null) recentNums.push(s.bonus);
-            }
-
-            // 2) 빈도 계산
-            const freq = {};
-            for (const n of recentNums) freq[n] = (freq[n] || 0) + 1;
-
-            // 3) 현재 풀 (③번 + ④번)
-            const pool = new Set([...activeFreq2, ...oldNextFreq2]);
-            const topPredNums = lastTopPred.map(p => p.num);
-
-            // 4) 점수 계산 (모든 번호에 대해)
-            let bestNum = recentNums[0];
-            let bestScore = -1;
-            const uniqueNums = [...new Set(recentNums)];
-            for (const n of uniqueNums) {
-                let score = (freq[n] || 0) * 3;          // 유사 회차 내 출현 빈도
-                if (pool.has(n)) score += 8;             // ③번 또는 ④번에 포함
-                if (topNumsAll.includes(n)) score += 5;  // ①번에 포함
-                if (globalIntersectionMap[n]) score += 15; // ⑤번 교집합 (가장 강력)
-                if (lastBonusIntersection.includes(n)) score += 7;
-                if (topPredNums.includes(n)) score += 6; // 예측 TOP10
-                if (activeFreq2.includes(n)) score += 4;
-                if (n === 1 || n === 15 || n === 31) score += 3; // 보정
-
-                if (score > bestScore) {
-                    bestScore = score;
-                    bestNum = n;
-                }
-            }
-            return bestNum;
-        }
-
-        // ========================================================================
-        // 6. 분석 실행 (전체 UI 포함)
+        // 7. 분석 실행
         // ========================================================================
         function runAnalysis() {
             const base = parseInt(document.getElementById('baseRound').value) || 1234;
@@ -392,7 +324,6 @@
             winData = getWinning(base);
             const topCandidates = result.similar.slice(0, topN);
 
-            // ①번
             const topAllNums = [];
             for (const s of topCandidates) {
                 const allNums = [...s.nums];
@@ -401,11 +332,9 @@
             }
             topNumsAll = [...new Set(topAllNums)].sort((a,b)=>a-b);
 
-            // ③번 기본
             const topFreq = {};
             for (const n of topAllNums) topFreq[n] = (topFreq[n] || 0) + 1;
 
-            // 두 보너스 교집합
             const bonusSet = new Set(), nextBonusSet = new Set();
             for (const s of result.similar) {
                 if (s.bonus !== null) bonusSet.add(s.bonus);
@@ -414,7 +343,6 @@
             const bonusIntersection = [...bonusSet].filter(n => nextBonusSet.has(n)).sort((a,b)=>a-b);
             lastBonusIntersection = bonusIntersection;
 
-            // ④번
             const topNextAllNums = [];
             for (const s of topCandidates) {
                 if (s.round + 1 < base && s.nextNums.length > 0) {
@@ -426,7 +354,6 @@
             const topNextFreq = {};
             for (const n of topNextAllNums) topNextFreq[n] = (topNextFreq[n] || 0) + 1;
 
-            // 예측 TOP10
             const predScore = {}, predCount = {};
             for (const s of result.similar) {
                 if (!(s.round + 1 < base && s.nextNums.length > 0)) continue;
@@ -446,7 +373,6 @@
             lastTopPred = topPred;
             const topPredNums = topPred.map(item => item.num);
 
-            // ③번 구성
             const basePool = Object.keys(topFreq).filter(k => topFreq[k] >= 2).map(Number);
             const oneHit = Object.keys(topFreq).filter(k => topFreq[k] === 1).map(Number);
             const scoredOne = oneHit.map(n => {
@@ -476,233 +402,176 @@
             globalIntersectionMap = {};
             for (const n of intersectionFreq2) globalIntersectionMap[n] = true;
 
-            // ---- UI 생성 (전체) ----
-            let html = '';
-            html += `<div class="winning-info">🎯 기준 패턴 (${base-1}회): <span>${result.prevNums.join(', ')}</span>`;
+            let html = `<div class="winning-info">🎯 기준 패턴 (${base-1}회): <span>${result.prevNums.join(', ')}</span>`;
             if (winData) {
                 html += ` &nbsp;|&nbsp; 🔮 ${base}회 당첨 (검증용): <span style="color:#2ecc71;">${winData.main.join(', ')}</span> | 보너스: <span style="color:#ff6b6b;">${winData.bonus}</span>`;
-            } else html += ` &nbsp;|&nbsp; 🔮 ${base}회 당첨 (예측 대상): <span class="no-data">아직 미정</span>`;
-            html += `</div>`;
-
-            html += `<div class="recent-box">`;
-            html += `<strong>📊 상위 ${topN}개 유사회차 / 다음회차 당번 포함률 분석 (보너스 포함)</strong><br>`;
-            html += `<div style="font-size:12px; color:#888; margin-bottom:5px;">`;
-            html += `⚠️ 기준회차 직전 회차(<strong>${base-1}회</strong>)는 기준 패턴으로만 사용하고, 유사회차에서는 제외되었습니다.`;
-            html += ` | 🔹 유사회차: <strong>${topN}개</strong>`;
-            html += ` | 🔹 ③번 구성: 기본 ${poolInfo.baseCount}개 + 점수제 ${poolInfo.addedCount}개 = 총 ${activeFreq2.length}개`;
-            html += `</div>`;
-            if (winData) html += `<div style="margin-bottom:8px; color:#ffd700;">🎯 기준회차 당첨번호: <span style="color:#2ecc71; font-weight:bold;">${winData.main.join(', ')}</span> | 보너스: <span style="color:#ff6b6b; font-weight:bold;">${winData.bonus}</span></div>`;
-
-            const hitTopAll = topAllNums.filter(n => winData ? winData.main.includes(n) || n === winData.bonus : false);
-            const uniqueHitTop = [...new Set(hitTopAll)].sort((a,b)=>a-b);
-            html += `<div style="margin-top:5px;">`;
-            html += `<span style="color:#88ccff;">① 상위 ${topN}개 유사회차 (회차: ${topCandidates.map(s=>s.round).join(', ')})</span><br>`;
-            html += `<span style="color:#aaa;">전체 번호 (중복 제거): ${topNumsAll.join(', ')}</span><br>`;
-            let hitDisplay = uniqueHitTop.length ? uniqueHitTop.map(n => {
-                if (winData && winData.main.includes(n)) return `<span style="color:#2ecc71; font-weight:bold;">${n}★</span>`;
-                else if (winData && n === winData.bonus) return `<span style="color:#ff6b6b; font-weight:bold;">${n}☆</span>`;
-                return n;
-            }).join(', ') : '없음';
-            html += `<span style="color:#2ecc71;">✅ 기준 당번 포함: ${uniqueHitTop.length}개 (${hitDisplay})</span><br>`;
-            html += `<span style="color:#ffd700;">📊 포함률: ${topAllNums.length ? (uniqueHitTop.length / topAllNums.length * 100).toFixed(1) : 0}% (${uniqueHitTop.length}/${topAllNums.length})</span>`;
-            html += `</div>`;
-
-            const hitTopNextAll = topNextAllNums.filter(n => winData ? winData.main.includes(n) || n === winData.bonus : false);
-            const uniqueHitTopNext = [...new Set(hitTopNextAll)].sort((a,b)=>a-b);
-            html += `<div style="margin-top:8px;">`;
-            html += `<span style="color:#88ccff;">② 상위 ${topN}개 유사다음회차 (회차: ${Array.from(new Set(topCandidates.filter(s => s.round+1 < base).map(s => s.round+1))).join(', ')})</span><br>`;
-            html += `<span style="color:#aaa;">전체 번호 (중복 제거): ${[...new Set(topNextAllNums)].sort((a,b)=>a-b).join(', ')}</span><br>`;
-            let hitNextDisplay = uniqueHitTopNext.length ? uniqueHitTopNext.map(n => {
-                if (winData && winData.main.includes(n)) return `<span style="color:#2ecc71; font-weight:bold;">${n}★</span>`;
-                else if (winData && n === winData.bonus) return `<span style="color:#ff6b6b; font-weight:bold;">${n}☆</span>`;
-                return n;
-            }).join(', ') : '없음';
-            html += `<span style="color:#2ecc71;">✅ 기준 당번 포함: ${uniqueHitTopNext.length}개 (${hitNextDisplay})</span><br>`;
-            html += `<span style="color:#ffd700;">📊 포함률: ${topNextAllNums.length ? (uniqueHitTopNext.length / topNextAllNums.length * 100).toFixed(1) : 0}% (${uniqueHitTopNext.length}/${topNextAllNums.length})</span>`;
-            html += `</div>`;
-
-            html += `<div style="margin-top:10px; border-top:1px solid #555; padding-top:10px;">`;
-            html += `<span style="color:#88ccff;">③ 상위 ${topN}개 유사회차 동반수 (기본+점수제, ${activeFreq2.length}개): </span>`;
-            if (activeFreq2.length) {
-                const sortedActive = [...activeFreq2].sort((a,b) => (globalIntersectionMap[b]?1:0)-(globalIntersectionMap[a]?1:0) || (freq[b]||0)-(freq[a]||0));
-                html += sortedActive.map(n => {
-                    let cls='', mark='';
-                    if (winData && winData.main.includes(n)) { cls='match-hit'; mark='★'; }
-                    else if (winData && n === winData.bonus) { cls='match-bonus'; mark='☆'; }
-                    if (globalIntersectionMap[n]) cls += ' intersection-highlight';
-                    return `<span class="${cls}">${n}${mark}</span>`;
-                }).join(', ');
-            } else html += `<span style="color:#aaa;">없음</span>`;
-            html += `<br>`;
-            html += `<span style="color:#88ccff;">④ 상위 ${topN}개 유사다음회차 2회 이상 동반수 (${oldNextFreq2.length}개): </span>`;
-            if (oldNextFreq2.length) {
-                const sortedOld = [...oldNextFreq2].sort((a,b) => (freq[b]||0)-(freq[a]||0));
-                html += sortedOld.map(n => {
-                    let cls='', mark='';
-                    if (winData && winData.main.includes(n)) { cls='match-hit'; mark='★'; }
-                    else if (winData && n === winData.bonus) { cls='match-bonus'; mark='☆'; }
-                    return `<span class="${cls}">${n}${mark}</span>`;
-                }).join(', ');
-            } else html += `<span style="color:#aaa;">없음</span>`;
-            html += `<br>`;
-            html += `<span style="color:#9b59b6; font-weight:bold;">⑤ 교집합 (③∩④): </span>`;
-            if (intersectionFreq2.length) {
-                html += intersectionFreq2.map(n => {
-                    let cls='', mark='';
-                    if (winData && winData.main.includes(n)) { cls='match-hit'; mark='★'; }
-                    else if (winData && n === winData.bonus) { cls='match-bonus'; mark='☆'; }
-                    return `<span class="${cls}" style="font-weight:bold; background:rgba(155,89,182,0.3); padding:2px 8px; border-radius:4px;">${n}${mark}</span>`;
-                }).join(', ');
-            } else html += `<span style="color:#aaa;">없음</span>`;
-            html += `<br></div></div>`;
-
-            html += `<div class="pair-box" style="border-color:#e67e22;">`;
-            html += `<strong style="color:#e67e22;">🔮 다음회차 예측 TOP 10 (순수 과거 데이터 기반)</strong><br>`;
-            if (topPred.length) {
-                const maxScore = topPred[0].score;
-                html += topPred.map(({num, score, count}) => {
-                    let cls='pair-item', mark='';
-                    if (winData) {
-                        if (winData.main.includes(num)) { cls += ' hit'; mark='★'; }
-                        else if (num === winData.bonus) { cls += ' bonus'; mark='☆'; }
-                    }
-                    return `<span class="${cls}"><span class="num">${num}</span>${mark ? ` <span class="mark">${mark}</span>` : ''} <span class="freq">(${score}점, ${count}회)</span></span>`;
-                }).join(' ');
-            } else html += `<span style="color:#aaa;">예측 데이터 없음</span>`;
-            html += `</div>`;
-
-            const interWithTop10 = activeFreq2.filter(n => topPredNums.includes(n));
-            const diffFromTop10 = activeFreq2.filter(n => !topPredNums.includes(n));
-            html += `<div class="top5-combo-box" style="border-color:#9b59b6;">`;
-            html += `<strong style="color:#9b59b6;">🔗 ③번 ∩ 예측 TOP 10 (교집합)</strong><br>`;
-            if (interWithTop10.length) {
-                html += interWithTop10.map(n => {
-                    const pred = topPred.find(p => p.num === n);
-                    let cls='', mark='';
-                    if (winData && winData.main.includes(n)) { cls='match-hit'; mark='★'; }
-                    else if (winData && n === winData.bonus) { cls='match-bonus'; mark='☆'; }
-                    return `<span class="${cls}" style="font-weight:bold; background:rgba(155,89,182,0.3); padding:2px 8px; border-radius:4px;">${n}${mark} (${pred ? pred.score : 0}점)</span>`;
-                }).join(' ');
-            } else html += `<span style="color:#aaa;">없음</span>`;
-            html += `<br>`;
-            html += `<strong style="color:#e67e22;">➖ ③번 - 교집합 (③번만의 독자 번호)</strong><br>`;
-            if (diffFromTop10.length) {
-                html += diffFromTop10.map(n => {
-                    let cls='', mark='';
-                    if (winData && winData.main.includes(n)) { cls='match-hit'; mark='★'; }
-                    else if (winData && n === winData.bonus) { cls='match-bonus'; mark='☆'; }
-                    return `<span class="${cls}" style="font-weight:bold; padding:2px 8px; border-radius:4px;">${n}${mark}</span>`;
-                }).join(' ');
-            } else html += `<span style="color:#aaa;">없음</span>`;
-            html += `</div>`;
-
-            html += `<div class="intersection-box">`;
-            html += `<strong>🎯 두 보너스 집합 교집합 (${bonusIntersection.length}개)</strong><br>`;
-            if (bonusIntersection.length) {
-                html += bonusIntersection.map(n => {
-                    let cls='intersection-item', mark='';
-                    if (winData) {
-                        if (winData.main.includes(n)) { cls += ' hit'; mark='★'; }
-                        else if (n === winData.bonus) { cls += ' bonus'; mark='☆'; }
-                    }
-                    return `<span class="${cls}"><span class="num">${n}</span>${mark ? ` <span class="mark">${mark}</span>` : ''}</span>`;
-                }).join(' ');
-            } else html += `<span style="color:#aaa;">없음</span>`;
-            html += `</div>`;
-
-            const collected = Object.entries(freq).sort((a,b)=>b[1]-a[1]).slice(0,20).map(([num,count])=>({num:parseInt(num),count}));
-            html += `<div class="collected-box">`;
-            html += `<strong>📊 출현순위 TOP 20 (빈도 높은 순)</strong><br>`;
-            html += `<div style="font-size:12px; color:#888; margin-bottom:5px;">유사회차+다음회차 전체 빈도 (본+보너스 포함)</div>`;
-            if (collected.length) {
-                html += collected.map(({num,count}) => {
-                    let cls='collected-item', mark='';
-                    if (winData) {
-                        if (winData.main.includes(num)) { cls += ' hit'; mark='★'; }
-                        else if (num === winData.bonus) { cls += ' bonus'; mark='☆'; }
-                    }
-                    return `<span class="${cls}"><span class="num">${num}</span>${mark ? ` <span class="mark">${mark}</span>` : ''}<span class="freq">(${count}회)</span></span>`;
-                }).join(' ');
-            } else html += `<span style="color:#aaa;">없음</span>`;
-            html += `</div>`;
-
-            html += `<div class="info-box">🔹 유사회차 (상위 ${topN}개): ${topCandidates.map(s=>s.round).join(', ')}</div>`;
-            html += `<table><tr><th>회차</th><th>번호 (교집합 제외)</th><th>보너스</th><th>일치</th><th>⭐ 기준 당번 일치</th><th>👉 다음회차</th><th>다음 번호</th><th>다음 보너스</th></tr>`;
-            for (const s of result.similar.slice(0, Math.min(topN, 10))) {
-                const nextRound = s.round + 1;
-                const isNextValid = nextRound < base;
-                const filteredNums = s.nums.filter(n => !baseNums.includes(n));
-                let numsDisplay = filteredNums.length ? filteredNums.map(n => {
-                    let cls = '';
-                    if (winData && winData.main.includes(n)) cls = 'match-hit';
-                    else if (winData && n === winData.bonus) cls = 'match-bonus';
-                    return `<span class="${cls}">${n}</span>`;
-                }).join(', ') : '-';
-                let bonusDisplay = s.bonus;
-                if (winData) {
-                    if (winData.main.includes(s.bonus)) bonusDisplay = `<span class="match-hit">${s.bonus}</span>`;
-                    else if (s.bonus === winData.bonus) bonusDisplay = `<span class="match-bonus">${s.bonus}</span>`;
-                }
-                const winMatchDisplay = s.winMatchCount ?? '-';
-                let wClass = 'badge';
-                if (winMatchDisplay >= 4) wClass += ' badge-5';
-                else if (winMatchDisplay === 3) wClass += ' badge-4';
-                else if (winMatchDisplay === 2) wClass += ' badge-3';
-                else wClass += ' badge-2';
-
-                let nextNumsDisplay = '';
-                if (isNextValid && s.nextNums.length) {
-                    const fNext = s.nextNums.filter(n => !baseNums.includes(n));
-                    nextNumsDisplay = fNext.length ? fNext.map(n => {
-                        let cls = '';
-                        if (winData && winData.main.includes(n)) cls = 'match-hit';
-                        else if (winData && n === winData.bonus) cls = 'match-bonus';
-                        return `<span class="${cls}">${n}</span>`;
-                    }).join(', ') : '-';
-                } else nextNumsDisplay = '⚠️ 예측 대상';
-
-                let nextBonusDisplay = '-';
-                if (isNextValid && s.nextBonus !== null) {
-                    let nb = s.nextBonus;
-                    if (winData) {
-                        if (winData.main.includes(nb)) nb = `<span class="match-hit">${nb}</span>`;
-                        else if (nb === winData.bonus) nb = `<span class="match-bonus">${nb}</span>`;
-                    }
-                    nextBonusDisplay = nb;
-                }
-                let mClass = 'badge';
-                if (s.matchCount >= 5) mClass += ' badge-5';
-                else if (s.matchCount === 4) mClass += ' badge-4';
-                else if (s.matchCount === 3) mClass += ' badge-3';
-                else mClass += ' badge-2';
-
-                html += `<tr><td class="round-col">${s.round}</td><td>${numsDisplay}</td><td class="bonus-col">${bonusDisplay}</td>
-                <td><span class="${mClass}">${s.matchCount}개</span></td><td><span class="${wClass}">${winMatchDisplay}개</span></td>
-                <td class="round-col" style="color:#2ecc71;">${nextRound}</td><td>${nextNumsDisplay}</td><td class="bonus-col">${nextBonusDisplay}</td></tr>`;
             }
-            html += `</table>`;
-
-            const sortedPool = [...Object.keys(freq).filter(k=>freq[k]>=2).map(Number)].sort((a,b) => (globalIntersectionMap[b]?1:0)-(globalIntersectionMap[a]?1:0) || (freq[b]||0)-(freq[a]||0));
-            html += `<div class="pool-box">✅ <strong>2회 이상 등장 (${sortedPool.length}개):</strong> ${sortedPool.map(n => {
-                let cls='';
-                if (winData && winData.main.includes(n)) cls = 'winner-main';
-                else if (winData && n === winData.bonus) cls = 'winner-bonus';
-                if (globalIntersectionMap[n]) cls += ' intersection-highlight';
-                return `<span class="${cls}">${n}</span>`;
-            }).join(', ')}</div>`;
-
+            html += `</div>`;
+            html += `<div class="recent-box">📊 상위 ${topN}개 유사회차 | ③번: ${activeFreq2.length}개</div>`;
+            html += `<div class="pool-box">✅ ③번 동반수: ${activeFreq2.join(', ')}</div>`;
+            html += `<div class="intersection-box">⑤ 교집합: ${intersectionFreq2.join(', ') || '없음'}</div>`;
             document.getElementById('resultArea').innerHTML = html;
         }
 
         // ========================================================================
-        // 7. 9수 압축 (6개 유사회차 기존 로직 유지)
+        // 8. 1수 분석
+        // ========================================================================
+        function runAnalysisForOne() {
+            const topN = parseInt(document.getElementById('topCountOne').value) || 3;
+            const base = parseInt(document.getElementById('baseRound').value) || 1234;
+            const start = parseInt(document.getElementById('startRound').value) || 1000;
+            const min = parseInt(document.getElementById('minMatch').value) || 2;
+            const result = findSimilar(base, start, min, topN);
+            if (result.similar.length === 0) return null;
+
+            const freq = calcFreq(result.similar);
+            const topCandidates = result.similar.slice(0, topN);
+            const topAllNums = [];
+            for (const s of topCandidates) {
+                const allNums = [...s.nums];
+                if (s.bonus !== null) allNums.push(s.bonus);
+                for (const n of allNums) topAllNums.push(n);
+            }
+
+            const topFreq = {};
+            for (const n of topAllNums) topFreq[n] = (topFreq[n] || 0) + 1;
+
+            const bonusSet = new Set(), nextBonusSet = new Set();
+            for (const s of result.similar) {
+                if (s.bonus !== null) bonusSet.add(s.bonus);
+                if (s.nextBonus !== null) nextBonusSet.add(s.nextBonus);
+            }
+            const bonusIntersection = [...bonusSet].filter(n => nextBonusSet.has(n)).sort((a,b)=>a-b);
+
+            const topNextAllNums = [];
+            for (const s of topCandidates) {
+                if (s.round + 1 < base && s.nextNums.length > 0) {
+                    const allNext = [...s.nextNums];
+                    if (s.nextBonus !== null) allNext.push(s.nextBonus);
+                    for (const n of allNext) topNextAllNums.push(n);
+                }
+            }
+            const topNextFreq = {};
+            for (const n of topNextAllNums) topNextFreq[n] = (topNextFreq[n] || 0) + 1;
+
+            const predScore = {}, predCount = {};
+            for (const s of result.similar) {
+                if (!(s.round + 1 < base && s.nextNums.length > 0)) continue;
+                const weight = s.matchCount;
+                for (const n of s.nextNums) {
+                    predCount[n] = (predCount[n] || 0) + 1;
+                    let score = weight;
+                    if (freq[n]) score += freq[n] * 0.8;
+                    if (bonusIntersection.includes(n)) score += 2.0;
+                    predScore[n] = (predScore[n] || 0) + score;
+                }
+            }
+            const topPred = Object.entries(predScore)
+                .sort((a,b) => b[1] - a[1])
+                .slice(0, 10)
+                .map(([num, score]) => ({ num: parseInt(num), score: Math.round(score * 10) / 10, count: predCount[num] || 0 }));
+            const topPredNums = topPred.map(item => item.num);
+
+            const basePool = Object.keys(topFreq).filter(k => topFreq[k] >= 2).map(Number);
+            const oneHit = Object.keys(topFreq).filter(k => topFreq[k] === 1).map(Number);
+            const scoredOne = oneHit.map(n => {
+                let score = 0;
+                if (bonusIntersection.includes(n)) score += 3;
+                if (topPredNums.includes(n)) score += 2;
+                if (topNextFreq[n] > 0) score += 1;
+                if (freq[n] >= 5) score += 1;
+                return { num: n, score };
+            });
+            scoredOne.sort((a,b) => b.score - a.score);
+            let finalPool = [...basePool];
+            for (const item of scoredOne) {
+                if (finalPool.length >= 20) break;
+                if (!finalPool.includes(item.num)) finalPool.push(item.num);
+            }
+            finalPool.sort((a, b) => (freq[b] || 0) - (freq[a] || 0));
+
+            const tInterMap = {};
+            const tInter = finalPool.filter(n => topPredNums.includes(n) && bonusIntersection.includes(n));
+            for (const n of tInter) tInterMap[n] = true;
+
+            const tierMap = {1:[],2:[],3:[],4:[],5:[]};
+            finalPool.forEach(n => {
+                const isInter = tInterMap[n] || false;
+                const isTop10 = topPredNums.includes(n);
+                if (isInter && isTop10) tierMap[1].push(n);
+                else if (isInter) tierMap[2].push(n);
+                else if (isTop10) tierMap[3].push(n);
+                else tierMap[4].push(n);
+            });
+            const scoreFn = (n) => {
+                let s = (freq[n] || 0) * 2;
+                if (tInterMap[n]) s += 20;
+                if (topPredNums.includes(n)) s += 10;
+                return s;
+            };
+            for (let t=1; t<=4; t++) {
+                tierMap[t].sort((a,b) => scoreFn(b) - scoreFn(a) || a - b);
+            }
+            const ranked = [...tierMap[1], ...tierMap[2], ...tierMap[3], ...tierMap[4]];
+
+            return {
+                ranked: ranked,
+                freq: freq,
+                topPredNums: topPredNums,
+                winData: winData,
+                topN: topN,
+                finalPool: finalPool,
+                tInter: tInter
+            };
+        }
+
+        // ========================================================================
+        // 9. ★★★ 9수 압축 (교집합 점수 체계 보완) ★★★
         // ========================================================================
         function optimizeNine() {
             if (!similarData) {
                 alert('⚠️ 먼저 "분석 실행"을 해주세요.');
                 return;
             }
+            
             const topPredNums = lastTopPred.map(p => p.num);
+            const bonusIntersection = lastBonusIntersection || [];
+            
+            // 1회 출현수(oneHit) 중 교집합 점수 계산
+            const oneHitNums = activeFreq2.filter(n => {
+                const freq = globalFreqData[n] || 0;
+                return freq >= 1 && freq < 2;
+            });
+            
+            const bonusToMainIntersection = bonusIntersection.filter(n => 
+                topPredNums.includes(n)
+            );
+            
+            let qualifiedOneHits = oneHitNums.map(num => {
+                let intersectionScore = 0;
+                let predScore = 0;
+                
+                if (bonusIntersection.includes(num)) intersectionScore += 3.0;
+                if (bonusToMainIntersection.includes(num)) intersectionScore += 2.0;
+                if (globalIntersectionMap[num]) intersectionScore += 1.5;
+                
+                const pred = lastTopPred.find(p => p.num === num);
+                if (pred) predScore = pred.score;
+                
+                const freqScore = (globalFreqData[num] || 0) * 0.5;
+                
+                return { 
+                    num, 
+                    score: predScore + intersectionScore + freqScore,
+                    intersectionScore: intersectionScore,
+                    predScore: predScore,
+                    freqScore: freqScore
+                };
+            });
+            
+            qualifiedOneHits.sort((a, b) => b.score - a.score);
+            
+            // 9수 선정
             let exclusiveGroup = activeFreq2.filter(n => !topPredNums.includes(n));
             const mustInclude = [1, 15, 31];
             const mustIncluded = mustInclude.filter(n => exclusiveGroup.includes(n));
@@ -711,17 +580,32 @@
 
             let top9 = [...mustIncluded];
             top9 = top9.concat(restExclusive.slice(0, 6 - mustIncluded.length));
+            
             let interGroup = activeFreq2.filter(n => topPredNums.includes(n));
-            interGroup.sort((a,b) => (globalFreqData[b]||0) - (globalFreqData[a]||0) || b - a);
-            top9 = top9.concat(interGroup.slice(0, 3));
+            interGroup.sort((a, b) => {
+                const aScore = qualifiedOneHits.find(item => item.num === a)?.score || 0;
+                const bScore = qualifiedOneHits.find(item => item.num === b)?.score || 0;
+                return bScore - aScore;
+            });
+            
+            let addedCount = 0;
+            for (const num of interGroup) {
+                if (!top9.includes(num) && addedCount < 3) {
+                    top9.push(num);
+                    addedCount++;
+                }
+            }
+            
             if (top9.length < 9) {
                 const rest = activeFreq2.filter(n => !top9.includes(n));
                 rest.sort((a,b) => (globalFreqData[b]||0) - (globalFreqData[a]||0) || b - a);
                 top9 = top9.concat(rest.slice(0, 9 - top9.length));
             }
+            
             top9 = [...new Set(top9)];
             lastTop9 = top9;
 
+            // 결과 출력
             let hitMain=[], hitBonus=[];
             if (winData) {
                 top9.forEach(n => {
@@ -731,414 +615,428 @@
             }
             const totalHit = hitMain.length + (hitBonus.length ? 1 : 0);
             const isGoal = totalHit >= 3;
+            
+            const top3Scores = qualifiedOneHits.slice(0, 3).map(item => 
+                `${item.num}(${Math.round(item.score)}점)`
+            ).join(', ');
+            
             let html = document.getElementById('resultArea').innerHTML || '';
             html += `<div class="optimize-result" style="border-color: ${isGoal ? '#2ecc71' : '#e74c3c'};">
-            <div class="label" style="color:#ffd700; font-size:18px; font-weight:bold;">🎯 9수 압축 결과 (6개 유사회차 기반)</div>
-            <div style="font-size:13px; color:#88ccff;">📌 구성: ③번 독자 6개 + ③∩예측 3개 | ★ 강제 포함: ${mustIncluded.join(', ')}</div>
+            <div class="label" style="color:#ffd700; font-size:18px; font-weight:bold;">🎯 9수 압축 결과 (교집합 점수 보완)</div>
+            <div style="font-size:13px; color:#88ccff;">
+                📌 구성: ③번 독자 ${top9.length - addedCount}개 + 교집합 점수 기반 ${addedCount}개<br>
+                📈 교집합 TOP 3: ${top3Scores}
+            </div>
             <div class="number-list">${top9.map(n => {
                 let color='#fff', mark='';
                 if (winData) {
                     if (winData.main.includes(n)) { color='#2ecc71'; mark='★'; }
                     else if (n === winData.bonus) { color='#ff6b6b'; mark='☆'; }
                 }
-                return `<span style="color:${color};">${n}${mark}</span>`;
+                const scoreInfo = qualifiedOneHits.find(item => item.num === n);
+                const scoreMark = scoreInfo ? `(${Math.round(scoreInfo.score)}점)` : '';
+                return `<span style="color:${color};">${n}${mark}${scoreMark}</span>`;
             }).join('')}</div>
             <div class="desc">📊 본번호: ${hitMain.length}개 (${hitMain.join(', ')||'없음'})${hitBonus.length ? ` | 보너스: ${hitBonus.join(', ')}` : ''}</div>
             <div style="font-size:24px; font-weight:bold; color:${isGoal?'#2ecc71':'#e74c3c'};">✅ 총 ${totalHit}개 적중 ${isGoal ? '🎉 목표 달성!' : '😅 미달'}</div>
-            <div class="source">📌 유사회차: ${currentTopN}개 | 기준 회차: ${document.getElementById('baseRound').value}회</div>
-            <div style="margin-top:8px; font-size:12px; color:#888;">💡 이제 "강력 1수" 또는 "강력 5수" 버튼을 눌러보세요!</div>
+            <div class="source">📌 9수 유사회차: ${currentTopN}개 | 기준 회차: ${document.getElementById('baseRound').value}회</div>
             </div>`;
             document.getElementById('resultArea').innerHTML = html;
         }
 
         // ========================================================================
-        // 8. 9수 내부 순위 매기기 (Tier 시스템 - 5수용)
-        // ========================================================================
-        function getRankedNine() {
-            if (!lastTop9 || lastTop9.length === 0) return [];
-            const topPredNums = lastTopPred.map(p => p.num);
-            const mustInclude = [1, 15, 31];
-            
-            let tier1=[], tier2=[], tier3=[], tier4=[], tier5=[];
-            
-            lastTop9.forEach(n => {
-                const isInter = globalIntersectionMap[n] || false;
-                const isTop10 = topPredNums.includes(n);
-                const isMust = mustInclude.includes(n);
-                
-                if (isMust && isInter) tier1.push(n);
-                else if (isInter && isTop10) tier2.push(n);
-                else if (isInter) tier3.push(n);
-                else if (isTop10) tier4.push(n);
-                else tier5.push(n);
-            });
-            
-            const sortFn = (arr) => arr.sort((a,b) => {
-                const sa = getUnifiedScore(a);
-                const sb = getUnifiedScore(b);
-                if (sa !== sb) return sb - sa;
-                if (globalIntersectionMap[a] && !globalIntersectionMap[b]) return -1;
-                if (!globalIntersectionMap[a] && globalIntersectionMap[b]) return 1;
-                return (globalFreqData[b] || 0) - (globalFreqData[a] || 0) || a - b;
-            });
-            sortFn(tier1); sortFn(tier2); sortFn(tier3); sortFn(tier4); sortFn(tier5);
-            
-            return [...tier1, ...tier2, ...tier3, ...tier4, ...tier5];
-        }
-
-        // ========================================================================
-        // 9. ★★★ 강력 1수 (상위 3개 유사회차 분석) - 수정됨! ★★★
+        // 10. 강력 1수
         // ========================================================================
         function recommendStrong1() {
-            if (!similarData) {
-                alert('⚠️ 먼저 "분석 실행"을 해주세요.');
-                return;
-            }
-            
-            // ★ 변경: 상위 3개 유사회차에서 강력 1수 추출
-            const pick = getStrongOneFromSimilar();
-            
-            // Tier 계산 (표시용)
-            let tier = 5;
-            if (globalIntersectionMap[pick] && [1,15,31].includes(pick)) tier = 1;
-            else if (globalIntersectionMap[pick] && lastTopPred.map(p=>p.num).includes(pick)) tier = 2;
-            else if (globalIntersectionMap[pick]) tier = 3;
-            else if (lastTopPred.map(p=>p.num).includes(pick)) tier = 4;
-            
+            const result = runAnalysisForOne();
+            if (!result) { alert('⚠️ 1수 분석 실패'); return; }
+            const pick = result.ranked[0];
             let hitMark='', hitLabel='';
             if (winData) {
                 if (winData.main.includes(pick)) { hitMark=' ★'; hitLabel=' (🔥 본번호 당첨!)'; }
                 else if (pick === winData.bonus) { hitMark=' ☆'; hitLabel=' (✨ 보너스 당첨!)'; }
                 else hitLabel=' (검증 결과 미당첨)';
             }
-            const topSim = similarData.slice(0,3).map(s=>s.round).join(', ');
             let html = document.getElementById('resultArea').innerHTML || '';
             html += `<div class="strong-result">
-                <div class="label">💪 강력 1수 (상위 3개 유사회차 ${topSim} 분석)</div>
+                <div class="label">💪 강력 1수 (3개 유사회차)</div>
                 <div class="number">${pick}${hitMark}</div>
-                <div class="desc">📊 통합 점수: ${getUnifiedScore(pick).toFixed(1)}점 | 기반: 상위 3개 유사회차</div>
+                <div class="desc">📊 3개 유사회차 Tier 1위</div>
                 ${winData ? `<div style="margin-top:5px; color:${hitMark ? '#2ecc71' : '#aaa'}; font-weight:bold;">${hitLabel}</div>` : ''}
-                <div class="source">📅 기준 회차: ${document.getElementById('baseRound').value}회 | 유사회차: ${currentTopN}개 (9수는 ${currentTopN}개 기반, 1수는 상위 3개 기반)</div>
+                <div class="source">📅 기준 회차: ${document.getElementById('baseRound').value}회</div>
             </div>`;
             document.getElementById('resultArea').innerHTML = html;
         }
 
         // ========================================================================
-        // 10. ★★★ 강력 5수 (6개 유사회차 9수 내부 최적화) - 기존 유지 ★★★
+        // 11. 강력 5수
         // ========================================================================
         function recommendStrong5() {
-            if (!lastTop9 || lastTop9.length === 0) {
-                alert('⚠️ 먼저 "🎯 9수 압축"을 실행해주세요.');
+            if (!similarData) {
+                alert('⚠️ 먼저 "분석 실행"을 해주세요.');
                 return;
             }
+            optimizeNine();
             
-            const mustInclude = [1, 15, 31].filter(n => lastTop9.includes(n));
-            let top5 = [...mustInclude];
-            const rest = lastTop9.filter(n => !mustInclude.includes(n));
-            rest.sort((a, b) => getUnifiedScore(b) - getUnifiedScore(a) || b - a);
-            top5 = top5.concat(rest.slice(0, 5 - top5.length));
-            
+            const top9 = lastTop9;
+            const sorted = [...top9].sort((a, b) => getUnifiedScore(b) - getUnifiedScore(a));
+            const strong5 = sorted.slice(0, 5);
+            lastStrong5 = strong5;
+            const scoreInfo = strong5.map(n => `${n}(${Math.round(getUnifiedScore(n))}점)`).join(', ');
+
             let html = document.getElementById('resultArea').innerHTML || '';
             html += `<div class="strong5-result">
-                <div class="label">💪 강력 5수 (6개 유사회차 9수 내부 최적 조합)</div>
-                <div style="margin-bottom:10px; font-size:13px; color:#888;">⚡ 1순위: 강제 포함(1,15,31) 우선 | 2순위: 통합점수(⑤+③+①+빈도) 정렬</div>`;
-            top5.forEach((num, idx) => {
-                let hitMark='', numClass='num';
-                if (winData) {
-                    if (winData.main.includes(num)) { hitMark=' ★'; numClass += ' hit'; }
-                    else if (num === winData.bonus) { hitMark=' ☆'; numClass += ' bonus'; }
-                }
-                const colors = ['#e74c3c','#e67e22','#f1c40f','#3498db','#9b59b6'];
-                const score = getUnifiedScore(num);
-                const isForced = [1,15,31].includes(num);
-                html += `<div class="rank-item">
-                    <div class="rank" style="color:${colors[idx]};">${idx+1}위</div>
-                    <div class="${numClass}">${num}${hitMark}</div>
-                    <div class="info">점수: ${score.toFixed(1)}점 ${isForced ? '⭐ 강제포함' : ''}</div>
-                </div>`;
-            });
-            if (winData) {
-                const hitCount = top5.filter(n => winData.main.includes(n) || n === winData.bonus).length;
-                const hitMain = top5.filter(n => winData.main.includes(n));
-                const hitBonus = top5.filter(n => n === winData.bonus);
-                html += `<div style="margin-top:12px; text-align:center; color:#aaa;">📈 TOP 5 중 <span style="color:#2ecc71;">${hitMain.length}개 본번호</span>`;
-                if (hitBonus.length) html += ` + <span style="color:#ff6b6b;">${hitBonus.length}개 보너스</span>`;
-                html += ` (총 ${hitCount}개 적중!)</div>`;
-            }
-            html += `<div class="source" style="margin-top:10px;">📅 기준 회차: ${document.getElementById('baseRound').value}회</div></div>`;
-            document.getElementById('resultArea').innerHTML = html;
-        }
-
-        // ========================================================================
-        // 11. 백테스트 (1수 당첨위치)
-        // ========================================================================
-        function backtestWinnerPosition() {
-            const base = parseInt(document.getElementById('baseRound').value) || 1234;
-            const start = parseInt(document.getElementById('startRound').value) || 1000;
-            const min = parseInt(document.getElementById('minMatch').value) || 2;
-            const topN = parseInt(document.getElementById('topCount').value) || 6;
-            let hitPositions = [0,0,0,0,0,0,0,0,0];
-            let totalRounds = 0;
-            
-            for (let r = start; r < base; r++) {
-                const realWin = getWinning(r);
-                if (!realWin) continue;
-                
-                const tempResult = findSimilar(r, start, min, topN);
-                if (tempResult.similar.length === 0) continue;
-                
-                const tempSim = tempResult.similar;
-                const tempBaseNums = tempResult.prevNums;
-                const tempFreq = calcFreq(tempSim);
-                const tempWinData = getWinning(r);
-                const tempTopCandidates = tempSim.slice(0, topN);
-                
-                const tempTopAll = [];
-                for (const s of tempTopCandidates) {
-                    const allNums = [...s.nums];
-                    if (s.bonus !== null) allNums.push(s.bonus);
-                    for (const n of allNums) tempTopAll.push(n);
-                }
-                const tempTopNumsAll = [...new Set(tempTopAll)].sort((a,b)=>a-b);
-                
-                const tempTopFreq = {};
-                for (const n of tempTopAll) tempTopFreq[n] = (tempTopFreq[n] || 0) + 1;
-                
-                const tempBonusSet = new Set(), tempNextBonusSet = new Set();
-                for (const s of tempSim) {
-                    if (s.bonus !== null) tempBonusSet.add(s.bonus);
-                    if (s.nextBonus !== null) tempNextBonusSet.add(s.nextBonus);
-                }
-                const tempBonusInter = [...tempBonusSet].filter(n => tempNextBonusSet.has(n)).sort((a,b)=>a-b);
-                
-                const tempTopNextAll = [];
-                for (const s of tempTopCandidates) {
-                    if (s.round + 1 < r && s.nextNums.length > 0) {
-                        const allNext = [...s.nextNums];
-                        if (s.nextBonus !== null) allNext.push(s.nextBonus);
-                        for (const n of allNext) tempTopNextAll.push(n);
-                    }
-                }
-                const tempTopNextFreq = {};
-                for (const n of tempTopNextAll) tempTopNextFreq[n] = (tempTopNextFreq[n] || 0) + 1;
-                
-                const tempPredScore = {}, tempPredCount = {};
-                for (const s of tempSim) {
-                    if (!(s.round + 1 < r && s.nextNums.length > 0)) continue;
-                    const weight = s.matchCount;
-                    for (const n of s.nextNums) {
-                        tempPredCount[n] = (tempPredCount[n] || 0) + 1;
-                        let score = weight;
-                        if (tempFreq[n]) score += tempFreq[n] * 0.8;
-                        if (tempBonusInter.includes(n)) score += 2.0;
-                        tempPredScore[n] = (tempPredScore[n] || 0) + score;
-                    }
-                }
-                const tempTopPred = Object.entries(tempPredScore)
-                    .sort((a,b) => b[1] - a[1])
-                    .slice(0, 10)
-                    .map(([num, score]) => ({ num: parseInt(num), score: Math.round(score * 10) / 10, count: tempPredCount[num] || 0 }));
-                const tempTopPredNums = tempTopPred.map(item => item.num);
-                
-                const tempBasePool = Object.keys(tempTopFreq).filter(k => tempTopFreq[k] >= 2).map(Number);
-                const tempOneHit = Object.keys(tempTopFreq).filter(k => tempTopFreq[k] === 1).map(Number);
-                const tempScoredOne = tempOneHit.map(n => {
-                    let score = 0;
-                    if (tempBonusInter.includes(n)) score += 3;
-                    if (tempTopPredNums.includes(n)) score += 2;
-                    if (tempTopNextFreq[n] > 0) score += 1;
-                    if (tempFreq[n] >= 5) score += 1;
-                    return { num: n, score };
-                });
-                tempScoredOne.sort((a,b) => b.score - a.score);
-                const tempMaxAdd = Math.min(topN, 10);
-                const tempTarget = Math.min(20, tempBasePool.length + tempMaxAdd);
-                let tempFinalPool = [...tempBasePool];
-                for (const item of tempScoredOne) {
-                    if (tempFinalPool.length >= tempTarget) break;
-                    if (!tempFinalPool.includes(item.num)) tempFinalPool.push(item.num);
-                }
-                tempFinalPool.sort((a,b) => (tempFreq[b]||0) - (tempFreq[a]||0));
-                const tempActiveFreq2 = tempFinalPool;
-                const tempOldNextFreq2 = Object.keys(tempTopNextFreq).filter(k => tempTopNextFreq[k] >= 2).map(Number).sort((a,b)=>a-b);
-                const tempInterMap = {};
-                const tempInter = tempActiveFreq2.filter(n => tempOldNextFreq2.includes(n));
-                for (const n of tempInter) tempInterMap[n] = true;
-                
-                const exGroup = tempActiveFreq2.filter(n => !tempTopPredNums.includes(n));
-                const mustInclude = [1, 15, 31];
-                const mustInc = mustInclude.filter(n => exGroup.includes(n));
-                let restEx = exGroup.filter(n => !mustInc.includes(n));
-                restEx.sort((a,b) => (tempFreq[b]||0) - (tempFreq[a]||0) || b - a);
-                let top9 = [...mustInc];
-                top9 = top9.concat(restEx.slice(0, 6 - mustInc.length));
-                let interGrp = tempActiveFreq2.filter(n => tempTopPredNums.includes(n));
-                interGrp.sort((a,b) => (tempFreq[b]||0) - (tempFreq[a]||0) || b - a);
-                top9 = top9.concat(interGrp.slice(0, 3));
-                if (top9.length < 9) {
-                    const rest = tempActiveFreq2.filter(n => !top9.includes(n));
-                    rest.sort((a,b) => (tempFreq[b]||0) - (tempFreq[a]||0) || b - a);
-                    top9 = top9.concat(rest.slice(0, 9 - top9.length));
-                }
-                top9 = [...new Set(top9)];
-                
-                let found = false;
-                for (let i = 0; i < top9.length; i++) {
-                    if (realWin.main.includes(top9[i])) {
-                        hitPositions[i]++;
-                        found = true;
-                        break;
-                    }
-                }
-                if (found) totalRounds++;
-            }
-            
-            let html = document.getElementById('resultArea').innerHTML || '';
-            html += `<div class="backtest-result">
-                <h3 style="color:#8e44ad; margin-bottom:15px;">🔍 1수 당첨위치 백테스트 (${start}~${base-1}회)</h3>
-                <p style="color:#aaa; margin-bottom:10px;">📌 총 ${totalRounds}회에서 9수 내 본번호가 발견됨</p>
-                <table>
-                    <tr><th>9수 내 위치</th><th>적중 횟수</th><th>비율</th><th>막대</th></tr>`;
-            const maxVal = Math.max(...hitPositions, 1);
-            for (let i = 0; i < 9; i++) {
-                const pct = totalRounds > 0 ? (hitPositions[i] / totalRounds * 100) : 0;
-                const barWidth = (hitPositions[i] / maxVal * 100);
-                const isBest = hitPositions[i] === Math.max(...hitPositions);
-                html += `<tr>
-                    <td><strong>${i+1}번째</strong> ${isBest ? '⭐' : ''}</td>
-                    <td>${hitPositions[i]}회</td>
-                    <td>${pct.toFixed(1)}%</td>
-                    <td><div style="background:#333; width:150px; height:16px; border-radius:8px; overflow:hidden; display:inline-block;">
-                        <div style="background:${isBest?'#2ecc71':'#8e44ad'}; width:${barWidth}%; height:100%;"></div>
-                    </div></td>
-                </tr>`;
-            }
-            html += `</table>
-                <div style="margin-top:15px; padding:10px; background:#222; border-radius:8px; text-align:center; font-size:16px; color:#ffd700;">
-                    🏆 가장 많이 당첨된 위치: <span class="highlight-rank">${hitPositions.indexOf(Math.max(...hitPositions)) + 1}번째</span> (${Math.max(...hitPositions)}회 / ${totalRounds > 0 ? (Math.max(...hitPositions)/totalRounds*100).toFixed(1) : 0}%)
+                <div class="label">💪 강력 5수 (데이터 기반)</div>
+                <div style="margin-bottom:10px; font-size:13px; color:#888;">
+                    📊 9수: ${top9.join(', ')}<br>
+                    📈 통합 점수 기준 TOP 5: ${scoreInfo}
                 </div>
-                <div style="margin-top:10px; font-size:12px; color:#888;">💡 이 통계는 과거 데이터 기반으로, 미래를 보장하지 않습니다.</div>
+                <div style="display:flex; gap:10px; justify-content:center; flex-wrap:wrap; margin:10px 0;">
+                    ${strong5.map(num => {
+                        let hitMark='', numClass='';
+                        if (winData) {
+                            if (winData.main.includes(num)) { hitMark=' ★'; numClass='hit'; }
+                            else if (num === winData.bonus) { hitMark=' ☆'; numClass='bonus'; }
+                        }
+                        return `<span class="collected-item ${numClass}">
+                            <span class="num">${num}${hitMark}</span>
+                            <span class="freq">(${Math.round(getUnifiedScore(num))}점)</span>
+                        </span>`;
+                    }).join('')}
+                </div>
+                <div class="source">📅 기준 회차: ${document.getElementById('baseRound').value}회</div>
             </div>`;
             document.getElementById('resultArea').innerHTML = html;
         }
 
         // ========================================================================
-        // 12. ★★★ 강력5수 포함 조합 (상위 3개 유사회차 1수 고정) ★★★
+        // 12. 강력5수 포함 조합
         // ========================================================================
         function generateGungHapCombos() {
             if (!similarData) {
                 alert('⚠️ 먼저 "분석 실행"을 해주세요.');
                 return;
             }
-
-            const fixedNum = getStrongOneFromSimilar();
-
-            const pool = [...new Set([...activeFreq2, ...oldNextFreq2])];
-            if (pool.length < 5) {
-                alert('풀이 너무 작습니다. (최소 5개 필요)');
-                return;
-            }
-
-            const restPool = pool.filter(n => n !== fixedNum);
-            if (restPool.length < 5) {
-                alert('고정번호를 제외한 나머지 풀이 부족합니다.');
-                return;
-            }
+            optimizeNine();
+            
+            const top9 = lastTop9;
+            const sorted = [...top9].sort((a, b) => getUnifiedScore(b) - getUnifiedScore(a));
+            const strong5 = sorted.slice(0, 5);
+            const rest = top9.filter(n => !strong5.includes(n));
+            if (rest.length < 1) { alert('⚠️ 나머지 풀 부족'); return; }
 
             const combos = [];
-            const usedKeys = new Set();
-            for (let i = 0; i < 20; i++) {
-                const combo = [fixedNum];
-                const shuffled = [...restPool];
-                const startIdx = (i * 3) % shuffled.length;
-                for (let j = 0; j < 5; j++) {
-                    const idx = (startIdx + j) % shuffled.length;
-                    if (!combo.includes(shuffled[idx])) {
-                        combo.push(shuffled[idx]);
-                    } else {
-                        for (let k = 0; k < shuffled.length; k++) {
-                            const candidate = shuffled[(startIdx + j + k) % shuffled.length];
-                            if (!combo.includes(candidate)) {
-                                combo.push(candidate);
-                                break;
-                            }
-                        }
-                    }
-                }
-                while (combo.length < 6) {
-                    for (const n of restPool) {
-                        if (!combo.includes(n)) {
-                            combo.push(n);
-                            break;
-                        }
-                    }
-                }
+            const used = new Set();
+            for (let i = 0; i < 10 && i < rest.length; i++) {
+                const combo = [...strong5, rest[i % rest.length]];
                 combo.sort((a,b) => a - b);
                 const key = combo.join(',');
-                if (!usedKeys.has(key) && combo.length === 6) {
-                    usedKeys.add(key);
-                    combos.push(combo);
-                }
-                if (combos.length >= 10) break;
+                if (!used.has(key)) { used.add(key); combos.push(combo); }
+            }
+            while (combos.length < 10 && rest.length > 0) {
+                const combo = [...strong5, rest[combos.length % rest.length]];
+                combo.sort((a,b) => a - b);
+                const key = combo.join(',');
+                if (!used.has(key)) { used.add(key); combos.push(combo); }
             }
 
-            const topSim = similarData.slice(0,3).map(s=>s.round).join(', ');
+            const win = winData;
+            const winMain = win ? win.main : [];
+            const winBonus = win ? win.bonus : null;
+
+            function getRankLabel(matchCount, hasBonus) {
+                if (matchCount === 6) return '🏆 1등!!!';
+                if (matchCount === 5 && hasBonus) return '🥈 2등!!';
+                if (matchCount === 5) return '🥉 3등!';
+                if (matchCount === 4) return '🎯 4등!';
+                if (matchCount === 3 && hasBonus) return '✅ 5등+보너스!';
+                if (matchCount === 3) return '✅ 5등!';
+                return `${matchCount}개`;
+            }
+
             let html = document.getElementById('resultArea').innerHTML || '';
-            html += `<div class="section-title">🧩 강력5수 포함 궁합수 조합 (고정: ${fixedNum})</div>`;
-            html += `<div style="font-size:13px; color:#88ccff; margin-bottom:10px;">`;
-            html += `📌 상위 3개 유사회차 (${topSim})의 당첨번호에서 추출한 <strong>${fixedNum}</strong>을 모든 조합에 고정했습니다.`;
+            html += `<div class="section-title">🧩 강력5수 포함 조합 (9수 기반)</div>`;
+            html += `<div style="margin-bottom:10px; font-size:13px; color:#888;">
+                🔥 강력5수 (데이터 기반): <strong>${strong5.join(', ')}</strong><br>
+                📊 9수: ${top9.join(', ')}
+            </div>`;
+            html += `<div style="display:grid; grid-template-columns:1fr 1fr; gap:10px;">`;
+            combos.slice(0,10).forEach((c, i) => {
+                const matchMain = c.filter(n => winMain.includes(n));
+                const matchBonus = c.filter(n => n === winBonus);
+                const matchCount = matchMain.length;
+                const hasBonus = matchBonus.length > 0;
+                const rankLabel = getRankLabel(matchCount, hasBonus);
+
+                const display = c.map(n => {
+                    if (winMain.includes(n)) return `<span style="color:#2ecc71; font-weight:bold;">${n}★</span>`;
+                    else if (n === winBonus) return `<span style="color:#ff6b6b; font-weight:bold;">${n}☆</span>`;
+                    else if (strong5.includes(n)) return `<span style="color:#ffd700; font-weight:bold;">${n}🔥</span>`;
+                    return n;
+                }).join(' ');
+
+                html += `<div class="combo-box" style="border-color:#e67e22;">
+                    <span style="color:#e67e22; font-weight:bold; margin-right:8px;">#${i+1}</span>
+                    ${display}
+                    <span style="margin-left:10px; font-size:12px; color:#aaa;">${rankLabel}</span>
+                </div>`;
+            });
             html += `</div>`;
+            html += `<div class="source" style="margin-top:10px;">📅 기준 회차: ${document.getElementById('baseRound').value}회</div>`;
+            document.getElementById('resultArea').innerHTML = html;
+        }
 
-            combos.slice(0, 10).forEach((c, i) => {
-                const display = c.map(n => {
-                    let cls='', mark='';
-                    if (winData && winData.main.includes(n)) { cls='match-hit'; mark='★'; }
-                    else if (winData && n === winData.bonus) { cls='match-bonus'; mark='☆'; }
-                    if (n === fixedNum) {
-                        return `<span class="${cls}" style="border:2px solid #e74c3c; border-radius:20px; padding:2px 10px; background:rgba(231,76,60,0.2);">${n}${mark}<span class="strong5-tag">🔥고정</span></span>`;
+        // ========================================================================
+        // 13. ★★★ 하이브리드 10조합 (최종) ★★★
+        // ========================================================================
+        function runHybrid() {
+            runAnalysis();
+            optimizeNine();
+
+            const oneResult = runAnalysisForOne();
+            if (!oneResult) { alert('3개 유사회차 분석 실패'); return; }
+            const fixedA = oneResult.ranked[0];
+
+            const top9 = lastTop9;
+            const sorted = [...top9].sort((a, b) => getUnifiedScore(b) - getUnifiedScore(a));
+            let strong5 = sorted.slice(0, 5);
+            lastStrong5 = strong5;
+
+            // 고정A와 중복 제거
+            let availableStrong = strong5.filter(n => n !== fixedA);
+            
+            // 고정B: 강력5수 중 교집합 있는 번호 우선
+            let fixedB;
+            const intersectionCandidates = availableStrong.filter(n => 
+                lastBonusIntersection.includes(n) || globalIntersectionMap[n]
+            );
+            
+            if (intersectionCandidates.length > 0) {
+                fixedB = intersectionCandidates[0];
+            } else {
+                fixedB = availableStrong.length > 0 ? availableStrong[0] : strong5[0];
+            }
+
+            // 고정B도 제외한 실제 조합용 강력5수
+            const strongForCombo = availableStrong.filter(n => n !== fixedB);
+            const restPool = top9.filter(n => !strong5.includes(n));
+            
+            const allCombos = [];
+            const used = new Set();
+
+            // ============================================
+            // ★ 강력5수 2개씩 조합 (우선)
+            // ============================================
+            for (let i = 0; i < strongForCombo.length; i++) {
+                for (let j = i + 1; j < strongForCombo.length; j++) {
+                    if (allCombos.length >= 10) break;
+                    const s1 = strongForCombo[i];
+                    const s2 = strongForCombo[j];
+                    
+                    let restCopy = [...restPool];
+                    let rest3 = [];
+                    const takeCount = Math.min(3, restCopy.length);
+                    for (let k = 0; k < takeCount; k++) {
+                        const idx = (i + j + k) % restCopy.length;
+                        rest3.push(restCopy[idx]);
+                        restCopy.splice(idx, 1);
                     }
-                    return `<span class="${cls}">${n}${mark}</span>`;
-                }).join(' ');
-                html += `<div class="combo-box">#${i+1}: ${display}</div>`;
-            });
-            document.getElementById('resultArea').innerHTML = html;
-        }
+                    
+                    let combo = [fixedA, fixedB, s1, s2, ...rest3];
+                    
+                    if (combo.length < 6) {
+                        const extra = restPool.filter(n => !combo.includes(n));
+                        for (let k = 0; k < 6 - combo.length && k < extra.length; k++) {
+                            combo.push(extra[k]);
+                        }
+                    }
+                    
+                    let uniqueCombo = [...new Set(combo)];
+                    uniqueCombo.sort((a,b) => a - b);
+                    
+                    if (uniqueCombo.length === 6) {
+                        const key = uniqueCombo.join(',');
+                        if (!used.has(key)) {
+                            used.add(key);
+                            allCombos.push(uniqueCombo);
+                        }
+                    }
+                }
+                if (allCombos.length >= 10) break;
+            }
 
-        // ========================================================================
-        // 13. 상위6 동반수 조합 (기존 유지)
-        // ========================================================================
-        function generateTop5Combos() {
-            if (activeFreq2.length < 6) { alert('③번 풀이 6개 미만'); return; }
-            const combos = makeCombos(activeFreq2);
+            // ============================================
+            // ★ 강력5수 1개씩 조합 (부족할 때)
+            // ============================================
+            let count = 0;
+            while (allCombos.length < 10 && count < 100) {
+                count++;
+                const idx = count % strongForCombo.length;
+                const s = strongForCombo[idx];
+                if (!s) continue;
+                
+                let restCopy = [...restPool];
+                let rest3 = [];
+                const takeCount = Math.min(3, restCopy.length);
+                for (let k = 0; k < takeCount; k++) {
+                    const idx2 = (count + k) % restCopy.length;
+                    rest3.push(restCopy[idx2]);
+                    restCopy.splice(idx2, 1);
+                }
+                
+                let combo = [fixedA, fixedB, s, ...rest3];
+                
+                if (combo.length < 6) {
+                    const extra = restPool.filter(n => !combo.includes(n));
+                    for (let k = 0; k < 6 - combo.length && k < extra.length; k++) {
+                        combo.push(extra[k]);
+                    }
+                }
+                
+                let uniqueCombo = [...new Set(combo)];
+                uniqueCombo.sort((a,b) => a - b);
+                
+                if (uniqueCombo.length === 6) {
+                    const key = uniqueCombo.join(',');
+                    if (!used.has(key)) {
+                        used.add(key);
+                        allCombos.push(uniqueCombo);
+                    }
+                }
+            }
+
+            // ============================================
+            // ★ 보험: 나머지 조합 (무조건 10개 채우기)
+            // ============================================
+            if (allCombos.length < 10) {
+                const remaining = top9.filter(n => n !== fixedA && n !== fixedB);
+                const combos = getCombinations(remaining, 4);
+                for (const c of combos) {
+                    if (allCombos.length >= 10) break;
+                    let combo = [fixedA, fixedB, ...c];
+                    let uniqueCombo = [...new Set(combo)];
+                    uniqueCombo.sort((a,b) => a - b);
+                    if (uniqueCombo.length === 6) {
+                        const key = uniqueCombo.join(',');
+                        if (!used.has(key)) {
+                            used.add(key);
+                            allCombos.push(uniqueCombo);
+                        }
+                    }
+                }
+            }
+
+            // ============================================
+            // 당첨 정보
+            // ============================================
+            const win = winData;
+            const winMain = win ? win.main : [];
+            const winBonus = win ? win.bonus : null;
+
+            function getRankLabel(matchCount, hasBonus) {
+                if (matchCount === 6) return '🏆 1등!!!';
+                if (matchCount === 5 && hasBonus) return '🥈 2등!! (5+보너스)';
+                if (matchCount === 5) return '🥉 3등! (5개)';
+                if (matchCount === 4 && hasBonus) return '🎯 4등! (4개+보너스)';
+                if (matchCount === 4) return '🎯 4등! (4개)';
+                if (matchCount === 3 && hasBonus) return '✅ 5등+보너스!';
+                if (matchCount === 3) return '✅ 5등!';
+                if (matchCount === 2 && hasBonus) return '💫 2개+보너스';
+                return `${matchCount}개`;
+            }
+
+            function getRankColor(matchCount, hasBonus) {
+                if (matchCount >= 5) return '#ffd700';
+                if (matchCount === 4) return '#00b894';
+                if (matchCount === 3) return '#2ecc71';
+                if (matchCount === 2 && hasBonus) return '#888';
+                return '#555';
+            }
+
+            const nineHitMain = lastTop9.filter(n => winMain.includes(n));
+            const fixedAHit = winMain.includes(fixedA) ? '★ 본번호' : (fixedA === winBonus ? '☆ 보너스' : '미당첨');
+            const fixedBHit = winMain.includes(fixedB) ? '★ 본번호' : (fixedB === winBonus ? '☆ 보너스' : '미당첨');
+
+            const fiveOrMore = allCombos.filter(c => {
+                const hit = c.filter(n => winMain.includes(n)).length;
+                return hit >= 3;
+            });
+
+            const strongHit = strong5.filter(n => winMain.includes(n) || n === winBonus);
+
             let html = document.getElementById('resultArea').innerHTML || '';
-            html += `<div class="section-title">🔮 상위6 동반수 조합</div>`;
-            combos.slice(0,10).forEach((c,i) => {
-                const display = c.map(n => {
-                    let cls='', mark='';
-                    if (winData && winData.main.includes(n)) { cls='match-hit'; mark='★'; }
-                    else if (winData && n === winData.bonus) { cls='match-bonus'; mark='☆'; }
-                    if (globalIntersectionMap[n]) cls += ' intersection-highlight';
-                    return `<span class="${cls}">${n}${mark}</span>`;
-                }).join(' ');
-                html += `<div class="combo-box">#${i+1}: ${display}</div>`;
-            });
+            html += `<div class="hybrid-result-box">
+                <div class="label-title">🤝 하이브리드 10조합 (보너스 가중치 ${BONUS_WEIGHT})</div>
+                <div class="info-line">
+                    📊 9수: <strong>${lastTop9.join(', ')}</strong><br>
+                    🔥 강력5수: <strong>${strong5.join(', ')}</strong> (당첨 ${strongHit.length}개)<br>
+                    🔒 고정A (1수): <span style="color:#e74c3c; font-weight:bold;">${fixedA}</span> ${fixedAHit}<br>
+                    🔒 고정B: <span style="color:#e74c3c; font-weight:bold;">${fixedB}</span> ${fixedBHit}<br>
+                    📦 사용 가능 강력: ${strongForCombo.join(', ')}<br>
+                    📌 9수 중 당첨번호: <span style="color:#2ecc71; font-weight:bold;">${nineHitMain.join(', ') || '없음'}</span>
+                </div>
+                <div style="font-size:13px; color:#888; margin-bottom:10px;">
+                    🔹 강력5수 2개씩 조합 우선 | 🔸 부족하면 1개씩
+                </div>
+                <div class="grid-combos">
+                    ${allCombos.slice(0,10).map((c, i) => {
+                        const matchMain = c.filter(n => winMain.includes(n));
+                        const matchBonus = c.filter(n => n === winBonus);
+                        const matchCount = matchMain.length;
+                        const hasBonus = matchBonus.length > 0;
+                        
+                        const rankLabel = getRankLabel(matchCount, hasBonus);
+                        const rankColor = getRankColor(matchCount, hasBonus);
+                        const strongCount = c.filter(n => strong5.includes(n)).length;
+
+                        return `<div class="combo-item">
+                            <span style="color:#ffd700; font-weight:bold;">#${i+1}</span>
+                            <span style="color:#888; font-size:11px; margin-right:8px;">[강력${strongCount}개]</span>
+                            ${c.map(n => {
+                                if (winMain.includes(n)) return `<span style="color:#2ecc71; font-weight:bold;">${n}★</span>`;
+                                else if (n === winBonus) return `<span style="color:#ff6b6b; font-weight:bold;">${n}☆</span>`;
+                                else if (n === fixedA || n === fixedB) return `<span class="fixed-num">${n}</span>`;
+                                else if (strong5.includes(n)) return `<span style="color:#e67e22; font-weight:bold;">${n}🔥</span>`;
+                                return n;
+                            }).join(' ')}
+                            <span style="color:${rankColor}; margin-left:10px; font-size:13px; font-weight:bold;">${rankLabel}</span>
+                        </div>`;
+                    }).join('')}
+                </div>
+                <div style="margin-top:15px; padding:10px; background:#222; border-radius:8px; text-align:center; color:#aaa; font-size:14px;">
+                    📈 총 10개 조합 중 <span style="color:#2ecc71;">${fiveOrMore.length}개</span>가 5등 이상 당첨!
+                </div>
+                <div class="source" style="margin-top:10px;">📅 기준 회차: ${document.getElementById('baseRound').value}회</div>
+            </div>`;
             document.getElementById('resultArea').innerHTML = html;
         }
 
+        // ========================================================================
+        // 14. 리셋
+        // ========================================================================
         function resetAll() {
             document.getElementById('resultArea').innerHTML = '<div class="loading">분석 결과가 여기에 표시됩니다.</div>';
             similarData = null; winData = null; activeFreq2 = []; oldNextFreq2 = []; globalFreqData = {};
-            topNumsAll = []; lastTopPred = []; lastBonusIntersection = []; lastTop9 = []; globalIntersectionMap = {};
+            topNumsAll = []; lastTopPred = []; lastBonusIntersection = []; lastTop9 = []; lastStrong5 = [];
+            globalIntersectionMap = {};
         }
 
+        // ========================================================================
+        // 슬라이더
+        // ========================================================================
         document.getElementById('topCount').addEventListener('input', function() {
             document.getElementById('topCountDisplay').textContent = this.value;
+        });
+        document.getElementById('topCountOne').addEventListener('input', function() {
+            document.getElementById('topCountOneDisplay').textContent = this.value;
         });
 
         window.onload = function() {
             document.getElementById('baseRound').value = 1234;
             document.getElementById('topCount').value = 6;
+            document.getElementById('topCountOne').value = 3;
             document.getElementById('topCountDisplay').textContent = 6;
+            document.getElementById('topCountOneDisplay').textContent = 3;
             runAnalysis();
         };
     </script>
