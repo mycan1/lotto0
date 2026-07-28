@@ -2,7 +2,7 @@
 <html lang="ko">
 <head>
     <meta charset="UTF-8">
-    <title>📊 통합 9수/1수/5수 + 히스토리 전략 v18</title>
+    <title>📊 통합 9수/1수/5수 + 히스토리 전략 v20</title>
     <style>
         * { box-sizing: border-box; margin: 0; padding: 0; }
         body { background: #0a0a0a; color: #fff; font-family: 'Segoe UI', sans-serif; padding: 20px; max-width: 1100px; margin: 0 auto; }
@@ -176,12 +176,11 @@
     </style>
 </head>
 <body>
-    <h1>📊 통합 9수/1수/5수 + 히스토리 전략 v18</h1>
+    <h1>📊 통합 9수/1수/5수 + 히스토리 전략 v20</h1>
     <div class="update-notice">
-        ✅ <strong>1235회 미추첨 처리 완료</strong> (당첨번호 표시 불가)<br>
-        ✅ <strong>히스토리 전략 추가</strong> (백테스트 결과 기반 1수/5수/TOP10 빈도 추천)<br>
-        ✅ <strong>보너스 통계 완전 제거</strong> (③/④/⑤/출현순위/2회이상/9수 모두 본번호만 사용)<br>
-        ✅ <strong>전략 A/B/C 테스트 유지</strong> (현재 유사회차 기반)
+        ✅ <strong>유사회차 테이블 필터링 개선</strong> (일치 0~2개는 숨기고, 빈도 계산은 전체 활용)<br>
+        ✅ <strong>히스토리 전략 minMatch 동기화</strong> (2회 고정 → minMatch 값 따라감)<br>
+        ✅ <strong>보너스 통계 완전 제거</strong> (③/④/⑤/출현순위/2회이상/9수 모두 본번호만 사용)
     </div>
     <div class="filters">
         <div class="filter-group">
@@ -196,8 +195,8 @@
             <label>🎯 최소 일치</label>
             <select id="minMatch">
                 <option value="1">1개</option>
-                <option value="2">2개</option>
-                <option value="3" selected>3개</option>
+                <option value="2" selected>2개</option>
+                <option value="3">3개</option>
                 <option value="4">4개</option>
                 <option value="5">5개</option>
             </select>
@@ -362,6 +361,7 @@
         return baseRound;
     }
 
+    // 🔥 수정: minMatch를 1로 고정하여 모든 유사회차를 일단 수집
     function findSimilar(baseRound, startRound, minMatch, topN) {
         const prev = getWinning(baseRound - 1);
         if (!prev) return { similar: [], prevNums: [] };
@@ -378,11 +378,13 @@
             const bonus = row[7];
             let matchCount = nums.filter(n => baseNums.includes(n)).length;
             if (!excludeBonus && bonus === baseBonus) matchCount += 1;
-            if (matchCount < minMatch) continue;
+            // matchCount가 6을 초과하면 제외 (오류 방지)
             if (matchCount > 6) {
                 console.warn(`⚠️ [방화벽] ${r}회의 matchCount(${matchCount})가 6을 초과하여 제외됨`);
                 continue;
             }
+            // 🔥 minMatch는 여기서 사용하지 않고, 무조건 1로 취급하여 모든 회차 수집
+            // if (matchCount < minMatch) continue; // 이 조건 제거
             const next = (r + 1 < baseRound) ? getWinning(r + 1) : null;
             const nextFiltered = next ? next.main.filter(n => !baseNums.includes(n)) : [];
             const nextBonusFiltered = (next && next.bonus !== null && !baseNums.includes(next.bonus)) ? next.bonus : null;
@@ -432,8 +434,8 @@
             const bonus = row[7];
             let matchCount = nums.filter(n => baseNums.includes(n)).length;
             if (!excludeBonus && bonus === baseBonus) matchCount += 1;
-            if (matchCount < minMatch) continue;
             if (matchCount > 6) continue;
+            // 🔥 TOP10은 모든 회차를 스캔하지만, minMatch 미만은 제외 (빈도 계산에서 제외)
             similarRounds.push({ round: r, matchCount });
         }
 
@@ -500,11 +502,10 @@
     }
 
     // ========================================================================
-    // 3. runAnalysis (1235회 미추첨 처리 수정 완료)
+    // 3. runAnalysis (테이블 표시만 minMatch 이상으로 필터링)
     // ========================================================================
     function runAnalysis() {
-        console.log('🚀 runAnalysis 실행');
-        // 🔥 이전 데이터 완전 초기화 (1235회 미추첨 처리 핵심)
+        console.log('🚀 runAnalysis 실행 (테이블 필터링 개선)');
         winData = null;
         similarData = null;
         
@@ -519,9 +520,10 @@
         document.getElementById('topCountDisplay').textContent = topN;
         const targetRound = base;
 
-        const result = findSimilar(base, start, minMatch, topN);
+        // 🔥 findSimilar 호출 시 minMatch를 1로 전달 (모든 회차 수집)
+        const result = findSimilar(base, start, 1, topN);
         if (result.similar.length === 0) {
-            document.getElementById('resultArea').innerHTML = `<div style="color:#f39c12; padding:20px;">⚠️ 유사회차 없음 (${base-1}회 기준, ${minMatch}회 이상)</div>`;
+            document.getElementById('resultArea').innerHTML = `<div style="color:#f39c12; padding:20px;">⚠️ 유사회차 없음</div>`;
             return;
         }
         similarData = result.similar;
@@ -532,7 +534,6 @@
         const freq = calcFreq(result.similar);
         globalFreqData = freq;
         
-        // 🔥 수정: base 회차 데이터가 없으면 null 유지 (1235회 미추첨)
         const tempWinData = getWinning(base);
         winData = tempWinData ? tempWinData : null;
         const winMain = winData ? winData.main : [];
@@ -545,6 +546,7 @@
             s.nextNums.forEach(n => allNextNums.push(n));
         });
 
+        // 🔥 빈도 계산 및 validSet 생성 (여기서는 모든 회차를 사용하므로, 3회 이상이면 validSet에 포함)
         const freqMap = {};
         allSimNums.forEach(n => { freqMap[n] = (freqMap[n] || 0) + 1; });
         const validSet = new Set(
@@ -629,7 +631,7 @@
         // ===== UI 렌더링 =====
         let html = `<div class="winning-info">🎯 기준 패턴 (${targetRound}회): <span>${baseNums.join(', ')}</span>`;
         if (winData) {
-            html += ` &nbsp;|&nbsp; ✅ ${targetRound}회 실제 당첨 (검증용): <span style="color:#2ecc71;">${winData.main.join(', ')}</span> | 보너스: <span style="color:#ff6b6b;">${winData.bonus}</span>`;
+            html += ` &nbsp;|&nbsp; ✅ ${targetRound}회 실제 당첨 (검증용): <span style="color:#2ecc71;">${winData.main.join(', ')}</span> | 보너ス: <span style="color:#ff6b6b;">${winData.bonus}</span>`;
         } else {
             html += ` &nbsp;|&nbsp; ⚠️ ${targetRound}회 미추첨 (검증 데이터 없음)`;
         }
@@ -690,10 +692,12 @@
             html += `</div>`;
         }
 
+        // ===== 🔥 테이블 표시: minMatch 이상인 회차만 필터링 (displaySimilar) =====
+        const displaySimilar = result.similar.filter(s => s.matchCount >= minMatch);
         html += `<div style="margin-top:15px; overflow-x:auto;">`;
-        html += `<strong style="color:#3498db;">🔹 유사회차 (상위 ${topN}개 전체) - ⭐ ${targetRound}회 당번 일치</strong>`;
+        html += `<strong style="color:#3498db;">🔹 유사회차 (상위 ${topN}개 중 ${minMatch}회 이상) - ⭐ ${targetRound}회 당번 일치</strong>`;
         html += `<table class="detail-table"><thead><tr><th>회차</th><th>번호 (직전 당번 제거)</th><th>보너스</th><th>일치</th><th>⭐ ${targetRound}회 당번 일치</th></tr></thead><tbody>`;
-        result.similar.forEach(s => {
+        displaySimilar.forEach(s => {
             const displayNums = s.remainedNums.map(n => {
                 if (winMain.includes(n)) return `<span class="win-num">${n}★</span>`;
                 else if (winBonus === n) return `<span class="bonus-num">${n}☆</span>`;
@@ -706,6 +710,7 @@
         });
         html += `</tbody></table></div>`;
 
+        // over2 역시 minMatch 기준으로 표시
         const over2 = Object.keys(allFreqMap)
             .filter(k => allFreqMap[k] >= minMatch)
             .map(Number)
@@ -841,6 +846,7 @@
 
         const results = backtestResults;
         const freq1 = {}, freq5 = {}, freqTop10 = {};
+        const currentMinMatch = parseInt(document.getElementById('minMatch').value) || 2;
 
         results.forEach(r => {
             if (r.num1 && r.num1 > 0) {
@@ -859,10 +865,11 @@
         });
 
         const getTop = (freq, n = 5) => {
-            return Object.entries(freq)
-                .sort((a, b) => b[1] - a[1] || parseInt(a[0]) - parseInt(b[0]))
-                .slice(0, n)
-                .map(([num]) => parseInt(num));
+            const filtered = Object.entries(freq)
+                .filter(([num, count]) => count >= currentMinMatch)
+                .sort((a, b) => b[1] - a[1] || parseInt(a[0]) - parseInt(b[0]));
+            if (filtered.length === 0) return [];
+            return filtered.slice(0, n).map(([num]) => parseInt(num));
         };
 
         const topA = getTop(freqTop10, 5);
@@ -873,29 +880,26 @@
 
         const cardHtml = `
         <div id="historyStrategyCard" style="background: #0a1a2a; border: 3px solid #2980b9; border-radius: 15px; padding: 20px; margin-top: 20px; box-shadow: 0 0 30px rgba(41, 128, 185, 0.2);">
-            <h3 style="color: #2980b9; margin-bottom: 15px;">📈 백테스트 히스토리 전략 (${totalRounds}개 회차 분석)</h3>
+            <h3 style="color: #2980b9; margin-bottom: 15px;">📈 백테스트 히스토리 전략 (${totalRounds}개 회차 분석, ${currentMinMatch}회 이상만 추천)</h3>
             <div style="display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 15px;">
                 <div style="background: #1a1a2a; padding: 15px; border-radius: 10px; border-left: 4px solid #f1c40f;">
                     <div style="color: #f1c40f; font-weight: bold; font-size: 16px;">🎯 전략 A (TOP10 빈도)</div>
-                    <div style="font-size: 13px; color: #aaa; margin-top: 5px;">역대 TOP10에 가장 많이 등장한 번호</div>
-                    <div style="font-size: 20px; font-weight: bold; margin: 10px 0; letter-spacing: 2px;">${topA.map(n => `<span style="color:#fff;">${n}</span>`).join(' ')}</div>
-                    <div style="font-size: 12px; color: #888;">출현 횟수: ${topA.map(n => `${n}(${freqTop10[n]||0}회)`).join(', ')}</div>
+                    <div style="font-size: 13px; color: #aaa; margin-top: 5px;">${topA.length > 0 ? topA.join(', ') : '⚠️ 조건을 만족하는 번호 없음'}</div>
+                    <div style="font-size: 12px; color: #888; margin-top: 5px;">출현 횟수: ${topA.map(n => `${n}(${freqTop10[n]||0}회)`).join(', ')}</div>
                 </div>
                 <div style="background: #1a1a2a; padding: 15px; border-radius: 10px; border-left: 4px solid #e74c3c;">
                     <div style="color: #e74c3c; font-weight: bold; font-size: 16px;">💪 전략 B (1수 빈도)</div>
-                    <div style="font-size: 13px; color: #aaa; margin-top: 5px;">역대 강력 1수에 가장 많이 등장한 번호</div>
-                    <div style="font-size: 20px; font-weight: bold; margin: 10px 0; letter-spacing: 2px;">${topB.map(n => `<span style="color:#fff;">${n}</span>`).join(' ')}</div>
-                    <div style="font-size: 12px; color: #888;">출현 횟수: ${topB.map(n => `${n}(${freq1[n]||0}회)`).join(', ')}</div>
+                    <div style="font-size: 13px; color: #aaa; margin-top: 5px;">${topB.length > 0 ? topB.join(', ') : '⚠️ 조건을 만족하는 번호 없음'}</div>
+                    <div style="font-size: 12px; color: #888; margin-top: 5px;">출현 횟수: ${topB.map(n => `${n}(${freq1[n]||0}회)`).join(', ')}</div>
                 </div>
                 <div style="background: #1a1a2a; padding: 15px; border-radius: 10px; border-left: 4px solid #2ecc71;">
                     <div style="color: #2ecc71; font-weight: bold; font-size: 16px;">📌 전략 C (5수 빈도)</div>
-                    <div style="font-size: 13px; color: #aaa; margin-top: 5px;">역대 강력 5수에 가장 많이 등장한 번호</div>
-                    <div style="font-size: 20px; font-weight: bold; margin: 10px 0; letter-spacing: 2px;">${topC.map(n => `<span style="color:#fff;">${n}</span>`).join(' ')}</div>
-                    <div style="font-size: 12px; color: #888;">출현 횟수: ${topC.map(n => `${n}(${freq5[n]||0}회)`).join(', ')}</div>
+                    <div style="font-size: 13px; color: #aaa; margin-top: 5px;">${topC.length > 0 ? topC.join(', ') : '⚠️ 조건을 만족하는 번호 없음'}</div>
+                    <div style="font-size: 12px; color: #888; margin-top: 5px;">출현 횟수: ${topC.map(n => `${n}(${freq5[n]||0}회)`).join(', ')}</div>
                 </div>
             </div>
             <div style="margin-top: 15px; color: #888; font-size: 12px; border-top: 1px solid #333; padding-top: 10px; display: flex; justify-content: space-between;">
-                <span>📌 분석 기준: 최소일치 ${document.getElementById('minMatch').value}개, 상위 ${document.getElementById('topCount').value}개 유사회차</span>
+                <span>📌 분석 기준: 최소일치 ${currentMinMatch}개, 상위 ${document.getElementById('topCount').value}개 유사회차</span>
                 <span style="color: #555;">🔄 "📊 백테스트" 실행 후 갱신됩니다.</span>
             </div>
         </div>
@@ -937,7 +941,7 @@
                 const topPredNums = topPredLocal.map(p => p.num);
                 const hitTop10 = topPredNums.filter(n => winMain.includes(n)).length;
 
-                const simResult = findSimilar(round, start, minMatch, topN);
+                const simResult = findSimilar(round, start, 1, topN);
                 if (simResult.similar.length === 0) {
                     results.push({ round, win: winMain, bonus: winBonus, nums9: [], hit9: 0, unionTop9: [], hitUnion9: 0, topPredNums, hitTop10, num1: 0, hit1: 0, nums5: [], hit5: 0 });
                     continue;
@@ -1154,7 +1158,7 @@
         document.getElementById('topCountDisplay').textContent = 10;
         document.getElementById('excludeBonus').checked = true;
         document.getElementById('resultArea').innerHTML = '<div class="loading">🟢 준비 완료! "🚀 분석 실행" 버튼을 눌러주세요.</div>';
-        console.log('🟢 v18 로드 완료 (1235회 미추첨 처리 확정)');
+        console.log('🟢 v20 로드 완료 (유사회차 테이블 필터링 개선)');
         console.log('💡 사용법: 1) 📊 백테스트 실행 → 2) 📈 히스토리 전략 클릭');
     };
     </script>
