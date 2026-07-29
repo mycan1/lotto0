@@ -173,6 +173,46 @@
             accent-color: #ffd700;
             cursor: pointer;
         }
+        .residual-result .freq-item {
+            display: inline-block;
+            background: #222;
+            padding: 2px 10px;
+            border-radius: 20px;
+            margin: 2px 4px;
+            font-size: 14px;
+        }
+        .residual-result .freq-item .cnt {
+            color: #aaa;
+            font-size: 11px;
+        }
+        .residual-result .freq-item .hit {
+            color: #2ecc71;
+        }
+        .residual-result .freq-item .bonus {
+            color: #ff6b6b;
+        }
+        .strategy-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr 1fr;
+            gap: 15px;
+            margin-top: 15px;
+        }
+        .strategy-card {
+            background: #0a0a0a;
+            padding: 12px;
+            border-radius: 8px;
+            border-left: 4px solid #2ecc71;
+        }
+        .strategy-card .label {
+            font-weight: bold;
+            margin-bottom: 5px;
+        }
+        @media (max-width: 700px) {
+            .strategy-grid { grid-template-columns: 1fr 1fr; }
+        }
+        @media (max-width: 500px) {
+            .strategy-grid { grid-template-columns: 1fr; }
+        }
     </style>
 </head>
 <body>
@@ -181,7 +221,9 @@
         ✅ <strong>히스토리 전략 minMatch 동기화</strong> (2회 고정 → minMatch 값 따라감)<br>
         ✅ <strong>1235회 미추첨 처리 완료</strong> (당첨번호 표시 불가)<br>
         ✅ <strong>보너스 통계 완전 제거</strong> (③/④/⑤/출현순위/2회이상/9수 모두 본번호만 사용)<br>
-        ✅ <strong>전략 A/B/C 테스트 유지</strong> (현재 유사회차 기반)
+        ✅ <strong>전략 A/B/C 테스트 유지</strong> (현재 유사회차 기반)<br>
+        ✅ <strong>통합 빈도 모든 번호 표시</strong> (상위 10개 제한 제거, 등장한 모든 번호 출력)<br>
+        ✅ <strong>백테스트 완전 수정</strong> (회차별로 독립적인 분석 적용, 색상은 예상 회차 기준)
     </div>
     <div class="filters">
         <div class="filter-group">
@@ -225,7 +267,7 @@
                 <button onclick="recommendStrong5()" class="strong-btn" style="background:#e67e22;">💪 강력 5수</button>
                 <button onclick="optimizeNine()" class="optimize-btn">🎯 9수 압축</button>
                 <button onclick="runHybrid()" class="hybrid-btn">🤝 하이브리드</button>
-                <button onclick="runResidualAnalysis()" class="residual-btn">📋 잔여 10풀</button>
+                <button onclick="runResidualAnalysis()" class="residual-btn">📊 통합 빈도</button>
                 <button onclick="runStrategyTest()" class="strategy-btn">🧪 현재 전략 A/B/C</button>
                 <button onclick="runBacktestHistoryStrategy()" class="history-btn">📈 히스토리 전략</button>
                 <button onclick="openBacktestModal()" class="backtest-btn">📊 백테스트</button>
@@ -235,7 +277,7 @@
         <div class="filter-group" style="flex-basis:100%; border-top:1px solid #333; padding-top:10px; margin-top:5px;">
             <label>🔍 수동 테스트 회차</label>
             <div style="display:flex; gap:10px; align-items:center; flex-wrap:wrap;">
-                <input type="number" id="manualRound" value="1235" min="1" max="9999" style="width:120px; padding:6px 12px; border-radius:8px; border:1px solid #555; background:#2a2a2a; color:#fff; font-size:14px;">
+                <input type="number" id="manualRound" value="1234" min="1" max="9999" style="width:120px; padding:6px 12px; border-radius:8px; border:1px solid #555; background:#2a2a2a; color:#fff; font-size:14px;">
                 <button onclick="runManualTest()" class="strong-btn" style="background:#3498db; padding:8px 25px;">🔍 테스트 실행</button>
                 <span style="color:#888; font-size:12px;">※ 특정 회차만 빠르게 분석</span>
                 <div class="bonus-toggle">
@@ -827,7 +869,7 @@
     }
 
     // ========================================================================
-    // 5. 📈 히스토리 전략 (수정됨 - minMatch 동적 적용)
+    // 5. 📈 히스토리 전략
     // ========================================================================
     function runBacktestHistoryStrategy() {
         const resultDiv = document.getElementById('resultArea');
@@ -839,7 +881,6 @@
 
         const results = backtestResults;
         const freq1 = {}, freq5 = {}, freqTop10 = {};
-        // 🔥 현재 minMatch 값을 읽어옴
         const currentMinMatch = parseInt(document.getElementById('minMatch').value) || 2;
 
         results.forEach(r => {
@@ -858,7 +899,6 @@
             }
         });
 
-        // 🔥 수정: 하드코딩된 2 대신 currentMinMatch 사용
         const getTop = (freq, n = 5) => {
             const filtered = Object.entries(freq)
                 .filter(([num, count]) => count >= currentMinMatch)
@@ -906,9 +946,20 @@
     }
 
     // ========================================================================
-    // 6. 백테스트
+    // 6. 백테스트 (수정 완료 - round 전달)
     // ========================================================================
     function runBacktest() {
+        // ✅ 1. 현재 baseRound 값을 읽어서 종료 회차에 자동 설정
+        const baseRound = parseInt(document.getElementById('baseRound').value) || 1234;
+        const startRound = parseInt(document.getElementById('startRound').value) || 1000;
+        document.getElementById('btEndRound').value = baseRound;
+        document.getElementById('btStartRound').value = startRound;
+
+        // ✅ 2. 예상 회차의 당첨번호 (녹색/빨간색 기준)
+        const targetWin = getWinning(baseRound);
+        const targetMain = targetWin ? targetWin.main : [];
+        const targetBonus = targetWin ? targetWin.bonus : null;
+
         const start = parseInt(document.getElementById('btStartRound').value) || 1000;
         const endRaw = parseInt(document.getElementById('btEndRound').value) || 1234;
         const end = checkFutureData(endRaw);
@@ -932,6 +983,7 @@
                 const winMain = win.main;
                 const winBonus = win.bonus;
 
+                // ✅ 3. 수정된 부분: round를 전달하여 각 회차별로 독립 분석
                 const topPredLocal = getTop10FromPattern(round, start, minMatch, 30, excludeBonus, sortMode);
                 const topPredNums = topPredLocal.map(p => p.num);
                 const hitTop10 = topPredNums.filter(n => winMain.includes(n)).length;
@@ -1060,9 +1112,10 @@
 
             results.forEach(r => {
                 const winStr = r.win.join(', ') + (r.bonus ? `(${r.bonus}☆)` : '');
+                // ✅ 예상 회차(targetMain) 기준으로 색칠
                 const formatNum = (n) => {
-                    if (r.win.includes(n)) return `<span class="hit-num">${n}</span>`;
-                    if (n === r.bonus) return `<span class="bonus-num">${n}</span>`;
+                    if (targetMain.includes(n)) return `<span class="hit-num">${n}</span>`;
+                    if (n === targetBonus) return `<span class="bonus-num">${n}</span>`;
                     return n;
                 };
                 const num9Str = r.nums9.map(n => formatNum(n)).join(' ');
@@ -1094,12 +1147,125 @@
             </div>`;
 
             resultDiv.innerHTML = tableHtml + summaryHtml;
-            console.log('✅ 백테스트 완료. "📈 히스토리 전략" 버튼을 눌러 분석하세요.');
+            console.log('✅ 백테스트 완료. (회차별 독립 분석 적용, 예상 회차 기준 색상)');
         }, 100);
     }
 
     // ========================================================================
-    // 7. 기타 버튼들
+    // 7. 📊 통합 빈도
+    // ========================================================================
+    function runResidualAnalysis() {
+        const resultDiv = document.getElementById('resultArea');
+
+        if (!backtestResults || backtestResults.length === 0) {
+            alert('⚠️ 먼저 "📊 백테스트"를 실행해주세요!');
+            return;
+        }
+
+        const results = backtestResults;
+        const totalRounds = results.length;
+
+        const baseRound = parseInt(document.getElementById('baseRound').value) || 1234;
+        const currentWin = getWinning(baseRound);
+        const winMainSet = new Set(currentWin ? currentWin.main : []);
+        const winBonus = currentWin ? currentWin.bonus : null;
+
+        const freq9 = {}, freq1 = {}, freq5 = {}, freqUnion = {}, freqTop10 = {};
+        const allFreq = {};
+
+        results.forEach(r => {
+            r.nums9.forEach(n => {
+                freq9[n] = (freq9[n] || 0) + 1;
+                allFreq[n] = (allFreq[n] || 0) + 1;
+            });
+            if (r.num1 > 0) {
+                freq1[r.num1] = (freq1[r.num1] || 0) + 1;
+                allFreq[r.num1] = (allFreq[r.num1] || 0) + 1;
+            }
+            r.nums5.forEach(n => {
+                freq5[n] = (freq5[n] || 0) + 1;
+                allFreq[n] = (allFreq[n] || 0) + 1;
+            });
+            r.unionTop9.forEach(n => {
+                freqUnion[n] = (freqUnion[n] || 0) + 1;
+                allFreq[n] = (allFreq[n] || 0) + 1;
+            });
+            r.topPredNums.forEach(n => {
+                freqTop10[n] = (freqTop10[n] || 0) + 1;
+                allFreq[n] = (allFreq[n] || 0) + 1;
+            });
+        });
+
+        const sortFreq = (freqObj) => {
+            return Object.entries(freqObj)
+                .sort((a, b) => b[1] - a[1] || parseInt(a[0]) - parseInt(b[0]))
+                .map(([num, cnt]) => ({ num: parseInt(num), cnt }));
+        };
+
+        const topAll = sortFreq(allFreq).slice(0, 20);
+        const top9 = sortFreq(freq9);
+        const top1 = sortFreq(freq1);
+        const top5 = sortFreq(freq5);
+        const topUnion = sortFreq(freqUnion);
+        const topPred = sortFreq(freqTop10);
+
+        const renderItems = (items) => {
+            if (!items || items.length === 0) return '⚠️ 등장한 번호 없음';
+            return items.map(({num, cnt}) => {
+                let color = '#fff';
+                if (winMainSet.has(num)) {
+                    color = '#2ecc71';
+                } else if (winBonus === num) {
+                    color = '#ff6b6b';
+                }
+                return `<span class="freq-item" style="color:${color};">${num} <span class="cnt" style="color:#aaa;">(${cnt}회)</span></span>`;
+            }).join(' ');
+        };
+
+        let html = `
+        <div class="residual-result" style="background: #1a1a2a; border: 2px solid #9b59b6; border-radius: 15px; padding: 20px; margin-top: 20px;">
+            <h3 style="color: #9b59b6;">📊 통합 빈도 분석 (백테스트 ${totalRounds}회 기준)</h3>
+            <div class="strategy-grid">
+                <div class="strategy-card" style="border-left-color: #2ecc71;">
+                    <div class="label" style="color: #2ecc71;">🎯 9수 (${top9.length}개)</div>
+                    <div style="font-size: 13px;">${renderItems(top9)}</div>
+                </div>
+                <div class="strategy-card" style="border-left-color: #e74c3c;">
+                    <div class="label" style="color: #e74c3c;">💪 1수 (${top1.length}개)</div>
+                    <div style="font-size: 13px;">${renderItems(top1)}</div>
+                </div>
+                <div class="strategy-card" style="border-left-color: #f1c40f;">
+                    <div class="label" style="color: #f1c40f;">📌 5수 (${top5.length}개)</div>
+                    <div style="font-size: 13px;">${renderItems(top5)}</div>
+                </div>
+                <div class="strategy-card" style="border-left-color: #00b894;">
+                    <div class="label" style="color: #00b894;">🎯 통합 TOP 9 (${topUnion.length}개)</div>
+                    <div style="font-size: 13px;">${renderItems(topUnion)}</div>
+                </div>
+                <div class="strategy-card" style="border-left-color: #ffd700;">
+                    <div class="label" style="color: #ffd700;">🔮 예측 TOP 10 (${topPred.length}개)</div>
+                    <div style="font-size: 13px;">${renderItems(topPred)}</div>
+                </div>
+            </div>
+            <div style="margin-top: 20px; background: #0a0a0a; padding: 15px; border-radius: 8px; border-top: 2px solid #9b59b6;">
+                <div style="color: #ffd700; font-weight: bold; font-size: 16px;">📈 전체 통합 빈도 TOP 20 (모든 전략 번호 수집)</div>
+                <div style="font-size: 16px; margin-top: 8px;">
+                    ${renderItems(topAll)}
+                </div>
+            </div>
+            <div style="margin-top: 12px; color: #888; font-size: 12px; border-top: 1px solid #333; padding-top: 10px;">
+                <span style="color:#2ecc71;">■ 녹색</span> = 기준 회차(${baseRound}회) 본번호 당첨자 | 
+                <span style="color:#ff6b6b;">■ 빨간색</span> = 기준 회차 보너스 번호<br>
+                ⚡ 각 전략별로 등장한 <strong>모든 번호</strong>를 빈도순으로 표시했습니다 (상위 제한 없음).
+            </div>
+        </div>
+        `;
+
+        resultDiv.innerHTML = html;
+    }
+
+    // ========================================================================
+    // 8. 기타 버튼들
     // ========================================================================
     function recommendStrong1() {
         if (!lastTop9 || lastTop9.length === 0) { alert('⚠️ 먼저 "분석 실행"을 해주세요.'); return; }
@@ -1122,20 +1288,21 @@
     }
     function optimizeNine() { runAnalysis(); }
     function runHybrid() { alert('🤝 하이브리드: 분석 실행 후 사용 가능'); }
-    function runResidualAnalysis() { alert('📋 잔여 10풀: 분석 실행 후 사용 가능'); }
     function resetAll() {
         document.getElementById('resultArea').innerHTML = '<div class="loading">🟢 초기화 완료!</div>';
         similarData = null; winData = null; activeFreq2 = []; lastTop9 = [];
         backtestResults = null;
     }
     function openBacktestModal() {
-        document.getElementById('btStartRound').value = document.getElementById('startRound').value;
-        document.getElementById('btEndRound').value = document.getElementById('baseRound').value;
+        const baseRound = parseInt(document.getElementById('baseRound').value) || 1234;
+        const startRound = parseInt(document.getElementById('startRound').value) || 1000;
+        document.getElementById('btStartRound').value = startRound;
+        document.getElementById('btEndRound').value = baseRound;
         document.getElementById('backtestModal').classList.add('active');
         document.getElementById('backtestResult').innerHTML = '⏳ 분석을 실행하려면 "분석 실행" 버튼을 누르세요.';
     }
     function runManualTest() {
-        const round = parseInt(document.getElementById('manualRound').value) || 1235;
+        const round = parseInt(document.getElementById('manualRound').value) || 1234;
         document.getElementById('baseRound').value = round;
         alert(`🔍 수동 테스트: 기준 회차를 ${round}회로 설정했습니다. "분석 실행"을 눌러주세요.`);
         runAnalysis();
@@ -1153,8 +1320,8 @@
         document.getElementById('topCountDisplay').textContent = 10;
         document.getElementById('excludeBonus').checked = true;
         document.getElementById('resultArea').innerHTML = '<div class="loading">🟢 준비 완료! "🚀 분석 실행" 버튼을 눌러주세요.</div>';
-        console.log('🟢 v19 로드 완료 (히스토리 전략 minMatch 동기화)');
-        console.log('💡 사용법: 1) 📊 백테스트 실행 → 2) 📈 히스토리 전략 클릭');
+        console.log('🟢 v19 로드 완료 (백테스트 회차별 독립 분석 적용)');
+        console.log('💡 사용법: 1) 📊 백테스트 실행 → 2) 📊 통합 빈도 클릭');
     };
     </script>
 </body>
