@@ -2,7 +2,7 @@
 <html lang="ko">
 <head>
     <meta charset="UTF-8">
-    <title>📊 통합 9수/1수/5수 + 히스토리 전략 v19</title>
+    <title>📊 통합 9수/1수/5수 + 히스토리 전략 v23</title>
     <style>
         * { box-sizing: border-box; margin: 0; padding: 0; }
         body { background: #0a0a0a; color: #fff; font-family: 'Segoe UI', sans-serif; padding: 20px; max-width: 1100px; margin: 0 auto; }
@@ -207,6 +207,11 @@
             font-weight: bold;
             margin-bottom: 5px;
         }
+        .v23-box { background: #0a1a2a; border: 3px solid #9b59b6; border-radius: 15px; padding: 15px 20px; margin: 10px 0; }
+        .v23-box .title { color: #9b59b6; font-size: 18px; font-weight: bold; }
+        .v23-box .numbers { font-size: 28px; font-weight: bold; letter-spacing: 3px; margin: 8px 0; }
+        .v23-box .stats { font-size: 14px; color: #aaa; }
+        .badge-v23 { background: #9b59b6; color: #fff; padding: 2px 12px; border-radius: 20px; font-size: 12px; margin-left: 8px; }
         @media (max-width: 700px) {
             .strategy-grid { grid-template-columns: 1fr 1fr; }
         }
@@ -216,14 +221,15 @@
     </style>
 </head>
 <body>
-    <h1>📊 통합 9수/1수/5수 + 히스토리 전략 v19</h1>
+    <h1>📊 통합 9수/1수/5수 + 히스토리 전략 v23</h1>
     <div class="update-notice">
-        ✅ <strong>히스토리 전략 minMatch 동기화</strong> (2회 고정 → minMatch 값 따라감)<br>
-        ✅ <strong>1235회 미추첨 처리 완료</strong> (당첨번호 표시 불가)<br>
-        ✅ <strong>보너스 통계 완전 제거</strong> (③/④/⑤/출현순위/2회이상/9수 모두 본번호만 사용)<br>
-        ✅ <strong>전략 A/B/C 테스트 유지</strong> (현재 유사회차 기반)<br>
-        ✅ <strong>통합 빈도 모든 번호 표시</strong> (상위 10개 제한 제거, 등장한 모든 번호 출력)<br>
-        ✅ <strong>백테스트 완전 수정</strong> (회차별로 독립적인 분석 적용, 색상은 예상 회차 기준)
+        ✅ <strong>히스토리 전략 minMatch 동기화</strong><br>
+        ✅ <strong>1235회 미추첨 처리 완료</strong><br>
+        ✅ <strong>보너스 통계 완전 제거</strong><br>
+        ✅ <strong>전략 A/B/C 테스트 유지</strong><br>
+        ✅ <strong>통합 빈도 모든 번호 표시</strong><br>
+        ✅ <strong>백테스트 완전 수정</strong><br>
+        ✅ <strong>🧬 v23.0 강제 보호 추가</strong> (2회 이상 출현자 우선 보호 + 노이즈 제거)
     </div>
     <div class="filters">
         <div class="filter-group">
@@ -382,7 +388,7 @@
     let activeFreq2 = [], oldNextFreq2 = [];
     let globalIntersectionMap = {}, globalFreqData = {};
     let similarData = null, winData = null, baseNums = [];
-    let lastTopPred = [], lastBonusIntersection = [], lastTop9 = [];
+    let lastTopPred = [], lastBonusIntersection = [], lastTop9 = [], lastV23Result = [];
     let currentTopN = 10;
     let prevWinBonus = null;
     let backtestResults = null;
@@ -545,7 +551,7 @@
     // 3. runAnalysis
     // ========================================================================
     function runAnalysis() {
-        console.log('🚀 runAnalysis 실행');
+        console.log('🚀 runAnalysis 실행 (v23.0)');
         winData = null;
         similarData = null;
         
@@ -626,7 +632,7 @@
         globalIntersectionMap = {};
         pool5.forEach(n => globalIntersectionMap[n] = true);
 
-        // ===== 9수 생성 =====
+        // ===== 9수 생성 (기존 로직) =====
         let selected9 = [];
         const candidatePool = [...pool5, ...finalPool3, ...pool4];
         const validCandidates = candidatePool.filter(n => validSet.has(n));
@@ -662,6 +668,48 @@
         }
         selected9.sort((a,b) => a-b);
         lastTop9 = selected9;
+
+        // ===== v23.0 강제 보호 로직 =====
+        // 점수 계산 (2회 이상 가중치 상향, TOP10 가중치 하향)
+        const scoreMapV23 = {};
+        for (let i = 1; i <= 45; i++) {
+            let score = 0;
+            if (validSet.has(i)) score += 3;       // 1수열 동반자
+            if (finalPool3.includes(i)) score += 2;  // 유사③
+            if (pool4.includes(i)) score += 3;       // 🔥 2회 이상 -> 1수열과 동급 (3점)
+            if (topPredTop5.includes(i)) score += 1; // 🔥 TOP10은 1점만 (노이즈 방지)
+            scoreMapV23[i] = score;
+        }
+
+        // 1. 강제 선발 (pool4 상위 5개)
+        const sortedPool4 = [...pool4].sort((a,b) => (scoreMapV23[b]||0) - (scoreMapV23[a]||0));
+        const guaranteed = sortedPool4.slice(0, 5);
+        if (guaranteed.length < 5) {
+            // pool4가 5개 미만이면 validSet에서 추가로 채움
+            const extra = [...validSet].filter(n => !guaranteed.includes(n)).sort((a,b) => (scoreMapV23[b]||0) - (scoreMapV23[a]||0));
+            while (guaranteed.length < 5 && extra.length > 0) {
+                guaranteed.push(extra.shift());
+            }
+        }
+
+        // 2. 전체 점수 순위 (guaranteed 제외)
+        const sortedAll = Object.entries(scoreMapV23)
+            .sort((a, b) => b[1] - a[1] || a[0] - b[0])
+            .map(([num]) => parseInt(num));
+        const remaining = sortedAll.filter(n => !guaranteed.includes(n));
+
+        // 3. 나머지 5개 채우기
+        const fillers = remaining.slice(0, 5);
+
+        // 4. 최종 10수
+        const v23Result = [...guaranteed, ...fillers].sort((a,b) => a-b);
+        lastV23Result = v23Result;
+
+        let hitV23 = [], hitV23Bonus = [];
+        if (winData) {
+            winData.main.forEach(n => { if (v23Result.includes(n)) hitV23.push(n); });
+            if (winData.bonus !== null && v23Result.includes(winData.bonus)) hitV23Bonus.push(winData.bonus);
+        }
 
         const sortedScores = Object.entries(scoreMap).sort((a,b) => b[1] - a[1]);
         const strong1 = sortedScores.length > 0 ? parseInt(sortedScores[0][0]) : '없음';
@@ -773,11 +821,19 @@
             <div class="source">📌 기준 회차: ${base-1}회 (예상: ${targetRound}회) | 🔒 ${minMatch}회 이상 (보너스 제외)</div>
         </div>`;
 
+        // ===== v23.0 결과 박스 =====
+        html += `<div class="v23-box">
+            <div class="title">🧬 v23.0 강제 보호 10수 <span class="badge-v23">NEW (2회 이상 우선)</span></div>
+            <div class="numbers">${v23Result.map(n => colorNum(n, winMain, winBonus)).join(' ')}</div>
+            <div class="stats">📊 본번호: ${hitV23.length}개 (${hitV23.join(', ') || '없음'})${hitV23Bonus.length ? ` | 보너스: ${hitV23Bonus.join(', ')}` : ''}</div>
+            <div class="stats" style="color: ${(hitV23.length + (hitV23Bonus.length ? 1 : 0)) >= 3 ? '#2ecc71' : '#e74c3c'}; font-size: 18px; font-weight: bold;">✅ ${winData ? '총 ' + (hitV23.length + (hitV23Bonus.length ? 1 : 0)) + '개 적중' : '⚠️ 검증 데이터 없음'}</div>
+        </div>`;
+
         document.getElementById('resultArea').innerHTML = html;
     }
 
     // ========================================================================
-    // 4. 🧪 현재 전략 A/B/C
+    // 4. 🧪 현재 전략 A/B/C (v23 포함)
     // ========================================================================
     function runStrategyTest() {
         const resultDiv = document.getElementById('resultArea');
@@ -828,19 +884,22 @@
         const sortedC = Object.entries(freqC).sort((a, b) => b[1] - a[1] || a[0] - b[0]).map(([num]) => parseInt(num));
         const topC = sortedC.slice(0, 5);
 
-        let hitA = [], hitB = [], hitC = [];
+        let hitA = [], hitB = [], hitC = [], hitV23 = [];
         if (winDataObj) {
             const winMain = winDataObj.main;
             const winBonus = winDataObj.bonus;
             hitA = topA.filter(n => winMain.includes(n) || n === winBonus);
             hitB = topB.filter(n => winMain.includes(n) || n === winBonus);
             hitC = topC.filter(n => winMain.includes(n) || n === winBonus);
+            if (lastV23Result.length > 0) {
+                hitV23 = lastV23Result.filter(n => winMain.includes(n) || n === winBonus);
+            }
         }
 
         const cardHtml = `
         <div id="strategyResultCard" style="background: #1a2a1a; border: 3px solid #f1c40f; border-radius: 15px; padding: 20px; margin-top: 20px; box-shadow: 0 0 30px rgba(241, 196, 15, 0.1);">
-            <h3 style="color: #f1c40f; margin-bottom: 15px;">🧪 현재 유사회차 기반 3가지 전략</h3>
-            <div style="display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 15px;">
+            <h3 style="color: #f1c40f; margin-bottom: 15px;">🧪 현재 유사회차 기반 전략 (A/B/C + v23)</h3>
+            <div style="display: grid; grid-template-columns: 1fr 1fr 1fr 1fr; gap: 15px;">
                 <div style="background: #1a1a2a; padding: 15px; border-radius: 10px; border-left: 4px solid #e74c3c;">
                     <div style="color: #e74c3c; font-weight: bold;">⚡ 전략 A (역발상)</div>
                     <div style="font-size: 13px; color: #aaa;">${topA.join(', ')}</div>
@@ -855,6 +914,11 @@
                     <div style="color: #9b59b6; font-weight: bold;">📌 전략 C (잔여 집중)</div>
                     <div style="font-size: 13px; color: #aaa;">${topC.join(', ')}</div>
                     <div style="color: ${hitC.length > 0 ? '#2ecc71' : '#888'};">✅ ${hitC.length}개 적중</div>
+                </div>
+                <div style="background: #1a1a2a; padding: 15px; border-radius: 10px; border-left: 4px solid #9b59b6;">
+                    <div style="color: #9b59b6; font-weight: bold;">🧬 v23.0 강제 보호</div>
+                    <div style="font-size: 13px; color: #aaa;">${lastV23Result.length > 0 ? lastV23Result.join(', ') : '분석 실행 필요'}</div>
+                    <div style="color: ${hitV23.length > 0 ? '#2ecc71' : '#888'};">✅ ${hitV23.length}개 적중</div>
                 </div>
             </div>
             <div style="margin-top: 15px; color: #888; font-size: 12px; border-top: 1px solid #333; padding-top: 10px;">
@@ -880,7 +944,7 @@
         }
 
         const results = backtestResults;
-        const freq1 = {}, freq5 = {}, freqTop10 = {};
+        const freq1 = {}, freq5 = {}, freqTop10 = {}, freqV23 = {};
         const currentMinMatch = parseInt(document.getElementById('minMatch').value) || 2;
 
         results.forEach(r => {
@@ -897,6 +961,11 @@
                     if (n > 0) freqTop10[n] = (freqTop10[n] || 0) + 1;
                 });
             }
+            if (r.v23nums && r.v23nums.length > 0) {
+                r.v23nums.forEach(n => {
+                    if (n > 0) freqV23[n] = (freqV23[n] || 0) + 1;
+                });
+            }
         });
 
         const getTop = (freq, n = 5) => {
@@ -910,27 +979,29 @@
         const topA = getTop(freqTop10, 5);
         const topB = getTop(freq1, 5);
         const topC = getTop(freq5, 5);
+        const topV23 = getTop(freqV23, 5);
 
         const totalRounds = results.length;
 
         const cardHtml = `
         <div id="historyStrategyCard" style="background: #0a1a2a; border: 3px solid #2980b9; border-radius: 15px; padding: 20px; margin-top: 20px; box-shadow: 0 0 30px rgba(41, 128, 185, 0.2);">
             <h3 style="color: #2980b9; margin-bottom: 15px;">📈 백테스트 히스토리 전략 (${totalRounds}개 회차 분석, ${currentMinMatch}회 이상만 추천)</h3>
-            <div style="display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 15px;">
+            <div style="display: grid; grid-template-columns: 1fr 1fr 1fr 1fr; gap: 15px;">
                 <div style="background: #1a1a2a; padding: 15px; border-radius: 10px; border-left: 4px solid #f1c40f;">
-                    <div style="color: #f1c40f; font-weight: bold; font-size: 16px;">🎯 전략 A (TOP10 빈도)</div>
-                    <div style="font-size: 13px; color: #aaa; margin-top: 5px;">${topA.length > 0 ? topA.join(', ') : '⚠️ 조건을 만족하는 번호 없음'}</div>
-                    <div style="font-size: 12px; color: #888; margin-top: 5px;">출현 횟수: ${topA.map(n => `${n}(${freqTop10[n]||0}회)`).join(', ')}</div>
+                    <div style="color: #f1c40f; font-weight: bold; font-size: 16px;">🎯 전략 A (TOP10)</div>
+                    <div style="font-size: 13px; color: #aaa;">${topA.length > 0 ? topA.join(', ') : '⚠️ 없음'}</div>
                 </div>
                 <div style="background: #1a1a2a; padding: 15px; border-radius: 10px; border-left: 4px solid #e74c3c;">
-                    <div style="color: #e74c3c; font-weight: bold; font-size: 16px;">💪 전략 B (1수 빈도)</div>
-                    <div style="font-size: 13px; color: #aaa; margin-top: 5px;">${topB.length > 0 ? topB.join(', ') : '⚠️ 조건을 만족하는 번호 없음'}</div>
-                    <div style="font-size: 12px; color: #888; margin-top: 5px;">출현 횟수: ${topB.map(n => `${n}(${freq1[n]||0}회)`).join(', ')}</div>
+                    <div style="color: #e74c3c; font-weight: bold; font-size: 16px;">💪 전략 B (1수)</div>
+                    <div style="font-size: 13px; color: #aaa;">${topB.length > 0 ? topB.join(', ') : '⚠️ 없음'}</div>
                 </div>
                 <div style="background: #1a1a2a; padding: 15px; border-radius: 10px; border-left: 4px solid #2ecc71;">
-                    <div style="color: #2ecc71; font-weight: bold; font-size: 16px;">📌 전략 C (5수 빈도)</div>
-                    <div style="font-size: 13px; color: #aaa; margin-top: 5px;">${topC.length > 0 ? topC.join(', ') : '⚠️ 조건을 만족하는 번호 없음'}</div>
-                    <div style="font-size: 12px; color: #888; margin-top: 5px;">출현 횟수: ${topC.map(n => `${n}(${freq5[n]||0}회)`).join(', ')}</div>
+                    <div style="color: #2ecc71; font-weight: bold; font-size: 16px;">📌 전략 C (5수)</div>
+                    <div style="font-size: 13px; color: #aaa;">${topC.length > 0 ? topC.join(', ') : '⚠️ 없음'}</div>
+                </div>
+                <div style="background: #1a1a2a; padding: 15px; border-radius: 10px; border-left: 4px solid #9b59b6;">
+                    <div style="color: #9b59b6; font-weight: bold; font-size: 16px;">🧬 v23.0 강제 보호</div>
+                    <div style="font-size: 13px; color: #aaa;">${topV23.length > 0 ? topV23.join(', ') : '⚠️ 없음'}</div>
                 </div>
             </div>
             <div style="margin-top: 15px; color: #888; font-size: 12px; border-top: 1px solid #333; padding-top: 10px; display: flex; justify-content: space-between;">
@@ -946,16 +1017,14 @@
     }
 
     // ========================================================================
-    // 6. 백테스트 (수정 완료 - round 전달)
+    // 6. 백테스트 (v23 추가)
     // ========================================================================
     function runBacktest() {
-        // ✅ 1. 현재 baseRound 값을 읽어서 종료 회차에 자동 설정
         const baseRound = parseInt(document.getElementById('baseRound').value) || 1234;
         const startRound = parseInt(document.getElementById('startRound').value) || 1000;
         document.getElementById('btEndRound').value = baseRound;
         document.getElementById('btStartRound').value = startRound;
 
-        // ✅ 2. 예상 회차의 당첨번호 (녹색/빨간색 기준)
         const targetWin = getWinning(baseRound);
         const targetMain = targetWin ? targetWin.main : [];
         const targetBonus = targetWin ? targetWin.bonus : null;
@@ -974,7 +1043,8 @@
         resultDiv.innerHTML = '<div style="text-align:center; padding:20px; color:#aaa;">⏳ 분석 중입니다. (총 ' + (end - start + 1) + '개 회차)...</div>';
 
         const results = [];
-        let total9 = 0, totalUnion9 = 0, totalTop10 = 0, total1 = 0, total5 = 0, max9 = 0;
+        let total9 = 0, totalUnion9 = 0, totalTop10 = 0, total1 = 0, total5 = 0, totalV23 = 0;
+        let max9 = 0, maxV23 = 0;
 
         setTimeout(() => {
             for (let round = start; round <= end; round++) {
@@ -983,14 +1053,13 @@
                 const winMain = win.main;
                 const winBonus = win.bonus;
 
-                // ✅ 3. 수정된 부분: round를 전달하여 각 회차별로 독립 분석
                 const topPredLocal = getTop10FromPattern(round, start, minMatch, 30, excludeBonus, sortMode);
                 const topPredNums = topPredLocal.map(p => p.num);
                 const hitTop10 = topPredNums.filter(n => winMain.includes(n)).length;
 
                 const simResult = findSimilar(round, start, minMatch, topN);
                 if (simResult.similar.length === 0) {
-                    results.push({ round, win: winMain, bonus: winBonus, nums9: [], hit9: 0, unionTop9: [], hitUnion9: 0, topPredNums, hitTop10, num1: 0, hit1: 0, nums5: [], hit5: 0 });
+                    results.push({ round, win: winMain, bonus: winBonus, nums9: [], hit9: 0, unionTop9: [], hitUnion9: 0, topPredNums, hitTop10, num1: 0, hit1: 0, nums5: [], hit5: 0, v23nums: [], hitV23: 0 });
                     continue;
                 }
 
@@ -1081,7 +1150,37 @@
                 const unionTop9 = unionSorted.slice(0, 9).sort((a,b)=>a-b);
                 const hitUnion9 = unionTop9.filter(n => winMain.includes(n)).length;
 
-                results.push({ round, win: winMain, bonus: winBonus, nums9, hit9, unionTop9, hitUnion9, topPredNums, hitTop10, num1, hit1, nums5, hit5 });
+                // v23.0 계산 (강제 보호)
+                const scoreMapV23bt = {};
+                for (let i = 1; i <= 45; i++) {
+                    let score = 0;
+                    if (validSet.has(i)) score += 3;
+                    if (finalPool3.includes(i)) score += 2;
+                    if (pool4.includes(i)) score += 3; // 2회 이상 강화
+                    if (topPredLocal.slice(0,5).some(p => p.num === i)) score += 1; // TOP10 약화
+                    scoreMapV23bt[i] = score;
+                }
+                // 강제 선발 (pool4 상위 5개)
+                const sortedPool4bt = [...pool4].sort((a,b) => (scoreMapV23bt[b]||0) - (scoreMapV23bt[a]||0));
+                const guaranteedBt = sortedPool4bt.slice(0, 5);
+                if (guaranteedBt.length < 5) {
+                    const extra = [...validSet].filter(n => !guaranteedBt.includes(n)).sort((a,b) => (scoreMapV23bt[b]||0) - (scoreMapV23bt[a]||0));
+                    while (guaranteedBt.length < 5 && extra.length > 0) {
+                        guaranteedBt.push(extra.shift());
+                    }
+                }
+                const sortedAllBt = Object.entries(scoreMapV23bt)
+                    .sort((a, b) => b[1] - a[1] || a[0] - b[0])
+                    .map(([num]) => parseInt(num));
+                const remainingBt = sortedAllBt.filter(n => !guaranteedBt.includes(n));
+                const fillersBt = remainingBt.slice(0, 5);
+                const v23bt = [...guaranteedBt, ...fillersBt].sort((a,b)=>a-b);
+                const hitV23bt = v23bt.filter(n => winMain.includes(n)).length;
+
+                totalV23 += hitV23bt;
+                if (hitV23bt > maxV23) maxV23 = hitV23bt;
+
+                results.push({ round, win: winMain, bonus: winBonus, nums9, hit9, unionTop9, hitUnion9, topPredNums, hitTop10, num1, hit1, nums5, hit5, v23nums: v23bt, hitV23: hitV23bt });
 
                 if (hit9 > max9) max9 = hit9;
                 total9 += hit9;
@@ -1099,6 +1198,7 @@
             const avgTop10 = (totalTop10 / totalRounds).toFixed(2);
             const avg1 = (total1 / totalRounds).toFixed(2);
             const avg5 = (total5 / totalRounds).toFixed(2);
+            const avgV23 = (totalV23 / totalRounds).toFixed(2);
 
             let tableHtml = `<table><thead><tr>
                 <th>회차</th>
@@ -1108,11 +1208,11 @@
                 <th style="color:#f1c40f;">5수</th>
                 <th style="color:#00b894;">통합 TOP 9</th>
                 <th style="color:#ffd700;">예측 TOP 10</th>
+                <th style="color:#9b59b6;">🧬 v23 10수</th>
             </tr></thead><tbody>`;
 
             results.forEach(r => {
                 const winStr = r.win.join(', ') + (r.bonus ? `(${r.bonus}☆)` : '');
-                // ✅ 예상 회차(targetMain) 기준으로 색칠
                 const formatNum = (n) => {
                     if (targetMain.includes(n)) return `<span class="hit-num">${n}</span>`;
                     if (n === targetBonus) return `<span class="bonus-num">${n}</span>`;
@@ -1123,6 +1223,7 @@
                 const num5Str = r.nums5.length > 0 ? r.nums5.map(n => formatNum(n)).join(' ') : '-';
                 const unionStr = r.unionTop9.map(n => formatNum(n)).join(' ');
                 const top10Str = r.topPredNums.map(n => formatNum(n)).join(' ');
+                const v23Str = r.v23nums.map(n => formatNum(n)).join(' ');
 
                 tableHtml += `<tr>
                     <td>${r.round}</td>
@@ -1132,6 +1233,7 @@
                     <td>${num5Str} (${r.hit5})</td>
                     <td>${unionStr} (${r.hitUnion9})</td>
                     <td>${top10Str} (${r.hitTop10})</td>
+                    <td style="color:#9b59b6;">${v23Str} (${r.hitV23})</td>
                 </tr>`;
             });
             tableHtml += `</tbody></table>`;
@@ -1143,16 +1245,17 @@
                 <div class="summary-item"><div class="value">${avg5}</div><div class="label">💪 5수 평균</div></div>
                 <div class="summary-item"><div class="value">${avg9}</div><div class="label">🎯 9수 평균</div></div>
                 <div class="summary-item"><div class="value">${avgUnion9}</div><div class="label">🎯 통합 TOP 9</div></div>
-                <div class="summary-item"><div class="value">${max9}</div><div class="label">🏆 최대 적중</div></div>
+                <div class="summary-item"><div class="value">${avgV23}</div><div class="label">🧬 v23 10수</div></div>
+                <div class="summary-item"><div class="value">${maxV23}</div><div class="label">🏆 v23 최대 적중</div></div>
             </div>`;
 
             resultDiv.innerHTML = tableHtml + summaryHtml;
-            console.log('✅ 백테스트 완료. (회차별 독립 분석 적용, 예상 회차 기준 색상)');
+            console.log('✅ 백테스트 완료 (v23 포함)');
         }, 100);
     }
 
     // ========================================================================
-    // 7. 📊 통합 빈도
+    // 7. 📊 통합 빈도 (v23 포함)
     // ========================================================================
     function runResidualAnalysis() {
         const resultDiv = document.getElementById('resultArea');
@@ -1170,7 +1273,7 @@
         const winMainSet = new Set(currentWin ? currentWin.main : []);
         const winBonus = currentWin ? currentWin.bonus : null;
 
-        const freq9 = {}, freq1 = {}, freq5 = {}, freqUnion = {}, freqTop10 = {};
+        const freq9 = {}, freq1 = {}, freq5 = {}, freqUnion = {}, freqTop10 = {}, freqV23 = {};
         const allFreq = {};
 
         results.forEach(r => {
@@ -1194,6 +1297,10 @@
                 freqTop10[n] = (freqTop10[n] || 0) + 1;
                 allFreq[n] = (allFreq[n] || 0) + 1;
             });
+            r.v23nums.forEach(n => {
+                freqV23[n] = (freqV23[n] || 0) + 1;
+                allFreq[n] = (allFreq[n] || 0) + 1;
+            });
         });
 
         const sortFreq = (freqObj) => {
@@ -1208,6 +1315,7 @@
         const top5 = sortFreq(freq5);
         const topUnion = sortFreq(freqUnion);
         const topPred = sortFreq(freqTop10);
+        const topV23 = sortFreq(freqV23);
 
         const renderItems = (items) => {
             if (!items || items.length === 0) return '⚠️ 등장한 번호 없음';
@@ -1245,6 +1353,10 @@
                 <div class="strategy-card" style="border-left-color: #ffd700;">
                     <div class="label" style="color: #ffd700;">🔮 예측 TOP 10 (${topPred.length}개)</div>
                     <div style="font-size: 13px;">${renderItems(topPred)}</div>
+                </div>
+                <div class="strategy-card" style="border-left-color: #9b59b6;">
+                    <div class="label" style="color: #9b59b6;">🧬 v23.0 10수 (${topV23.length}개)</div>
+                    <div style="font-size: 13px;">${renderItems(topV23)}</div>
                 </div>
             </div>
             <div style="margin-top: 20px; background: #0a0a0a; padding: 15px; border-radius: 8px; border-top: 2px solid #9b59b6;">
@@ -1290,7 +1402,7 @@
     function runHybrid() { alert('🤝 하이브리드: 분석 실행 후 사용 가능'); }
     function resetAll() {
         document.getElementById('resultArea').innerHTML = '<div class="loading">🟢 초기화 완료!</div>';
-        similarData = null; winData = null; activeFreq2 = []; lastTop9 = [];
+        similarData = null; winData = null; activeFreq2 = []; lastTop9 = []; lastV23Result = [];
         backtestResults = null;
     }
     function openBacktestModal() {
@@ -1320,8 +1432,8 @@
         document.getElementById('topCountDisplay').textContent = 10;
         document.getElementById('excludeBonus').checked = true;
         document.getElementById('resultArea').innerHTML = '<div class="loading">🟢 준비 완료! "🚀 분석 실행" 버튼을 눌러주세요.</div>';
-        console.log('🟢 v19 로드 완료 (백테스트 회차별 독립 분석 적용)');
-        console.log('💡 사용법: 1) 📊 백테스트 실행 → 2) 📊 통합 빈도 클릭');
+        console.log('🟢 v23 로드 완료 (강제 보호 메커니즘 적용)');
+        console.log('💡 2회 이상 출현 숫자를 우선 보호하여 수동과 자동의 격차를 해소했습니다.');
     };
     </script>
 </body>
