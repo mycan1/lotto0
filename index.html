@@ -229,7 +229,7 @@
         ✅ <strong>전략 A/B/C 테스트 유지</strong><br>
         ✅ <strong>통합 빈도 모든 번호 표시</strong><br>
         ✅ <strong>백테스트 완전 수정</strong><br>
-        ✅ <strong>🧬 v23.0 강제 보호 추가</strong> (2회 이상 출현자 우선 보호 + 노이즈 제거)
+        ✅ <strong>🧬 v23.0 강제 보호 추가</strong> (1회 이상 출현자 우선 보호 + 노이즈 제거)
     </div>
     <div class="filters">
         <div class="filter-group">
@@ -669,39 +669,35 @@
         selected9.sort((a,b) => a-b);
         lastTop9 = selected9;
 
-        // ===== v23.0 강제 보호 로직 =====
-        // 점수 계산 (2회 이상 가중치 상향, TOP10 가중치 하향)
+        // ===== v23.0 강제 보호 로직 (1회 이상 우선) =====
         const scoreMapV23 = {};
         for (let i = 1; i <= 45; i++) {
             let score = 0;
             if (validSet.has(i)) score += 3;       // 1수열 동반자
             if (finalPool3.includes(i)) score += 2;  // 유사③
-            if (pool4.includes(i)) score += 3;       // 🔥 2회 이상 -> 1수열과 동급 (3점)
-            if (topPredTop5.includes(i)) score += 1; // 🔥 TOP10은 1점만 (노이즈 방지)
+            if (pool4.includes(i)) score += 3;       // 2회 이상 -> 1수열과 동급 (3점)
+            if (topPredTop5.includes(i)) score += 1; // TOP10은 1점만 (노이즈 방지)
             scoreMapV23[i] = score;
         }
 
-        // 1. 강제 선발 (pool4 상위 5개)
-        const sortedPool4 = [...pool4].sort((a,b) => (scoreMapV23[b]||0) - (scoreMapV23[a]||0));
-        const guaranteed = sortedPool4.slice(0, 5);
+        // 🔥 변경: 강제 선발 기준을 "1회 이상 출현자"로 완화 (pool4 → oneOrMore)
+        const oneOrMore = Object.keys(freqMap).filter(k => freqMap[k] >= 1).map(Number);
+        const sortedOneOrMore = oneOrMore.sort((a,b) => (scoreMapV23[b]||0) - (scoreMapV23[a]||0));
+        const guaranteed = sortedOneOrMore.slice(0, 5);
         if (guaranteed.length < 5) {
-            // pool4가 5개 미만이면 validSet에서 추가로 채움
+            // 부족하면 validSet에서 추가로 채움 (minMatch 이상)
             const extra = [...validSet].filter(n => !guaranteed.includes(n)).sort((a,b) => (scoreMapV23[b]||0) - (scoreMapV23[a]||0));
             while (guaranteed.length < 5 && extra.length > 0) {
                 guaranteed.push(extra.shift());
             }
         }
 
-        // 2. 전체 점수 순위 (guaranteed 제외)
+        // 전체 점수 순위 (guaranteed 제외)
         const sortedAll = Object.entries(scoreMapV23)
             .sort((a, b) => b[1] - a[1] || a[0] - b[0])
             .map(([num]) => parseInt(num));
         const remaining = sortedAll.filter(n => !guaranteed.includes(n));
-
-        // 3. 나머지 5개 채우기
         const fillers = remaining.slice(0, 5);
-
-        // 4. 최종 10수
         const v23Result = [...guaranteed, ...fillers].sort((a,b) => a-b);
         lastV23Result = v23Result;
 
@@ -823,7 +819,7 @@
 
         // ===== v23.0 결과 박스 =====
         html += `<div class="v23-box">
-            <div class="title">🧬 v23.0 강제 보호 10수 <span class="badge-v23">NEW (2회 이상 우선)</span></div>
+            <div class="title">🧬 v23.0 강제 보호 10수 <span class="badge-v23">NEW (1회 이상 우선)</span></div>
             <div class="numbers">${v23Result.map(n => colorNum(n, winMain, winBonus)).join(' ')}</div>
             <div class="stats">📊 본번호: ${hitV23.length}개 (${hitV23.join(', ') || '없음'})${hitV23Bonus.length ? ` | 보너스: ${hitV23Bonus.join(', ')}` : ''}</div>
             <div class="stats" style="color: ${(hitV23.length + (hitV23Bonus.length ? 1 : 0)) >= 3 ? '#2ecc71' : '#e74c3c'}; font-size: 18px; font-weight: bold;">✅ ${winData ? '총 ' + (hitV23.length + (hitV23Bonus.length ? 1 : 0)) + '개 적중' : '⚠️ 검증 데이터 없음'}</div>
@@ -1150,19 +1146,20 @@
                 const unionTop9 = unionSorted.slice(0, 9).sort((a,b)=>a-b);
                 const hitUnion9 = unionTop9.filter(n => winMain.includes(n)).length;
 
-                // v23.0 계산 (강제 보호)
+                // v23.0 계산 (1회 이상 우선)
                 const scoreMapV23bt = {};
                 for (let i = 1; i <= 45; i++) {
                     let score = 0;
                     if (validSet.has(i)) score += 3;
                     if (finalPool3.includes(i)) score += 2;
-                    if (pool4.includes(i)) score += 3; // 2회 이상 강화
-                    if (topPredLocal.slice(0,5).some(p => p.num === i)) score += 1; // TOP10 약화
+                    if (pool4.includes(i)) score += 3;
+                    if (topPredLocal.slice(0,5).some(p => p.num === i)) score += 1;
                     scoreMapV23bt[i] = score;
                 }
-                // 강제 선발 (pool4 상위 5개)
-                const sortedPool4bt = [...pool4].sort((a,b) => (scoreMapV23bt[b]||0) - (scoreMapV23bt[a]||0));
-                const guaranteedBt = sortedPool4bt.slice(0, 5);
+                // 🔥 변경: 강제 선발 기준을 1회 이상으로 완화
+                const oneOrMoreBt = Object.keys(freqMap).filter(k => freqMap[k] >= 1).map(Number);
+                const sortedOneOrMoreBt = oneOrMoreBt.sort((a,b) => (scoreMapV23bt[b]||0) - (scoreMapV23bt[a]||0));
+                const guaranteedBt = sortedOneOrMoreBt.slice(0, 5);
                 if (guaranteedBt.length < 5) {
                     const extra = [...validSet].filter(n => !guaranteedBt.includes(n)).sort((a,b) => (scoreMapV23bt[b]||0) - (scoreMapV23bt[a]||0));
                     while (guaranteedBt.length < 5 && extra.length > 0) {
@@ -1250,7 +1247,7 @@
             </div>`;
 
             resultDiv.innerHTML = tableHtml + summaryHtml;
-            console.log('✅ 백테스트 완료 (v23 포함)');
+            console.log('✅ 백테스트 완료 (v23 1회 이상 우선)');
         }, 100);
     }
 
@@ -1432,8 +1429,8 @@
         document.getElementById('topCountDisplay').textContent = 10;
         document.getElementById('excludeBonus').checked = true;
         document.getElementById('resultArea').innerHTML = '<div class="loading">🟢 준비 완료! "🚀 분석 실행" 버튼을 눌러주세요.</div>';
-        console.log('🟢 v23 로드 완료 (강제 보호 메커니즘 적용)');
-        console.log('💡 2회 이상 출현 숫자를 우선 보호하여 수동과 자동의 격차를 해소했습니다.');
+        console.log('🟢 v23 로드 완료 (1회 이상 강제 보호 메커니즘 적용)');
+        console.log('💡 1회 이상 출현 숫자를 우선 보호하여 수동과 자동의 격차를 해소했습니다.');
     };
     </script>
 </body>
