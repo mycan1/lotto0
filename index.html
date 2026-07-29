@@ -2,7 +2,7 @@
 <html lang="ko">
 <head>
     <meta charset="UTF-8">
-    <title>📊 v23.3 9MAX + 강력 1수/5수 (교집합 우선)</title>
+    <title>📊 v23.3 9MAX + 강력 1수/5수 (유사회차 40)</title>
     <style>
         * { box-sizing: border-box; margin: 0; padding: 0; }
         body { background: #0a0a0a; color: #fff; font-family: 'Segoe UI', sans-serif; padding: 20px; max-width: 1100px; margin: 0 auto; }
@@ -108,12 +108,13 @@
     </style>
 </head>
 <body>
-    <h1>📊 v23.3 9MAX + 강력 1수/5수 (교집합 우선)</h1>
+    <h1>📊 v23.3 9MAX + 강력 1수/5수 (유사회차 40)</h1>
     <div class="update-notice">
+        ✅ <strong>유사회차 최대 40개로 확장</strong> (더 풍부한 데이터 수집)<br>
         ✅ <strong>9MAX 공식 유지</strong> (2회↑ 강제선발 + 연관성2배 + TOP10 전원 가산점)<br>
         ✅ <strong>v23.0 강제 보호 10수 유지</strong> (1회 이상 우선)<br>
-        ✅ <strong>💪 강력 1수/5수 튜닝 완료</strong> → 9MAX ∩ v23.0 (교집합) 우선 추천!<br>
-        ✅ <strong>오프셋, 유사회차 개수 등 모든 옵션 동일</strong>
+        ✅ <strong>💪 강력 1수</strong> = 교집합(9∩10) 내 최우선 점수 1개<br>
+        ✅ <strong>💪 강력 5수</strong> = 교집합 내 짝수 3개 + 홀수 2개 (부족 시 합집합-교집합에서 보충)
     </div>
     <div class="filters">
         <div class="filter-group">
@@ -152,8 +153,8 @@
         <div class="filter-group">
             <label>📊 9수 유사회차 개수</label>
             <div class="range-container">
-                <input type="range" id="topCount" min="3" max="20" value="9" step="1">
-                <span class="range-value" id="topCountDisplay">9</span>
+                <input type="range" id="topCount" min="3" max="40" value="40" step="1">
+                <span class="range-value" id="topCountDisplay">40</span>
                 <span class="range-label">개</span>
             </div>
         </div>
@@ -373,7 +374,7 @@
         const base = checkFutureData(baseRaw);
         const start = parseInt(document.getElementById('startRound').value) || 1000;
         const minMatch = parseInt(document.getElementById('minMatch').value) || 1;
-        const topN = parseInt(document.getElementById('topCount').value) || 9;
+        const topN = parseInt(document.getElementById('topCount').value) || 40;
         document.getElementById('topCountDisplay').textContent = topN;
         const targetRound = base;
 
@@ -515,7 +516,7 @@
     }
 
     // ========================================================================
-    // 💪 강력 1수 (튜닝 ver. 교집합 우선)
+    // 💪 강력 1수 (교집합 최우선)
     // ========================================================================
     function recommendStrong1() {
         if (!lastTop9 || lastTop9.length === 0) { 
@@ -524,7 +525,7 @@
         }
         const base = parseInt(document.getElementById('baseRound').value) || 1235;
         
-        // 1순위: 9수 ∩ 10수 (교집합)
+        // 교집합 (9수 ∩ 10수)
         const intersectSet = new Set(lastTop9.filter(n => lastV23Result.includes(n)));
         let candidates = Array.from(intersectSet)
             .map(num => ({ num, score: globalFreqData[num] || 0 }))
@@ -561,7 +562,7 @@
     }
 
     // ========================================================================
-    // 💪 강력 5수 (튜닝 ver. 교집합 우선)
+    // 💪 강력 5수 (교집합 내 짝3 + 홀2, 부족 시 합집합에서 보충)
     // ========================================================================
     function recommendStrong5() {
         if (!lastTop9 || lastTop9.length === 0) { 
@@ -570,51 +571,92 @@
         }
         const base = parseInt(document.getElementById('baseRound').value) || 1235;
         
-        // 1순위: 9수 ∩ 10수 (교집합)
+        // 1. 교집합 (9수 ∩ 10수)
         const intersectSet = new Set(lastTop9.filter(n => lastV23Result.includes(n)));
-        let candidates = Array.from(intersectSet)
-            .map(num => ({ num, score: globalFreqData[num] || 0 }))
-            .sort((a, b) => b.score - a.score || a.num - b.num);
+        // 2. 합집합 (9수 ∪ 10수)
+        const unionSet = new Set([...lastTop9, ...lastV23Result]);
         
-        // 2순위: 교집합이 5개 미만이면 합집합에서 추가
-        if (candidates.length < 5) {
-            const unionSet = new Set([...lastTop9, ...lastV23Result]);
-            const extra = Array.from(unionSet)
-                .filter(num => !intersectSet.has(num))
+        // 3. 교집합을 짝수/홀수로 분리 + 점수 매기기
+        const intersectEvens = [];
+        const intersectOdds = [];
+        intersectSet.forEach(num => {
+            const score = globalFreqData[num] || 0;
+            if (num % 2 === 0) intersectEvens.push({ num, score });
+            else intersectOdds.push({ num, score });
+        });
+        
+        // 4. 각각 점수 내림차순 정렬
+        intersectEvens.sort((a, b) => b.score - a.score || a.num - b.num);
+        intersectOdds.sort((a, b) => b.score - a.score || a.num - b.num);
+        
+        // 5. 교집합에서 짝수 3개, 홀수 2개 선택
+        let selected = [];
+        let evenPick = intersectEvens.slice(0, 3);
+        let oddPick = intersectOdds.slice(0, 2);
+        selected.push(...evenPick);
+        selected.push(...oddPick);
+        
+        // 6. 부족한 짝수/홀수를 합집합 - 교집합(남은 수)에서 채우기
+        const remainingSet = new Set([...unionSet].filter(n => !intersectSet.has(n)));
+        
+        if (evenPick.length < 3) {
+            const needed = 3 - evenPick.length;
+            const remainingEvens = [];
+            remainingSet.forEach(num => {
+                if (num % 2 === 0) remainingEvens.push({ num, score: globalFreqData[num] || 0 });
+            });
+            remainingEvens.sort((a, b) => b.score - a.score || a.num - b.num);
+            selected.push(...remainingEvens.slice(0, needed));
+        }
+        
+        if (oddPick.length < 2) {
+            const needed = 2 - oddPick.length;
+            const remainingOdds = [];
+            remainingSet.forEach(num => {
+                if (num % 2 === 1) remainingOdds.push({ num, score: globalFreqData[num] || 0 });
+            });
+            remainingOdds.sort((a, b) => b.score - a.score || a.num - b.num);
+            selected.push(...remainingOdds.slice(0, needed));
+        }
+        
+        // 7. 그래도 5개가 안 되면 (예외) 합집합 전체에서 점수순으로 채움
+        if (selected.length < 5) {
+            const allCandidates = Array.from(unionSet)
                 .map(num => ({ num, score: globalFreqData[num] || 0 }))
                 .sort((a, b) => b.score - a.score || a.num - b.num);
-            
-            const needed = 5 - candidates.length;
-            candidates.push(...extra.slice(0, needed));
+            const existingNums = new Set(selected.map(item => item.num));
+            for (const item of allCandidates) {
+                if (selected.length >= 5) break;
+                if (!existingNums.has(item.num)) {
+                    selected.push(item);
+                    existingNums.add(item.num);
+                }
+            }
         }
         
-        if (candidates.length === 0) {
-            alert('⚠️ 추천할 번호가 없습니다.');
-            return;
-        }
-        
-        const top5 = candidates.slice(0, 5).map(item => item.num);
+        const top5 = selected.slice(0, 5).map(item => item.num);
         const winMain = winData ? winData.main : [];
         const winBonus = winData ? winData.bonus : null;
         const hitMain = top5.filter(n => winMain.includes(n));
         const hitBonus = top5.filter(n => n === winBonus);
         const hitCount = hitMain.length + hitBonus.length;
+        const evenCount = top5.filter(n => n % 2 === 0).length;
+        const oddCount = top5.filter(n => n % 2 === 1).length;
         
         document.getElementById('resultArea').innerHTML += `
             <div class="strong5-result" style="border-color: #ffd700; background: #1a1a0a;">
-                <div class="label" style="color: #ffd700;">💪 강력 5수 (${base}회 예상) - 교집합 우선</div>
+                <div class="label" style="color: #ffd700;">💪 강력 5수 (${base}회 예상) - 교집합 내 짝3+홀2</div>
                 <div style="display:flex; gap:10px; justify-content:center; flex-wrap:wrap; margin:10px 0;">
                     ${top5.map(n => {
                         const isHit = winMain.includes(n);
                         const isBonus = n === winBonus;
-                        let color = '#fff';
-                        let mark = '';
+                        let color = '#fff', mark = '';
                         if (isHit) { color = '#2ecc71'; mark = '★'; }
                         else if (isBonus) { color = '#ff6b6b'; mark = '☆'; }
                         return `<span style="font-size:28px; font-weight:bold; color:${color};">${n}${mark}</span>`;
                     }).join(' ')}
                 </div>
-                <div class="source">📌 교집합 우선 추천 (본${hitMain.length}개${hitMain.length ? ' '+hitMain.join(',') : ''}${hitBonus.length ? ' | 보너스 '+hitBonus.join(',') : ''}) → 총 ${hitCount}개 적중</div>
+                <div class="source">📌 짝수 ${evenCount}개 + 홀수 ${oddCount}개 (교집합 우선, 부족 시 남은 수 보충) (본${hitMain.length}개${hitMain.length ? ' '+hitMain.join(',') : ''}${hitBonus.length ? ' | 보너스 '+hitBonus.join(',') : ''}) → 총 ${hitCount}개 적중</div>
             </div>
         `;
     }
@@ -645,12 +687,12 @@
     window.onload = function() {
         document.getElementById('baseRound').value = 1235;
         document.getElementById('startRound').value = 1000;
-        document.getElementById('topCount').value = 9;
-        document.getElementById('topCountDisplay').textContent = 9;
+        document.getElementById('topCount').value = 40;
+        document.getElementById('topCountDisplay').textContent = 40;
         document.getElementById('refOffset').value = '-1';
         document.getElementById('excludeBonus').checked = true;
-        document.getElementById('resultArea').innerHTML = '<div class="loading">🟢 v23.3 최종 완성 (교집합 우선)! "🚀 분석 실행"을 눌러주세요.</div>';
-        console.log('🟢 v23.3 최종 로드 완료 (9MAX + 강력 1수/5수 교집합 우선)');
+        document.getElementById('resultArea').innerHTML = '<div class="loading">🟢 v23.3 (유사회차 40) 준비 완료! "🚀 분석 실행"을 눌러주세요.</div>';
+        console.log('🟢 v23.3 로드 완료 (유사회차 40, 9MAX + 강력 1수/5수 교집합 내 짝3+홀2)');
     };
     </script>
 </body>
