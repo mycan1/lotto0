@@ -2,7 +2,7 @@
 <html lang="ko">
 <head>
     <meta charset="UTF-8">
-    <title>📊 v27 – 구간 강제 9MAX + 최종10수</title>
+    <title>📊 v27.1 – 대기전용 자동제거 + 수동입력</title>
     <style>
         * { box-sizing: border-box; margin: 0; padding: 0; }
         body { background: #0a0a0a; color: #fff; font-family: 'Segoe UI', sans-serif; padding: 20px; max-width: 1400px; margin: 0 auto; }
@@ -11,7 +11,8 @@
         .filter-group { display: flex; flex-direction: column; gap: 2px; }
         .filter-group label { color: #ffd700; font-size: 11px; font-weight: bold; }
         .filter-group input, .filter-group select { padding: 4px 10px; border-radius: 6px; border: 1px solid #555; background: #2a2a2a; color: #fff; font-size: 13px; width: 100%; }
-        .filter-group input[type="number"] { width: 80px; }
+        .filter-group input[type="number"] { width: 70px; }
+        .filter-group input[type="text"] { width: 100px; }
         .filter-group input[type="range"] { width: 120px; padding: 0; background: transparent; accent-color: #ffd700; }
         .filter-group .range-value { color: #ffd700; font-weight: bold; font-size: 14px; min-width: 25px; display: inline-block; text-align: center; }
         .filter-group input[type="checkbox"] { width: 18px; height: 18px; accent-color: #ffd700; cursor: pointer; }
@@ -142,9 +143,9 @@
     </style>
 </head>
 <body>
-    <h1>📊 v27 – 구간 강제 9MAX + 최종10수</h1>
+    <h1>📊 v27.1 – 대기전용 자동제거 + 수동입력</h1>
     <div class="update-notice">
-        ✅ 예상회차↔시작회차 연동 | 수동테스트 연동 | 유사회차 개수만 표시 | 9MAX/최종10수/v23.0 구간강제 | TOP10 제외 10전략 | 강력 1/2/3순위 | 이월수 자동구분 | 미래데이터 미참조 | 대기TOP10/9MAX 합집합 & 전용수 표시
+        ✅ 예상회차↔시작회차 연동 | 수동테스트 연동 | 유사회차 개수만 표시 | 9MAX/최종10수/v23.0 구간강제 | TOP10 제외 10전략 | 강력 1/2/3순위 | 이월수 자동구분 | 미래데이터 미참조 | 대기TOP10/9MAX 합집합 & 전용수 표시 | <strong style="color:#e74c3c;">🚫대기전용 자동제거</strong> | <strong style="color:#3498db;">✏️수동 제외/포함</strong>
     </div>
     <div class="filters">
         <div class="filter-group">
@@ -202,9 +203,14 @@
                 <input type="checkbox" id="excludeBonus" checked>
                 <label style="font-size:11px;">보너스제거</label>
             </div>
+            <span style="color:#888;font-size:12px;margin-left:4px;">🚫제외:</span>
+            <input type="text" id="manualExclude" placeholder="1,2,3" style="width:80px;padding:3px 6px;border-radius:5px;border:1px solid #555;background:#2a2a2a;color:#fff;font-size:12px;">
+            <span style="color:#888;font-size:12px;">✅포함:</span>
+            <input type="text" id="manualInclude" placeholder="4,5,6" style="width:80px;padding:3px 6px;border-radius:5px;border:1px solid #555;background:#2a2a2a;color:#fff;font-size:12px;">
+            <span style="color:#666;font-size:10px;">(분석 시 자동 적용)</span>
         </div>
     </div>
-    <div class="result-area" id="resultArea"><div class="loading">🟢 v27 준비 완료! "🚀 분석"을 눌러주세요.</div></div>
+    <div class="result-area" id="resultArea"><div class="loading">🟢 v27.1 준비 완료! "🚀 분석"을 눌러주세요.</div></div>
 
     <div class="modal-overlay" id="backtestModal">
         <div class="modal-box">
@@ -308,6 +314,7 @@
     let lastTopPredFull = [];
     let lastTop10Intersect = [];
     let lastExcludeTop10 = [];
+    let lastOnlyNineSorted = [];
 
     // ========================================================================
     // 기본 함수
@@ -413,9 +420,9 @@
     }
 
     // ========================================================================
-    // 구간 강제 적용
+    // 구간 강제 적용 (fallbackPool 지원)
     // ========================================================================
-    function getBalanced6FromCandidates(candidates, excludeSet, lowTarget = 2, midTarget = 2, highTarget = 2) {
+    function getBalanced6FromCandidates(candidates, excludeSet, lowTarget = 2, midTarget = 2, highTarget = 2, fallbackPool = null) {
         const low = [], mid = [], high = [];
         candidates.forEach(n => {
             if (!excludeSet.has(n)) {
@@ -440,19 +447,34 @@
             if (!result.includes(n)) result.push(n);
         }
         while (result.length < 6) {
-            for (let i = 1; i <= 45; i++) {
-                if (result.length >= 6) break;
-                if (!result.includes(i) && !excludeSet.has(i)) result.push(i);
+            let pool = fallbackPool ? fallbackPool.filter(n => !result.includes(n) && !excludeSet.has(n)) : [];
+            if (pool.length === 0) {
+                for (let i = 1; i <= 45; i++) {
+                    if (result.length >= 6) break;
+                    if (!result.includes(i) && !excludeSet.has(i)) result.push(i);
+                }
+                break;
+            } else {
+                for (let i = pool.length - 1; i > 0; i--) {
+                    const j = Math.floor(Math.random() * (i + 1));
+                    [pool[i], pool[j]] = [pool[j], pool[i]];
+                }
+                for (const n of pool) {
+                    if (result.length >= 6) break;
+                    if (!result.includes(n)) result.push(n);
+                }
             }
         }
         return filterNoConsecutive3(result, excludeSet);
     }
-    function getBalanced9FromCandidates(candidates, excludeSet, count = 9) {
+    function getBalanced9FromCandidates(candidates, excludeSet, count = 9, fallbackPool = null) {
         const sections = { low: [], mid: [], high: [] };
         candidates.forEach(n => {
-            if (n <= 15) sections.low.push(n);
-            else if (n <= 30) sections.mid.push(n);
-            else sections.high.push(n);
+            if (!excludeSet.has(n)) {
+                if (n <= 15) sections.low.push(n);
+                else if (n <= 30) sections.mid.push(n);
+                else sections.high.push(n);
+            }
         });
         let result = [];
         result.push(...sections.low.slice(0, 3));
@@ -467,9 +489,22 @@
             }
         }
         while (result.length < count) {
-            for (let i = 1; i <= 45; i++) {
-                if (result.length >= count) break;
-                if (!result.includes(i) && !excludeSet.has(i)) result.push(i);
+            let pool = fallbackPool ? fallbackPool.filter(n => !result.includes(n) && !excludeSet.has(n)) : [];
+            if (pool.length === 0) {
+                for (let i = 1; i <= 45; i++) {
+                    if (result.length >= count) break;
+                    if (!result.includes(i) && !excludeSet.has(i)) result.push(i);
+                }
+                break;
+            } else {
+                for (let i = pool.length - 1; i > 0; i--) {
+                    const j = Math.floor(Math.random() * (i + 1));
+                    [pool[i], pool[j]] = [pool[j], pool[i]];
+                }
+                for (const n of pool) {
+                    if (result.length >= count) break;
+                    if (!result.includes(n)) result.push(n);
+                }
             }
         }
         result = filterNoConsecutive3(result, excludeSet);
@@ -622,67 +657,67 @@
     }
 
     // ========================================================================
-    // TOP10 제외 전략
+    // TOP10 제외 전략 (fallbackPool 추가)
     // ========================================================================
     function getExcludeSet(topNums) { return new Set(topNums); }
-    function getExcludeTop10_Only3(pool3, pool4, topNums) {
+    function getExcludeTop10_Only3(pool3, pool4, topNums, fallbackPool = null) {
         const excludeSet = getExcludeSet(topNums);
         const only3 = pool3.filter(n => !pool4.includes(n) && !excludeSet.has(n));
         const rest = pool3.filter(n => !only3.includes(n) && !excludeSet.has(n));
-        return getBalanced6FromCandidates([...only3, ...rest], excludeSet, 2, 2, 2);
+        return getBalanced6FromCandidates([...only3, ...rest], excludeSet, 2, 2, 2, fallbackPool);
     }
-    function getExcludeTop10_TripleWithOnly3(pool3, pool4, topNums) {
+    function getExcludeTop10_TripleWithOnly3(pool3, pool4, topNums, fallbackPool = null) {
         const excludeSet = getExcludeSet(topNums);
         const intersect = pool3.filter(n => pool4.includes(n) && !excludeSet.has(n));
         const only3 = pool3.filter(n => !pool4.includes(n) && !excludeSet.has(n));
-        return getBalanced6FromCandidates([...intersect, ...only3], excludeSet, 2, 2, 2);
+        return getBalanced6FromCandidates([...intersect, ...only3], excludeSet, 2, 2, 2, fallbackPool);
     }
-    function getExcludeTop10_Only3And4(pool3, pool4, topNums) {
+    function getExcludeTop10_Only3And4(pool3, pool4, topNums, fallbackPool = null) {
         const excludeSet = getExcludeSet(topNums);
         const only3 = pool3.filter(n => !pool4.includes(n) && !excludeSet.has(n));
         const only4 = pool4.filter(n => !pool3.includes(n) && !excludeSet.has(n));
-        return getBalanced6FromCandidates([...only3, ...only4], excludeSet, 2, 2, 2);
+        return getBalanced6FromCandidates([...only3, ...only4], excludeSet, 2, 2, 2, fallbackPool);
     }
-    function getExcludeTop10_HighLow24(arr, topNums) {
+    function getExcludeTop10_HighLow24(pool3, topNums, fallbackPool = null) {
         const excludeSet = getExcludeSet(topNums);
-        const filtered = arr.filter(n => !excludeSet.has(n));
+        const filtered = pool3.filter(n => !excludeSet.has(n));
         const lows = filtered.filter(n => n <= 22), highs = filtered.filter(n => n >= 23);
-        return getBalanced6FromCandidates([...lows, ...highs], excludeSet, 2, 2, 2);
+        return getBalanced6FromCandidates([...lows, ...highs], excludeSet, 2, 2, 2, fallbackPool);
     }
-    function getExcludeTop10_LowHigh42(arr, topNums) {
+    function getExcludeTop10_LowHigh42(pool3, topNums, fallbackPool = null) {
         const excludeSet = getExcludeSet(topNums);
-        const filtered = arr.filter(n => !excludeSet.has(n));
+        const filtered = pool3.filter(n => !excludeSet.has(n));
         const lows = filtered.filter(n => n <= 22), highs = filtered.filter(n => n >= 23);
-        return getBalanced6FromCandidates([...lows, ...highs], excludeSet, 2, 2, 2);
+        return getBalanced6FromCandidates([...lows, ...highs], excludeSet, 2, 2, 2, fallbackPool);
     }
-    function getExcludeTop10_HighLow33(arr, topNums) {
+    function getExcludeTop10_HighLow33(pool3, topNums, fallbackPool = null) {
         const excludeSet = getExcludeSet(topNums);
-        const filtered = arr.filter(n => !excludeSet.has(n));
+        const filtered = pool3.filter(n => !excludeSet.has(n));
         const lows = filtered.filter(n => n <= 22), highs = filtered.filter(n => n >= 23);
-        return getBalanced6FromCandidates([...lows, ...highs], excludeSet, 2, 2, 2);
+        return getBalanced6FromCandidates([...lows, ...highs], excludeSet, 2, 2, 2, fallbackPool);
     }
-    function getExcludeTop10_OddEven24(arr, topNums) {
+    function getExcludeTop10_OddEven24(pool3, topNums, fallbackPool = null) {
         const excludeSet = getExcludeSet(topNums);
-        const filtered = arr.filter(n => !excludeSet.has(n));
+        const filtered = pool3.filter(n => !excludeSet.has(n));
         const odds = filtered.filter(n => n % 2 === 1), evens = filtered.filter(n => n % 2 === 0);
-        return getBalanced6FromCandidates([...odds, ...evens], excludeSet, 2, 2, 2);
+        return getBalanced6FromCandidates([...odds, ...evens], excludeSet, 2, 2, 2, fallbackPool);
     }
-    function getExcludeTop10_Only4(pool3, pool4, topNums) {
+    function getExcludeTop10_Only4(pool3, pool4, topNums, fallbackPool = null) {
         const excludeSet = getExcludeSet(topNums);
         const only4 = pool4.filter(n => !pool3.includes(n) && !excludeSet.has(n));
         const rest = pool4.filter(n => !only4.includes(n) && !excludeSet.has(n));
-        return getBalanced6FromCandidates([...only4, ...rest], excludeSet, 2, 2, 2);
+        return getBalanced6FromCandidates([...only4, ...rest], excludeSet, 2, 2, 2, fallbackPool);
     }
-    function getExcludeTop10_EndDigit334(arr, topNums) {
+    function getExcludeTop10_EndDigit334(pool3, topNums, fallbackPool = null) {
         const excludeSet = getExcludeSet(topNums);
-        const filtered = arr.filter(n => !excludeSet.has(n));
+        const filtered = pool3.filter(n => !excludeSet.has(n));
         const group1 = filtered.filter(n => n % 10 >= 0 && n % 10 <= 4);
         const group2 = filtered.filter(n => n % 10 >= 5 && n % 10 <= 9);
-        return getBalanced6FromCandidates([...group1, ...group2], excludeSet, 2, 2, 2);
+        return getBalanced6FromCandidates([...group1, ...group2], excludeSet, 2, 2, 2, fallbackPool);
     }
-    function getExcludeTop10_Sum150(arr, topNums) {
+    function getExcludeTop10_Sum150(pool3, topNums, fallbackPool = null) {
         const excludeSet = getExcludeSet(topNums);
-        const filtered = arr.filter(n => !excludeSet.has(n));
+        const filtered = pool3.filter(n => !excludeSet.has(n));
         const pool = filtered.slice(0, 20);
         let best = [], bestDiff = Infinity;
         for (let tries = 0; tries < 500; tries++) {
@@ -720,10 +755,10 @@
     }
 
     // ========================================================================
-    // runAnalysis - 메인 분석
+    // runAnalysis - 메인 분석 (대기전용 자동제거)
     // ========================================================================
     function runAnalysis() {
-        console.log('🚀 v27 실행');
+        console.log('🚀 v27.1 실행 (대기전용 자동제거)');
         winData = null; similarData = null;
         const excludeBonus = isBonusExcluded(), sortMode = document.getElementById('similarSort')?.value || 'high';
         const offset = parseInt(document.getElementById('refOffset').value) || -1;
@@ -734,6 +769,12 @@
         const topN = parseInt(document.getElementById('topCount').value) || 40;
         document.getElementById('topCountDisplay').textContent = topN;
         const targetRound = base;
+
+        // 수동 입력 읽기
+        const manualExcludeVal = document.getElementById('manualExclude').value;
+        const manualIncludeVal = document.getElementById('manualInclude').value;
+        let manualExcludeNums = manualExcludeVal ? manualExcludeVal.split(',').map(s => parseInt(s.trim())).filter(n => !isNaN(n) && n>=1 && n<=45) : [];
+        let manualIncludeNums = manualIncludeVal ? manualIncludeVal.split(',').map(s => parseInt(s.trim())).filter(n => !isNaN(n) && n>=1 && n<=45) : [];
 
         const result = findTrueSimilar(base, start, minMatch, topN, offset);
         if (result.similar.length === 0) { 
@@ -775,8 +816,8 @@
         const topPred = top10Result.map(item => ({ num: item.num, score: item.score, freq: Math.round(item.freq) }));
         lastTopPred = topPred;
         lastTopPredFull = top10Result;
-        const topPredTop10 = topPred.map(p => p.num);
-        const excludeSet = new Set(topPredTop10);
+        const topPredNums = topPred.map(p => p.num);
+        const excludeSet = new Set(topPredNums);
 
         const top10Nums = topPred.map(p => p.num);
         const top10Intersect = top10Nums.filter(n => pool5.includes(n));
@@ -790,23 +831,8 @@
 
         const pool3Numbers = finalPool3;
         const pool4Numbers = pool4;
-        const topPredNums = topPred.map(p => p.num);
 
-        const baseStrategies = {
-            '① ③만 우선': getExcludeTop10_Only3(pool3Numbers, pool4Numbers, topPredNums),
-            '② ③∩④∩③만': getExcludeTop10_TripleWithOnly3(pool3Numbers, pool4Numbers, topPredNums),
-            '③ ③만+④만': getExcludeTop10_Only3And4(pool3Numbers, pool4Numbers, topPredNums),
-            '④ 고저 2:4': getExcludeTop10_HighLow24(pool3Numbers, topPredNums),
-            '⑤ 저/고 4:2': getExcludeTop10_LowHigh42(pool3Numbers, topPredNums),
-            '⑥ 고저 3:3': getExcludeTop10_HighLow33(pool3Numbers, topPredNums),
-            '⑦ 홀짝 2:4': getExcludeTop10_OddEven24(pool3Numbers, topPredNums),
-            '⑧ ④만 우선': getExcludeTop10_Only4(pool3Numbers, pool4Numbers, topPredNums),
-            '⑨ 끝수 3:3:4': getExcludeTop10_EndDigit334(pool3Numbers, topPredNums),
-            '⑩ 합계 150': getExcludeTop10_Sum150(pool3Numbers, topPredNums)
-        };
-        lastBaseStrategies = baseStrategies;
-
-        // 9MAX
+        // --- 9MAX / v23.0 / 기타 계산 ---
         const oneHitCandidates = [...validSet].filter(n => !excludeSet.has(n));
         let guaranteed = [...pool4].filter(n => !excludeSet.has(n));
         while (guaranteed.length > 9) guaranteed.pop();
@@ -837,8 +863,7 @@
             const extra = oneHitCandidates.filter(n => !final9Candidates.includes(n) && !excludeSet.has(n));
             for (const n of extra) { if (final9Candidates.length >= 9) break; final9Candidates.push(n); }
         }
-        const final9 = getBalanced9FromCandidates(final9Candidates, excludeSet, 9);
-        lastTop9 = final9;
+        let final9 = getBalanced9FromCandidates(final9Candidates, excludeSet, 9);
 
         // v23.0
         const scoreMapV23 = {};
@@ -868,11 +893,22 @@
         }
         v23Result = filterNoConsecutive3(v23Result, excludeSet);
         v23Result.sort((a,b) => a-b);
-        lastV23Result = v23Result;
 
-        // 최종 10수
+        // 최종 10수 (임시)
         const freqCountAll = {};
-        for (const [name, nums] of Object.entries(baseStrategies)) {
+        const tempStrategies = {
+            '① ③만 우선': getExcludeTop10_Only3(pool3Numbers, pool4Numbers, topPredNums),
+            '② ③∩④∩③만': getExcludeTop10_TripleWithOnly3(pool3Numbers, pool4Numbers, topPredNums),
+            '③ ③만+④만': getExcludeTop10_Only3And4(pool3Numbers, pool4Numbers, topPredNums),
+            '④ 고저 2:4': getExcludeTop10_HighLow24(pool3Numbers, topPredNums),
+            '⑤ 저/고 4:2': getExcludeTop10_LowHigh42(pool3Numbers, topPredNums),
+            '⑥ 고저 3:3': getExcludeTop10_HighLow33(pool3Numbers, topPredNums),
+            '⑦ 홀짝 2:4': getExcludeTop10_OddEven24(pool3Numbers, topPredNums),
+            '⑧ ④만 우선': getExcludeTop10_Only4(pool3Numbers, pool4Numbers, topPredNums),
+            '⑨ 끝수 3:3:4': getExcludeTop10_EndDigit334(pool3Numbers, topPredNums),
+            '⑩ 합계 150': getExcludeTop10_Sum150(pool3Numbers, topPredNums)
+        };
+        for (const [name, nums] of Object.entries(tempStrategies)) {
             nums.forEach(n => {
                 if (!excludeSet.has(n)) freqCountAll[n] = (freqCountAll[n] || 0) + 1;
             });
@@ -912,55 +948,112 @@
         }
         final10 = filterNoConsecutive3(final10, excludeSet);
         final10.sort((a,b) => a-b);
-        lastFinal10 = final10;
 
-        // 교집합 계산
-        const triple = lastTop9.filter(n => lastV23Result.includes(n) && lastFinal10.includes(n));
-        const intersect_9_23 = lastTop9.filter(n => lastV23Result.includes(n) && !lastFinal10.includes(n));
-        const intersect_9_10 = lastTop9.filter(n => lastFinal10.includes(n) && !lastV23Result.includes(n));
-        const intersect_23_10 = lastV23Result.filter(n => lastFinal10.includes(n) && !lastTop9.includes(n));
+        // ============================================================
+        // ★★★ 대기 전용(onlyWait) 제거 및 수동제외 적용 ★★★
+        // ============================================================
+        const waitSet = new Set(waitTop10);
+        const nineSet = new Set(final9);
+        const onlyWait = waitTop10.filter(n => !nineSet.has(n));
+        const onlyNine = final9.filter(n => !waitSet.has(n));
+        lastOnlyNineSorted = onlyNine.sort((a,b) => a-b);
+
+        // ★ 제외 대상: TOP10 + 대기전용(onlyWait) + 수동제외
+        const finalExcludeList = [...new Set([...topPredNums, ...onlyWait, ...manualExcludeNums])];
+        const finalExcludeSet = new Set(finalExcludeList);
+
+        // ★ 대체 후보 풀 (3중교집합 > 9MAX전용 > TOP10∩⑤ > ③/④만)
+        const triple = final9.filter(n => v23Result.includes(n) && final10.includes(n));
+        const intersect_9_23 = final9.filter(n => v23Result.includes(n) && !final10.includes(n));
+        const intersect_9_10 = final9.filter(n => final10.includes(n) && !v23Result.includes(n));
+        const intersect_23_10 = v23Result.filter(n => final10.includes(n) && !final9.includes(n));
         lastTriple = triple;
         lastIntersect_9_23 = intersect_9_23;
         lastIntersect_9_10 = intersect_9_10;
         lastIntersect_23_10 = intersect_23_10;
 
-        // ============================================================
-        // ★★★ 대기TOP10과 9MAX의 합집합 및 전용수 계산 ★★★
-        // ============================================================
-        const waitSet = new Set(waitTop10);
-        const nineSet = new Set(lastTop9);
-        const unionSet = new Set([...waitTop10, ...lastTop9]);
-        const intersectionSet = new Set(waitTop10.filter(n => nineSet.has(n)));
-        const onlyWait = waitTop10.filter(n => !nineSet.has(n)); // 대기 전용
-        const onlyNine = lastTop9.filter(n => !waitSet.has(n)); // 9MAX 전용
-        const unionArray = Array.from(unionSet).sort((a,b) => a-b);
-        const onlyWaitSorted = onlyWait.sort((a,b) => a-b);
-        const onlyNineSorted = onlyNine.sort((a,b) => a-b);
+        const fallbackPoolBase = [...triple, ...onlyNine, ...top10Intersect, ...only3, ...only4, ...pool3Numbers, ...pool4Numbers];
+        const fallbackPool = [...new Set(fallbackPoolBase)].filter(n => !finalExcludeSet.has(n));
+
+        // ★ 10개 조합 재생성 (제외세트 + fallbackPool 적용)
+        const filteredPool3 = pool3Numbers.filter(n => !finalExcludeSet.has(n));
+        const filteredPool4 = pool4Numbers.filter(n => !finalExcludeSet.has(n));
+        const baseStrategies = {
+            '① ③만 우선': getExcludeTop10_Only3(filteredPool3, filteredPool4, finalExcludeList, fallbackPool),
+            '② ③∩④∩③만': getExcludeTop10_TripleWithOnly3(filteredPool3, filteredPool4, finalExcludeList, fallbackPool),
+            '③ ③만+④만': getExcludeTop10_Only3And4(filteredPool3, filteredPool4, finalExcludeList, fallbackPool),
+            '④ 고저 2:4': getExcludeTop10_HighLow24(filteredPool3, finalExcludeList, fallbackPool),
+            '⑤ 저/고 4:2': getExcludeTop10_LowHigh42(filteredPool3, finalExcludeList, fallbackPool),
+            '⑥ 고저 3:3': getExcludeTop10_HighLow33(filteredPool3, finalExcludeList, fallbackPool),
+            '⑦ 홀짝 2:4': getExcludeTop10_OddEven24(filteredPool3, finalExcludeList, fallbackPool),
+            '⑧ ④만 우선': getExcludeTop10_Only4(filteredPool3, filteredPool4, finalExcludeList, fallbackPool),
+            '⑨ 끝수 3:3:4': getExcludeTop10_EndDigit334(filteredPool3, finalExcludeList, fallbackPool),
+            '⑩ 합계 150': getExcludeTop10_Sum150(filteredPool3, finalExcludeList, fallbackPool)
+        };
+        lastBaseStrategies = baseStrategies;
+
+        // ★ 9MAX / v23.0 / 최종10수 재필터링 및 패딩
+        let final9Filtered = final9.filter(n => !finalExcludeSet.has(n));
+        while (final9Filtered.length < 9) {
+            const pool = fallbackPool.filter(n => !final9Filtered.includes(n) && !finalExcludeSet.has(n));
+            if (pool.length === 0) break;
+            final9Filtered.push(pool[0]);
+        }
+        final9Filtered = getBalanced9FromCandidates(final9Filtered, finalExcludeSet, 9, fallbackPool);
+        lastTop9 = final9Filtered;
+
+        let v23Filtered = v23Result.filter(n => !finalExcludeSet.has(n));
+        while (v23Filtered.length < 10) {
+            const pool = fallbackPool.filter(n => !v23Filtered.includes(n) && !finalExcludeSet.has(n));
+            if (pool.length === 0) break;
+            v23Filtered.push(pool[0]);
+        }
+        v23Filtered = filterNoConsecutive3(v23Filtered, finalExcludeSet);
+        v23Filtered.sort((a,b) => a-b);
+        lastV23Result = v23Filtered;
+
+        let final10Filtered = final10.filter(n => !finalExcludeSet.has(n));
+        while (final10Filtered.length < 10) {
+            const pool = fallbackPool.filter(n => !final10Filtered.includes(n) && !finalExcludeSet.has(n));
+            if (pool.length === 0) break;
+            final10Filtered.push(pool[0]);
+        }
+        final10Filtered = filterNoConsecutive3(final10Filtered, finalExcludeSet);
+        final10Filtered.sort((a,b) => a-b);
+        lastFinal10 = final10Filtered;
+
+        // 다시 교집합 재계산
+        const tripleFinal = lastTop9.filter(n => lastV23Result.includes(n) && lastFinal10.includes(n));
+        const i9_23 = lastTop9.filter(n => lastV23Result.includes(n) && !lastFinal10.includes(n));
+        const i9_10 = lastTop9.filter(n => lastFinal10.includes(n) && !lastV23Result.includes(n));
+        const i23_10 = lastV23Result.filter(n => lastFinal10.includes(n) && !lastTop9.includes(n));
+        lastTriple = tripleFinal;
+        lastIntersect_9_23 = i9_23;
+        lastIntersect_9_10 = i9_10;
+        lastIntersect_23_10 = i23_10;
 
         // 적중 계산
         let hit9 = [], hit9Bonus = [], hitV23 = [], hitV23Bonus = [];
         let hitFinal10 = [], hitFinal10Bonus = [];
         if (winData) {
-            final9.forEach(n => { if (winMain.includes(n)) hit9.push(n); else if (n === winBonus) hit9Bonus.push(n); });
-            v23Result.forEach(n => { if (winMain.includes(n)) hitV23.push(n); else if (n === winBonus) hitV23Bonus.push(n); });
-            final10.forEach(n => { if (winMain.includes(n)) hitFinal10.push(n); else if (n === winBonus) hitFinal10Bonus.push(n); });
+            lastTop9.forEach(n => { if (winMain.includes(n)) hit9.push(n); else if (n === winBonus) hit9Bonus.push(n); });
+            lastV23Result.forEach(n => { if (winMain.includes(n)) hitV23.push(n); else if (n === winBonus) hitV23Bonus.push(n); });
+            lastFinal10.forEach(n => { if (winMain.includes(n)) hitFinal10.push(n); else if (n === winBonus) hitFinal10Bonus.push(n); });
         }
         const total9Hit = hit9.length + (hit9Bonus.length ? 1 : 0);
         const totalV23Hit = hitV23.length + (hitV23Bonus.length ? 1 : 0);
         const totalFinalHit = hitFinal10.length + (hitFinal10Bonus.length ? 1 : 0);
 
         // ====================================================================
-        // UI 렌더링 - 축소 버전
+        // UI 렌더링 (수정 완료: 🚫 표시가 대기전용에 붙음)
         // ====================================================================
         let html = '';
 
-        // 1. 기준 패턴 + 당첨정보 (한 줄)
         html += `<div class="winning-info" style="font-size:13px;padding:4px 10px;">
             🎯 기준(${base+offset}): <span>${baseNums.join(', ')}</span>
             ${winData ? `&nbsp;| ✅ ${targetRound}회: <span style="color:#2ecc71;">${winData.main.join(', ')}</span> | 보: <span style="color:#ff6b6b;">${winData.bonus}</span>` : `&nbsp;| ⚠️ ${targetRound}회 미추첨`}
         </div>`;
 
-        // 2. 이월수 (한 줄)
         const badgeClass = carryoverInfo.type === 'actual' ? 'badge-actual' : 'badge-predicted';
         const badgeLabel = carryoverInfo.type === 'actual' ? '✅ 실제' : '🔮 예측';
         html += `<div class="carryover-box" style="font-size:13px;padding:3px 10px;">
@@ -968,12 +1061,10 @@
             ${carryoverInfo.type === 'actual' ? '(직전 회차 실제)' : '(유사 패턴 예측)'}
         </div>`;
 
-        // 3. 유사회차 요약
         html += `<div class="recent-summary" style="padding:3px 10px;font-size:12px;">
             📊 유사회차 (오프셋 ${offset}) → ${lastSimilarCount}개 회차
         </div>`;
 
-        // 4. 출현 횟수별 번호 분리 (축소)
         html += `<div style="background:#0a0a0a;border:2px solid #9b59b6;border-radius:8px;padding:6px 10px;margin:5px 0;">
             <div style="color:#9b59b6;font-weight:bold;font-size:13px;">📊 출현 횟수별 번호 분리</div>
             <div style="font-size:13px;line-height:1.6;">
@@ -984,9 +1075,8 @@
             <div style="color:#888;font-size:10px;">📌 ③:유사다음회차 동반수 | ④:2회 이상 동반수</div>
         </div>`;
 
-        // 5. 강력 1순위/2순위/3순위 (한 줄)
         const pick1 = topPred.length > 0 ? topPred[0].num : (lastTop9.length > 0 ? lastTop9[0] : '?');
-        const pick2 = triple.length > 0 ? triple[0] : (top10Intersect.length > 0 ? top10Intersect[0] : (lastTop9.length > 1 ? lastTop9[1] : '?'));
+        const pick2 = tripleFinal.length > 0 ? tripleFinal[0] : (top10Intersect.length > 0 ? top10Intersect[0] : (lastTop9.length > 1 ? lastTop9[1] : '?'));
         const pick3 = top10Intersect.length > 0 ? top10Intersect[0] : (lastTop9.length > 2 ? lastTop9[2] : '?');
 
         let p1c='#e74c3c', p1l='❌', p2c='#e74c3c', p2l='❌', p3c='#e74c3c', p3l='❌';
@@ -1005,22 +1095,20 @@
             </div>
         </div>`;
 
-        // 6. 교집합 과정 (한 줄)
         html += `<div class="intersect-process" style="padding:4px 10px;">
             <div style="display:flex;flex-wrap:wrap;gap:6px;align-items:center;font-size:13px;">
                 <span style="color:#ffd700;font-weight:bold;">📊 교집합:</span>
                 <span style="background:#e74c3c;color:#fff;padding:1px 8px;border-radius:10px;font-size:10px;">🔱3중</span>
-                <span>${triple.length > 0 ? triple.map(n => colorNum(n, winMain, winBonus, true, actualCarryovers)).join(' ') : '없음'} (${triple.length}개)</span>
+                <span>${tripleFinal.length > 0 ? tripleFinal.map(n => colorNum(n, winMain, winBonus, true, actualCarryovers)).join(' ') : '없음'} (${tripleFinal.length}개)</span>
                 <span style="background:#f39c12;color:#000;padding:1px 8px;border-radius:10px;font-size:10px;">⭕2중(9∩23)</span>
-                <span>${intersect_9_23.length > 0 ? intersect_9_23.map(n => colorNum(n, winMain, winBonus, true, actualCarryovers)).join(' ') : '없음'} (${intersect_9_23.length}개)</span>
+                <span>${i9_23.length > 0 ? i9_23.map(n => colorNum(n, winMain, winBonus, true, actualCarryovers)).join(' ') : '없음'} (${i9_23.length}개)</span>
                 <span style="background:#3498db;color:#fff;padding:1px 8px;border-radius:10px;font-size:10px;">🟦2중(9∩10)</span>
-                <span>${intersect_9_10.length > 0 ? intersect_9_10.map(n => colorNum(n, winMain, winBonus, true, actualCarryovers)).join(' ') : '없음'} (${intersect_9_10.length}개)</span>
+                <span>${i9_10.length > 0 ? i9_10.map(n => colorNum(n, winMain, winBonus, true, actualCarryovers)).join(' ') : '없음'} (${i9_10.length}개)</span>
                 <span style="background:#9b59b6;color:#fff;padding:1px 8px;border-radius:10px;font-size:10px;">🟧2중(23∩10)</span>
-                <span>${intersect_23_10.length > 0 ? intersect_23_10.map(n => colorNum(n, winMain, winBonus, true, actualCarryovers)).join(' ') : '없음'} (${intersect_23_10.length}개)</span>
+                <span>${i23_10.length > 0 ? i23_10.map(n => colorNum(n, winMain, winBonus, true, actualCarryovers)).join(' ') : '없음'} (${i23_10.length}개)</span>
             </div>
         </div>`;
 
-        // 7. TOP10 ∩ ⑤교집합
         html += `<div class="cross-verify-box" style="padding:4px 10px;">
             <div style="display:flex;flex-wrap:wrap;gap:4px;align-items:center;font-size:13px;">
                 <span style="color:#2ecc71;font-weight:bold;">🎯 TOP10∩⑤ (${top10Intersect.length}개):</span>
@@ -1028,7 +1116,6 @@
             </div>
         </div>`;
 
-        // 8. 제거 TOP 10 (한 줄)
         html += `<div class="top10-box" style="padding:4px 10px;">
             <div style="display:flex;flex-wrap:wrap;gap:4px;align-items:center;font-size:13px;">
                 <span style="color:#ffd700;font-weight:bold;">🔮 제거TOP10:</span>
@@ -1037,7 +1124,6 @@
             </div>
         </div>`;
 
-        // 9. 대기 TOP 10
         html += `<div class="wait-top10-box" style="padding:4px 10px;">
             <div style="display:flex;flex-wrap:wrap;gap:4px;align-items:center;font-size:13px;">
                 <span style="color:#3498db;font-weight:bold;">📌 대기TOP10:</span>
@@ -1046,7 +1132,12 @@
             </div>
         </div>`;
 
-        // 10. ★★★ 합집합 및 전용수 표시 (새로운 섹션) ★★★
+        const unionSet = new Set([...waitTop10, ...lastTop9]);
+        const unionArray = Array.from(unionSet).sort((a,b) => a-b);
+        const onlyWaitSorted = onlyWait.sort((a,b) => a-b);
+        const onlyNineSorted = onlyNine.sort((a,b) => a-b);
+
+        // ★★★ 여기가 수정된 핵심 UI 부분 ★★★
         html += `<div class="wait-union-box" style="border-color:#9b59b6;">
             <div style="display:flex;flex-wrap:wrap;gap:8px;align-items:center;font-size:13px;">
                 <span style="color:#9b59b6;font-weight:bold;">📌 합집합 (대기10 ∪ 9MAX) (${unionArray.length}개):</span>
@@ -1055,18 +1146,19 @@
             <div style="display:flex;flex-wrap:wrap;gap:8px;align-items:center;font-size:13px;margin-top:4px;border-top:1px solid #444;padding-top:4px;">
                 <span style="color:#ff6b6b;font-weight:bold;">🔴 대기 전용 (대기10 - 9MAX) (${onlyWaitSorted.length}개):</span>
                 <span>${onlyWaitSorted.length > 0 ? onlyWaitSorted.map(n => colorNum(n, winMain, winBonus, true, actualCarryovers)).join(' ') : '없음'}</span>
+                <span style="color:#e74c3c;font-size:10px;font-weight:bold;">🚫 자동제거됨</span> <!-- 👈 대기전용에 붙음 -->
             </div>
             <div style="display:flex;flex-wrap:wrap;gap:8px;align-items:center;font-size:13px;margin-top:4px;border-top:1px solid #444;padding-top:4px;">
                 <span style="color:#2ecc71;font-weight:bold;">🟢 9MAX 전용 (9MAX - 대기10) (${onlyNineSorted.length}개):</span>
                 <span>${onlyNineSorted.length > 0 ? onlyNineSorted.map(n => colorNum(n, winMain, winBonus, true, actualCarryovers)).join(' ') : '없음'}</span>
+                <!-- 👈 여기서는 🚫 자동제거됨 태그를 완전히 제거했음 -->
             </div>
-            <div style="color:#888;font-size:10px;margin-top:4px;">📌 대기TOP10과 9MAX의 합집합, 각 집합의 전용 번호</div>
+            <div style="color:#888;font-size:10px;margin-top:4px;">📌 대기TOP10과 9MAX의 합집합, 대기 전용은 자동 제거됨</div>
         </div>`;
 
-        // 11. 10개 조합
         html += `<div style="background:#0a0a0a;border:3px solid #ffd700;border-radius:10px;padding:8px 12px;margin:8px 0;">
             <div style="display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;">
-                <span style="color:#ffd700;font-weight:bold;font-size:14px;">📋 10개 조합</span>
+                <span style="color:#ffd700;font-weight:bold;font-size:14px;">📋 10개 조합 (제외 적용)</span>
                 <button onclick="copyOnlyNumbers()" class="copy-btn" style="padding:2px 12px;font-size:11px;">📋 복사</button>
             </div>
             <div class="combo-grid">
@@ -1078,34 +1170,31 @@
                 `).join('')}
             </div>
             <div style="display:flex;flex-wrap:wrap;gap:10px;font-size:13px;margin-top:4px;padding-top:4px;border-top:1px solid #333;">
-                <div><span style="color:#ffd700;">9MAX:</span> ${final9.map(n => colorNumSimple(n, winMain, winBonus)).join(' ')}</div>
-                <div><span style="color:#ffd700;">최종10수:</span> ${final10.map(n => colorNumSimple(n, winMain, winBonus)).join(' ')}</div>
+                <div><span style="color:#ffd700;">9MAX:</span> ${lastTop9.map(n => colorNumSimple(n, winMain, winBonus)).join(' ')}</div>
+                <div><span style="color:#ffd700;">최종10수:</span> ${lastFinal10.map(n => colorNumSimple(n, winMain, winBonus)).join(' ')}</div>
             </div>
             <div style="color:#888;font-size:10px;text-align:center;">★ 본번호 | ☆ 보너스</div>
         </div>`;
 
-        // 12. 9MAX
         html += `<div class="optimize-result" style="padding:8px 12px;border-color:${total9Hit>=3?'#2ecc71':'#e67e22'};">
             <div class="label" style="font-size:15px;">🎯 9MAX <span class="badge-9max">9MAX</span></div>
-            <div class="numbers" style="font-size:22px;">${final9.map(n => colorNum(n, winMain, winBonus, true, actualCarryovers)).join(' ')}</div>
+            <div class="numbers" style="font-size:22px;">${lastTop9.map(n => colorNum(n, winMain, winBonus, true, actualCarryovers)).join(' ')}</div>
             <div style="font-size:13px;">📊 본: ${hit9.length}개 (${hit9.join(', ')||'없음'})${hit9Bonus.length ? ` | 보너스: ${hit9Bonus.join(', ')}` : ''}</div>
             <div style="font-size:18px;font-weight:bold;color:${total9Hit>=3?'#2ecc71':'#f1c40f'};">✅ ${winData ? '총 '+total9Hit+'개 적중' : '⚠️ 검증 데이터 없음'}</div>
             <div class="source">📌 저3/중3/고3</div>
         </div>`;
 
-        // 13. v23.0
         html += `<div class="v23-box" style="padding:8px 12px;">
             <div class="title" style="font-size:15px;">🧬 v23.0 <span class="badge-v23">1회 이상</span></div>
-            <div class="numbers" style="font-size:22px;">${v23Result.map(n => colorNum(n, winMain, winBonus, true, actualCarryovers)).join(' ')}</div>
+            <div class="numbers" style="font-size:22px;">${lastV23Result.map(n => colorNum(n, winMain, winBonus, true, actualCarryovers)).join(' ')}</div>
             <div class="stats">📊 본: ${hitV23.length}개 (${hitV23.join(', ')||'없음'})${hitV23Bonus.length ? ` | 보너스: ${hitV23Bonus.join(', ')}` : ''}</div>
             <div class="stats" style="color:${totalV23Hit>=3?'#2ecc71':'#e74c3c'};font-size:18px;font-weight:bold;">✅ ${winData ? '총 '+totalV23Hit+'개 적중' : '⚠️ 검증 데이터 없음'}</div>
             <div class="source">📌 저3/중3/고4</div>
         </div>`;
 
-        // 14. 최종 10수
         html += `<div class="optimize-result" style="padding:8px 12px;border-color:${totalFinalHit>=5?'#2ecc71':'#ff6b6b'};background:${totalFinalHit>=5?'#0a2a1a':'#1a1a2a'};">
             <div class="label" style="font-size:15px;color:${totalFinalHit>=5?'#2ecc71':'#ff6b6b'};">🏆 최종 10수 <span class="badge-final">통합</span> ${totalFinalHit>=5?'✅ 목표!':`(${hitFinal10.length}개/5)`}</div>
-            <div class="numbers" style="font-size:22px;">${final10.map(n => colorNum(n, winMain, winBonus, true, actualCarryovers)).join(' ')}</div>
+            <div class="numbers" style="font-size:22px;">${lastFinal10.map(n => colorNum(n, winMain, winBonus, true, actualCarryovers)).join(' ')}</div>
             <div class="source">📌 저2/중4/고4</div>
             <div style="font-size:18px;font-weight:bold;color:${totalFinalHit>=5?'#2ecc71':'#f1c40f'};">
                 ${winData ? (totalFinalHit>=5 ? `✅ ${totalFinalHit}개 포함 (${hitFinal10.join(', ')}${hitFinal10Bonus.length ? `, ${winBonus}☆` : ''})` : `❌ ${hitFinal10.length}개 (${hitFinal10.join(', ')||'없음'})`) : '⚠️ 검증 데이터 없음'}
@@ -1123,10 +1212,10 @@
             alert('⚠️ 먼저 분석을 실행해주세요!');
             return;
         }
-        let text = '📊 10개 조합\n';
+        let text = '📊 10개 조합 (제외 적용)\n';
         text += '='.repeat(30) + '\n\n';
         for (const [name, nums] of Object.entries(lastBaseStrategies)) {
-            text += nums.join(', ') + '\n';
+            text += name + ': ' + nums.join(', ') + '\n';
         }
         text += '\n' + '='.repeat(30) + '\n';
         text += '9MAX: ' + lastTop9.join(', ') + '\n';
@@ -1146,7 +1235,7 @@
     }
 
     // ========================================================================
-    // 💪 강력 1수 (점수 합산 방식) - 기존 유지
+    // 💪 강력 1수 / 5수 (기존과 동일)
     // ========================================================================
     function recommendStrong1() {
         if (!lastTop9 || lastTop9.length === 0) { 
@@ -1215,9 +1304,6 @@
         `;
     }
 
-    // ========================================================================
-    // 💪 강력 5수 (점수 합산 방식) - 기존 유지
-    // ========================================================================
     function recommendStrong5() {
         if (!lastTop9 || lastTop9.length === 0) { 
             alert('⚠️ 먼저 분석 실행'); 
@@ -1503,10 +1589,12 @@
         document.getElementById('topCountDisplay').textContent = 40;
         document.getElementById('refOffset').value = '-1';
         document.getElementById('excludeBonus').checked = false;
+        document.getElementById('manualExclude').value = '';
+        document.getElementById('manualInclude').value = '';
         lastBaseRound = baseVal;
         lastStartRound = 1200;
-        document.getElementById('resultArea').innerHTML = '<div class="loading">🟢 v27 준비 완료! "🚀 분석"을 눌러주세요.</div>';
-        console.log('🟢 v27 로드 완료 (합집합 및 전용수 표시 추가)');
+        document.getElementById('resultArea').innerHTML = '<div class="loading">🟢 v27.1 준비 완료 (대기전용 자동제거)! "🚀 분석"을 눌러주세요.</div>';
+        console.log('🟢 v27.1 로드 완료 (대기전용 자동제거)');
     };
     </script>
 </body>
