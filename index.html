@@ -121,7 +121,7 @@
         ✅ <strong>📊 최종 10수 구간 강제 할당 (저2/중4/고4)</strong><br>
         ✅ <strong>📊 v23.0 구간 강제 할당 (저3/중3/고4)</strong><br>
         ✅ <strong>🔥 TOP10 제외 전략 10가지</strong> (3연번 + 구간 강제 필터링)<br>
-        ✅ <strong>💪 강력 1수/5수</strong> = 9MAX 기반 (구간 강제 적용)<br>
+        ✅ <strong>💪 강력 1수/5수</strong> = 9MAX ∩ v23.0 교집합 기반<br>
         ✅ <strong>🔥 이월수: 과거=실제 / 미래=예측</strong> (자동 구분)<br>
         ✅ <strong>🎯 모든 번호에 ★ 본번호 / ☆ 보너스 표시</strong>
     </div>
@@ -1097,40 +1097,117 @@
     }
 
     // ========================================================================
-    // 💪 강력 1수 / 5수
+    // 💪 강력 1수 (교집합 기반)
     // ========================================================================
     function recommendStrong1() {
-        if (!lastTop9 || lastTop9.length === 0) { alert('⚠️ 먼저 분석 실행'); return; }
+        if (!lastTop9 || lastTop9.length === 0) { 
+            alert('⚠️ 먼저 분석 실행'); 
+            return; 
+        }
+        if (!lastV23Result || lastV23Result.length === 0) {
+            alert('⚠️ v23.0 데이터가 없습니다.');
+            return;
+        }
+        
         const base = parseInt(document.getElementById('baseRound').value) || 1235;
         const winMain = winData ? winData.main : [];
         const winBonus = winData ? winData.bonus : null;
         const carryoverInfo = getCarryoverInfo(base);
         const actualCarryovers = carryoverInfo.numbers;
-        const pick = lastTop9[0] || 1;
+        
+        // 🔥 교집합 찾기
+        const intersect = lastTop9.filter(n => lastV23Result.includes(n));
+        
+        // 🔥 1수 = 교집합 우선, 없으면 9MAX 1위
+        let pick;
+        let source = '';
+        if (intersect.length > 0) {
+            // 교집합 중 9MAX 순위가 높은 순으로 정렬
+            const sortedIntersect = intersect.sort((a, b) => {
+                return lastTop9.indexOf(a) - lastTop9.indexOf(b);
+            });
+            pick = sortedIntersect[0];
+            source = `교집합 우선 (${intersect.join(', ')})`;
+        } else {
+            pick = lastTop9[0];
+            source = '9MAX 1위';
+        }
+        
         let color = '#e74c3c', label = '미당첨';
         if (winMain.includes(pick)) { color = '#2ecc71'; label = '🎉 본번호 당첨!'; }
         else if (pick === winBonus) { color = '#ff6b6b'; label = '🎉 보너스 당첨!'; }
+        
         document.getElementById('resultArea').innerHTML += `
             <div class="strong-result" style="border-color:#ffd700;background:#1a1a0a;border:3px solid ${color};">
-                <div class="label" style="color:#ffd700;font-size:16px;">💪 강력 1수 (${base}회)</div>
+                <div class="label" style="color:#ffd700;font-size:16px;">💪 강력 1수 (${base}회) - 교집합 기반</div>
                 <div class="number" style="color:${color};">${pick}</div>
-                <div class="desc" style="font-size:14px;color:#88ccff;">${label}</div>
-                <div class="source">📌 9MAX 1순위: ${lastTop9.join(', ')}</div>
+                <div class="desc" style="font-size:14px;color:#88ccff;">${label} | ${source}</div>
+                <div class="source">📌 9MAX ∩ v23.0: ${intersect.join(', ') || '없음'}</div>
             </div>
         `;
     }
 
+    // ========================================================================
+    // 💪 강력 5수 (교집합 + 보충)
+    // ========================================================================
     function recommendStrong5() {
-        if (!lastTop9 || lastTop9.length === 0) { alert('⚠️ 먼저 분석 실행'); return; }
+        if (!lastTop9 || lastTop9.length === 0) { 
+            alert('⚠️ 먼저 분석 실행'); 
+            return; 
+        }
+        if (!lastV23Result || lastV23Result.length === 0) {
+            alert('⚠️ v23.0 데이터가 없습니다.');
+            return;
+        }
+        
         const base = parseInt(document.getElementById('baseRound').value) || 1235;
         const winMain = winData ? winData.main : [];
         const winBonus = winData ? winData.bonus : null;
         const carryoverInfo = getCarryoverInfo(base);
         const actualCarryovers = carryoverInfo.numbers;
-        const top5 = lastTop9.slice(0, 5);
+        
+        // 🔥 교집합 찾기
+        const intersect = lastTop9.filter(n => lastV23Result.includes(n));
+        
+        // 🔥 9MAX + v23.0 합산 점수
+        const score = {};
+        lastTop9.forEach((n, i) => {
+            score[n] = (score[n] || 0) + (9 - i) * 2;  // 9MAX 가중치 2배
+        });
+        lastV23Result.forEach((n, i) => {
+            score[n] = (score[n] || 0) + (10 - i) * 1;  // v23.0 가중치 1배
+        });
+        
+        // 교집합에 추가 보너스 점수 (신뢰도 UP!)
+        intersect.forEach(n => {
+            score[n] = (score[n] || 0) + 5;  // 교집합 보너스 +5점
+        });
+        
+        const sorted = Object.entries(score)
+            .sort((a, b) => b[1] - a[1])
+            .map(([num]) => parseInt(num));
+        
+        // 🔥 5수 = 교집합 우선 + 나머지 상위 점수
+        let top5 = [...intersect];
+        for (const n of sorted) {
+            if (top5.length >= 5) break;
+            if (!top5.includes(n)) top5.push(n);
+        }
+        
+        // 그래도 5개가 안되면 9MAX에서 채움
+        if (top5.length < 5) {
+            for (const n of lastTop9) {
+                if (top5.length >= 5) break;
+                if (!top5.includes(n)) top5.push(n);
+            }
+        }
+        
+        const hitMain = top5.filter(n => winMain.includes(n));
+        const hitBonus = top5.filter(n => n === winBonus);
+        
         document.getElementById('resultArea').innerHTML += `
             <div class="strong5-result" style="border-color:#e67e22; background:#1a2a2a;">
-                <div class="label" style="color:#e67e22;">💪 강력 5수 (${base}회) - 9MAX 상위5</div>
+                <div class="label" style="color:#e67e22;">💪 강력 5수 (${base}회) - 교집합 기반</div>
                 <div class="numbers">
                     ${top5.map(n => {
                         const isHit = winMain.includes(n);
@@ -1143,7 +1220,7 @@
                         return `<span style="color:${c};">${n}${m}</span>`;
                     }).join(' ')}
                 </div>
-                <div class="source">📌 9MAX: ${lastTop9.join(', ')}</div>
+                <div class="source">📌 9MAX ∩ v23.0: ${intersect.join(', ') || '없음'} | 총 ${hitMain.length + hitBonus.length}개 적중</div>
             </div>
         `;
     }
