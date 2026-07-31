@@ -121,6 +121,9 @@
         .wait-top10-box { background: #1a1a2a; border: 2px solid #3498db; border-radius: 8px; padding: 8px 12px; margin: 8px 0; }
         .wait-top10-box .title { color: #3498db; font-weight: bold; font-size: 14px; }
         .wait-top10-box .numbers { font-size: 15px; letter-spacing: 1px; }
+        .wait-union-box { background: #1a1a2a; border: 2px solid #9b59b6; border-radius: 8px; padding: 8px 12px; margin: 8px 0; }
+        .wait-union-box .title { color: #9b59b6; font-weight: bold; font-size: 14px; }
+        .wait-union-box .numbers { font-size: 15px; letter-spacing: 1px; }
         .strong-pick-box { background: #0a1a0a; border: 2px solid #ffd700; border-radius: 8px; padding: 6px 12px; margin: 8px 0; }
         .strong-pick-box .pick-item { font-size: 14px; }
         .strong-pick-box .pick-num { font-weight: bold; font-size: 18px; }
@@ -141,7 +144,7 @@
 <body>
     <h1>📊 v27 – 구간 강제 9MAX + 최종10수</h1>
     <div class="update-notice">
-        ✅ 예상회차↔시작회차 연동 | 수동테스트 연동 | 유사회차 개수만 표시 | 9MAX/최종10수/v23.0 구간강제 | TOP10 제외 10전략 | 강력 1/2/3순위 | 이월수 자동구분 | 미래데이터 미참조
+        ✅ 예상회차↔시작회차 연동 | 수동테스트 연동 | 유사회차 개수만 표시 | 9MAX/최종10수/v23.0 구간강제 | TOP10 제외 10전략 | 강력 1/2/3순위 | 이월수 자동구분 | 미래데이터 미참조 | 대기TOP10/9MAX 합집합 & 전용수 표시
     </div>
     <div class="filters">
         <div class="filter-group">
@@ -921,6 +924,19 @@
         lastIntersect_9_10 = intersect_9_10;
         lastIntersect_23_10 = intersect_23_10;
 
+        // ============================================================
+        // ★★★ 대기TOP10과 9MAX의 합집합 및 전용수 계산 ★★★
+        // ============================================================
+        const waitSet = new Set(waitTop10);
+        const nineSet = new Set(lastTop9);
+        const unionSet = new Set([...waitTop10, ...lastTop9]);
+        const intersectionSet = new Set(waitTop10.filter(n => nineSet.has(n)));
+        const onlyWait = waitTop10.filter(n => !nineSet.has(n)); // 대기 전용
+        const onlyNine = lastTop9.filter(n => !waitSet.has(n)); // 9MAX 전용
+        const unionArray = Array.from(unionSet).sort((a,b) => a-b);
+        const onlyWaitSorted = onlyWait.sort((a,b) => a-b);
+        const onlyNineSorted = onlyNine.sort((a,b) => a-b);
+
         // 적중 계산
         let hit9 = [], hit9Bonus = [], hitV23 = [], hitV23Bonus = [];
         let hitFinal10 = [], hitFinal10Bonus = [];
@@ -1030,7 +1046,24 @@
             </div>
         </div>`;
 
-        // 10. 10개 조합
+        // 10. ★★★ 합집합 및 전용수 표시 (새로운 섹션) ★★★
+        html += `<div class="wait-union-box" style="border-color:#9b59b6;">
+            <div style="display:flex;flex-wrap:wrap;gap:8px;align-items:center;font-size:13px;">
+                <span style="color:#9b59b6;font-weight:bold;">📌 합집합 (대기10 ∪ 9MAX) (${unionArray.length}개):</span>
+                <span>${unionArray.length > 0 ? unionArray.map(n => colorNum(n, winMain, winBonus, true, actualCarryovers)).join(' ') : '없음'}</span>
+            </div>
+            <div style="display:flex;flex-wrap:wrap;gap:8px;align-items:center;font-size:13px;margin-top:4px;border-top:1px solid #444;padding-top:4px;">
+                <span style="color:#ff6b6b;font-weight:bold;">🔴 대기 전용 (대기10 - 9MAX) (${onlyWaitSorted.length}개):</span>
+                <span>${onlyWaitSorted.length > 0 ? onlyWaitSorted.map(n => colorNum(n, winMain, winBonus, true, actualCarryovers)).join(' ') : '없음'}</span>
+            </div>
+            <div style="display:flex;flex-wrap:wrap;gap:8px;align-items:center;font-size:13px;margin-top:4px;border-top:1px solid #444;padding-top:4px;">
+                <span style="color:#2ecc71;font-weight:bold;">🟢 9MAX 전용 (9MAX - 대기10) (${onlyNineSorted.length}개):</span>
+                <span>${onlyNineSorted.length > 0 ? onlyNineSorted.map(n => colorNum(n, winMain, winBonus, true, actualCarryovers)).join(' ') : '없음'}</span>
+            </div>
+            <div style="color:#888;font-size:10px;margin-top:4px;">📌 대기TOP10과 9MAX의 합집합, 각 집합의 전용 번호</div>
+        </div>`;
+
+        // 11. 10개 조합
         html += `<div style="background:#0a0a0a;border:3px solid #ffd700;border-radius:10px;padding:8px 12px;margin:8px 0;">
             <div style="display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;">
                 <span style="color:#ffd700;font-weight:bold;font-size:14px;">📋 10개 조합</span>
@@ -1051,7 +1084,7 @@
             <div style="color:#888;font-size:10px;text-align:center;">★ 본번호 | ☆ 보너스</div>
         </div>`;
 
-        // 11. 9MAX
+        // 12. 9MAX
         html += `<div class="optimize-result" style="padding:8px 12px;border-color:${total9Hit>=3?'#2ecc71':'#e67e22'};">
             <div class="label" style="font-size:15px;">🎯 9MAX <span class="badge-9max">9MAX</span></div>
             <div class="numbers" style="font-size:22px;">${final9.map(n => colorNum(n, winMain, winBonus, true, actualCarryovers)).join(' ')}</div>
@@ -1060,7 +1093,7 @@
             <div class="source">📌 저3/중3/고3</div>
         </div>`;
 
-        // 12. v23.0
+        // 13. v23.0
         html += `<div class="v23-box" style="padding:8px 12px;">
             <div class="title" style="font-size:15px;">🧬 v23.0 <span class="badge-v23">1회 이상</span></div>
             <div class="numbers" style="font-size:22px;">${v23Result.map(n => colorNum(n, winMain, winBonus, true, actualCarryovers)).join(' ')}</div>
@@ -1069,7 +1102,7 @@
             <div class="source">📌 저3/중3/고4</div>
         </div>`;
 
-        // 13. 최종 10수
+        // 14. 최종 10수
         html += `<div class="optimize-result" style="padding:8px 12px;border-color:${totalFinalHit>=5?'#2ecc71':'#ff6b6b'};background:${totalFinalHit>=5?'#0a2a1a':'#1a1a2a'};">
             <div class="label" style="font-size:15px;color:${totalFinalHit>=5?'#2ecc71':'#ff6b6b'};">🏆 최종 10수 <span class="badge-final">통합</span> ${totalFinalHit>=5?'✅ 목표!':`(${hitFinal10.length}개/5)`}</div>
             <div class="numbers" style="font-size:22px;">${final10.map(n => colorNum(n, winMain, winBonus, true, actualCarryovers)).join(' ')}</div>
@@ -1473,7 +1506,7 @@
         lastBaseRound = baseVal;
         lastStartRound = 1200;
         document.getElementById('resultArea').innerHTML = '<div class="loading">🟢 v27 준비 완료! "🚀 분석"을 눌러주세요.</div>';
-        console.log('🟢 v27 로드 완료 (축소 레이아웃)');
+        console.log('🟢 v27 로드 완료 (합집합 및 전용수 표시 추가)');
     };
     </script>
 </body>
