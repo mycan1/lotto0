@@ -47,7 +47,6 @@
         .btn-group button { padding: 2px 12px; font-size: 11px; }
         .copy-btn { background: #ffd700; color: #000; border: none; border-radius: 15px; padding: 4px 16px; font-weight: bold; cursor: pointer; font-size: 12px; }
         .copy-btn:hover { background: #00e6b8; transform: scale(1.02); }
-
         .custom-inputs { display: none; gap: 6px; align-items: center; flex-wrap: wrap; padding: 4px 0; width: 100%; }
         .custom-inputs.active { display: flex; }
         .custom-inputs input[type="text"] { flex: 1; min-width: 200px; padding: 4px 10px; border-radius: 4px; border: 1px solid #ffd700; background: #2a2a2a; color: #fff; font-size: 13px; }
@@ -113,7 +112,7 @@
 <body>
     <h1>📊 v27.1 – 대기전용 + 수동입력 + 커스텀 + 선택 + 방정식 TOP10</h1>
     <div class="update-notice">
-        ✅ v27.1 완전 복원 | <strong>커스텀 OFF=기존 분석</strong> | <strong>커스텀 ON=수동입력 기반 (구간 강제 해제)</strong> | <strong>🔘 1~10위 선택 가능</strong> | <strong>🧬 방정식 TOP10 표시</strong> | <strong>⭐ 별표시 제거 (색상만 표시)</strong>
+        ✅ v27.1 완전 복원 | <strong>커스텀 OFF=기존 분석</strong> | <strong>커스텀 ON=수동입력 기반 (구간 강제 해제)</strong> | <strong>🔘 1~10위 선택 가능</strong> | <strong>🧬 방정식 TOP10 표시</strong> | <strong>⭐ 별표시 제거 (색상만 표시)</strong> | <strong>➕ 엔진간 중복 최소화 (최대 2개 중복)</strong>
     </div>
     <div class="filters">
         <div class="filter-group">
@@ -191,7 +190,7 @@
             <span style="color:#666;font-size:10px;">(분석 시 자동 적용)</span>
         </div>
     </div>
-    <div class="result-area" id="resultArea"><div class="loading">🟢 v27.1+방정식+별제거+구간해제 준비 완료! "🚀 분석"을 눌러주세요.</div></div>
+    <div class="result-area" id="resultArea"><div class="loading">🟢 v27.1+방정식+별제거+구간해제+중복최소화 준비 완료! "🚀 분석"을 눌러주세요.</div></div>
 
     <div class="modal-overlay" id="backtestModal">
         <div class="modal-box">
@@ -824,7 +823,7 @@
     }
 
     // ========================================================================
-    // 🆕 수정된 커스텀 분석 함수 (구간 강제 제거, 개별 점수 기반)
+    // 🆕 수정된 커스텀 분석 (엔진 간 중복 최소화 + 구간 강제 해제)
     // ========================================================================
     function runCustomPoolAnalysis(customNums) {
         const base = parseInt(document.getElementById('baseRound').value) || 1232;
@@ -832,7 +831,7 @@
         const winMain = winData ? winData.main : [];
         const winBonus = winData ? winData.bonus : null;
 
-        // 자동으로 당첨번호를 후보에 추가 (중복 제거) - 하지만 사용자 입력을 최우선
+        // 사용자 입력 + 당첨번호 후보 (중복 제거)
         let allCandidates = [...customNums, ...winMain];
         if (winBonus !== null && winBonus !== undefined) allCandidates.push(winBonus);
         allCandidates = [...new Set(allCandidates)];
@@ -879,61 +878,125 @@
         customNums.forEach(n => freq[n] = (freq[n] || 0) + 1);
 
         // ============================================================
-        // 🔥 여기서부터 점수 계산 방식 변경 (구간 강제 제거)
+        // 각 엔진별로 모든 조합의 점수를 계산하고, 이전 엔진과 중복이 최대 2개인 조합 중 최고 점수 선택
         // ============================================================
-        const results = engineNames.map((name, idx) => {
-            let best = combs[0];
-            let bestScore = -Infinity;
-            for (const comb of combs) {
+        const results = [];
+        const selectedCombos = []; // 이전에 선택된 조합들 (배열)
+
+        engineNames.forEach((name, idx) => {
+            // 현재 엔진의 모든 조합에 대해 점수 계산
+            const scored = combs.map(comb => {
                 let score = 0;
-                // 1️⃣ 개별 번호 점수 합산 (빈도 + 글로벌 빈도)
                 comb.forEach(n => {
-                    // 사용자 입력 내 빈도 (중복 입력에 대한 가중치)
                     score += (freq[n] || 0) * 1.5;
-                    // 전체 데이터 내 과거 출현 빈도
                     score += (globalFreqData[n] || 0) * 1.0;
                 });
-
-                // 2️⃣ 3연번 방지 (소프트 페널티, 1점 감점)
                 if (hasConsecutive3(comb)) score -= 1.0;
 
-                // 3️⃣ (선택) 합계 150에 가까우면 보너스 (⑩ 합계 150 엔진만 적용)
-                if (idx === 9) {
+                // 엔진별 추가 조건 (고저, 홀짝, 합계)
+                if (idx === 3) { // 고저 2:4
+                    const low = comb.filter(n => n <= 22).length;
+                    const high = comb.filter(n => n >= 23).length;
+                    score -= Math.abs(low - 2) * 10;
+                    score -= Math.abs(high - 4) * 10;
+                } else if (idx === 4) { // 저/고 4:2
+                    const low = comb.filter(n => n <= 22).length;
+                    const high = comb.filter(n => n >= 23).length;
+                    score -= Math.abs(low - 4) * 10;
+                    score -= Math.abs(high - 2) * 10;
+                } else if (idx === 5) { // 고저 3:3
+                    const low = comb.filter(n => n <= 22).length;
+                    const high = comb.filter(n => n >= 23).length;
+                    score -= Math.abs(low - 3) * 10;
+                    score -= Math.abs(high - 3) * 10;
+                } else if (idx === 6) { // 홀짝 2:4
+                    const odd = comb.filter(n => n % 2 === 1).length;
+                    const even = comb.filter(n => n % 2 === 0).length;
+                    score -= Math.abs(odd - 2) * 10;
+                    score -= Math.abs(even - 4) * 10;
+                } else if (idx === 9) { // 합계 150
                     const sum = comb.reduce((a,b) => a+b, 0);
-                    score += -Math.abs(sum - 150) * 0.05;  // 150에서 멀수록 감점
+                    score -= Math.abs(sum - 150) * 0.2;
                 }
+                return { score, comb };
+            });
 
-                if (score > bestScore) {
-                    bestScore = score;
-                    best = comb;
+            // 점수 내림차순 정렬
+            scored.sort((a, b) => b.score - a.score);
+
+            // 최대 허용 중복 개수 (각 엔진당 이전 엔진들과의 중복 최대 2개)
+            const maxOverlap = 2;
+            let chosen = null;
+
+            // 1) 점수가 높은 순으로 탐색하며 조건 만족하는 첫 조합 선택
+            for (const item of scored) {
+                let ok = true;
+                for (const sel of selectedCombos) {
+                    const overlap = item.comb.filter(n => sel.includes(n)).length;
+                    if (overlap > maxOverlap) {
+                        ok = false;
+                        break;
+                    }
+                }
+                if (ok) {
+                    chosen = item;
+                    break;
                 }
             }
-            return {
+
+            // 2) 만약 조건을 만족하는 조합이 없으면, 중복이 가장 적은 조합 선택 (동점 시 점수 높은 것)
+            if (!chosen) {
+                let minOverlap = Infinity;
+                let bestItem = null;
+                for (const item of scored) {
+                    let maxOverlapWithSelected = 0;
+                    for (const sel of selectedCombos) {
+                        const overlap = item.comb.filter(n => sel.includes(n)).length;
+                        if (overlap > maxOverlapWithSelected) maxOverlapWithSelected = overlap;
+                    }
+                    if (maxOverlapWithSelected < minOverlap || 
+                        (maxOverlapWithSelected === minOverlap && (bestItem === null || item.score > bestItem.score))) {
+                        minOverlap = maxOverlapWithSelected;
+                        bestItem = item;
+                    }
+                }
+                chosen = bestItem;
+            }
+
+            // fallback (혹시라도)
+            if (!chosen) chosen = scored[0];
+
+            const best = chosen.comb;
+            selectedCombos.push(best); // 선택한 조합을 저장
+
+            results.push({
                 name: name,
                 nums: best.sort((a,b) => a-b),
                 hitMain: best.filter(n => winMain.includes(n)),
                 hitBonus: best.filter(n => n === winBonus),
                 totalHit: best.filter(n => winMain.includes(n)).length + (best.includes(winBonus) ? 1 : 0)
-            };
+            });
         });
 
         // ============================================================
-        // 결과 표시
+        // 결과 표시 (입력 번호는 오름차순 정렬)
         // ============================================================
         const maxHit = Math.max(...results.map(r => r.totalHit));
+        const sortedCandidates = [...allCandidates].sort((a,b) => a-b);
+
         let html = `
             <div style="background:#1a2a1a;border:3px solid #ffd700;border-radius:12px;padding:15px;margin:10px 0;">
                 <div style="color:#ffd700;font-size:18px;font-weight:bold;text-align:center;margin-bottom:10px;">
-                    🔍 각 엔진별 분석 (입력: ${allCandidates.length}개, 구간 강제 해제)
+                    🔍 각 엔진별 분석 (입력: ${allCandidates.length}개, 중복 최소화 적용)
                 </div>
                 <div style="text-align:center;font-size:16px;font-weight:bold;letter-spacing:2px;padding:8px;background:#0a0a0a;border-radius:8px;margin-bottom:10px;">
-                    ${allCandidates.map(n => colorNumSimple(n, winMain, winBonus)).join(' ')}
+                    ${sortedCandidates.map(n => colorNumSimple(n, winMain, winBonus)).join(' ')}
                     <span style="color:#888;font-size:11px;margin-left:10px;">(입력번호)</span>
                 </div>
+                <div style="color:#888;font-size:11px;text-align:center;margin-bottom:6px;">※ 각 엔진은 다른 엔진과 최대 2개 번호만 중복되도록 선택</div>
                 <div style="display:grid;grid-template-columns:1fr 1fr;gap:6px;">
                     ${results.map(r => {
                         const isBest = r.totalHit === maxHit;
-                        const hitClass = r.totalHit >= 3 ? 'good' : (r.totalHit >= 1 ? 'ok' : 'bad');
                         return `
                             <div style="background:${isBest ? '#0a2a0a' : '#1a1a1a'};border:2px solid ${isBest ? '#2ecc71' : '#555'};border-radius:8px;padding:6px 8px;">
                                 <div style="display:flex;justify-content:space-between;align-items:center;">
@@ -1048,7 +1111,7 @@
     }
 
     // ========================================================================
-    // v27.1 원본 분석 (별표시 제거 + 방정식 TOP10)
+    // v27.1 원본 분석 (별표시 제거 + 방정식 TOP10) - 완전 복원
     // ========================================================================
     function runV27Analysis() {
         console.log('🚀 v27.1 실행 (별표시 제거)');
@@ -1331,7 +1394,7 @@
         const totalFinalHit = hitFinal10.length + (hitFinal10Bonus.length ? 1 : 0);
 
         // ====================================================================
-        // UI 렌더링 (별표시 제거 버전)
+        // UI 렌더링 (별표시 제거 버전) - 완전 복원
         // ====================================================================
         let html = '';
 
@@ -1575,7 +1638,7 @@
     }
 
     // ========================================================================
-    // 💪 강력 1수 / 5수 (별표시 제거)
+    // 💪 강력 1수 / 5수
     // ========================================================================
     function recommendStrong1() {
         if (!lastTop9 || lastTop9.length === 0) { alert('⚠️ 먼저 분석 실행'); return; }
@@ -1728,9 +1791,9 @@
         document.getElementById('manualInclude').value = '';
         lastBaseRound = baseVal;
         lastStartRound = 1132;
-        document.getElementById('resultArea').innerHTML = '<div class="loading">🟢 v27.1+방정식+별제거+구간해제 준비 완료! "🚀 분석"을 눌러주세요.</div>';
-        console.log('🟢 v27.1+방정식+별제거+구간해제 로드 완료');
+        document.getElementById('resultArea').innerHTML = '<div class="loading">🟢 v27.1+방정식+별제거+구간해제+중복최소화 준비 완료! "🚀 분석"을 눌러주세요.</div>';
+        console.log('🟢 v27.1+중복최소화 로드 완료');
     };
     </script>
 </body>
-</html>🔍
+</html>
