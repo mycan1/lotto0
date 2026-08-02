@@ -8,6 +8,85 @@
         body { background: #0a0a0a; color: #fff; font-family: 'Segoe UI', sans-serif; padding: 20px; max-width: 1400px; margin: 0 auto; }
         h1 { color: #ffd700; text-align: center; border-bottom: 3px solid #ffd700; padding-bottom: 10px; margin-bottom: 20px; font-size: 28px; }
         
+        .custom-top-bar {
+            background: #1a1a2a;
+            border: 2px solid #ff6b6b;
+            border-radius: 12px;
+            padding: 12px 18px;
+            margin-bottom: 20px;
+            display: flex;
+            flex-wrap: wrap;
+            align-items: center;
+            gap: 12px;
+        }
+        .custom-top-bar .label {
+            color: #ff6b6b;
+            font-weight: bold;
+            font-size: 15px;
+            white-space: nowrap;
+        }
+        .custom-top-bar input[type="checkbox"] {
+            width: 20px;
+            height: 20px;
+            accent-color: #ff6b6b;
+            cursor: pointer;
+        }
+        .custom-top-bar .input-wrap {
+            flex: 1;
+            min-width: 200px;
+            display: flex;
+            gap: 8px;
+            align-items: center;
+        }
+        .custom-top-bar textarea {
+            flex: 1;
+            min-height: 44px;
+            padding: 8px 12px;
+            background: #0a0a0a;
+            border: 1px solid #555;
+            border-radius: 8px;
+            color: #fff;
+            font-size: 14px;
+            resize: vertical;
+            font-family: inherit;
+        }
+        .custom-top-bar textarea:focus {
+            border-color: #ff6b6b;
+            outline: none;
+        }
+        .custom-top-bar .hint {
+            color: #888;
+            font-size: 11px;
+            white-space: nowrap;
+        }
+        .custom-top-bar .btn-custom {
+            background: #ff6b6b;
+            color: #000;
+            border: none;
+            border-radius: 20px;
+            padding: 6px 18px;
+            font-weight: bold;
+            font-size: 13px;
+            cursor: pointer;
+            transition: 0.2s;
+            white-space: nowrap;
+        }
+        .custom-top-bar .btn-custom:hover {
+            background: #ff4757;
+            transform: scale(1.03);
+            box-shadow: 0 0 20px #ff6b6b;
+        }
+        .custom-top-bar .btn-custom:disabled {
+            opacity: 0.4;
+            cursor: not-allowed;
+            transform: none;
+            box-shadow: none;
+        }
+        @media (max-width: 700px) {
+            .custom-top-bar .input-wrap { flex-wrap: wrap; }
+            .custom-top-bar .hint { display: none; }
+        }
+
         .filters { background: #1a1a1a; border: 2px solid #ffd700; border-radius: 15px; padding: 12px 15px; margin-bottom: 20px; display: flex; flex-wrap: wrap; gap: 10px; align-items: center; }
         .filter-group { display: flex; flex-direction: column; gap: 2px; }
         .filter-group label { color: #ffd700; font-size: 11px; font-weight: bold; }
@@ -151,92 +230,22 @@
         .custom-area .input-group { display: flex; gap: 8px; flex-wrap: wrap; align-items: center; margin-top: 6px; }
         .custom-area textarea { width: 100%; min-height: 60px; background: #0a0a0a; border: 1px solid #555; color: #fff; padding: 6px; border-radius: 6px; font-size: 13px; resize: vertical; }
         .custom-area .hint { color: #888; font-size: 11px; margin-top: 4px; }
-        /* 커스텀 입력창 (결과 내부) */
-        .custom-in-result {
-            background: #1a1a2a;
-            border: 2px solid #ff6b6b;
-            border-radius: 12px;
-            padding: 10px 15px;
-            margin-bottom: 12px;
-            display: none;
-            flex-wrap: wrap;
-            align-items: center;
-            gap: 10px;
-        }
-        .custom-in-result.active {
-            display: flex;
-        }
-        .custom-in-result .label {
-            color: #ff6b6b;
-            font-weight: bold;
-            font-size: 14px;
-            white-space: nowrap;
-        }
-        .custom-in-result input[type="checkbox"] {
-            width: 18px;
-            height: 18px;
-            accent-color: #ff6b6b;
-            cursor: pointer;
-        }
-        .custom-in-result .input-wrap {
-            flex: 1;
-            min-width: 150px;
-            display: flex;
-            gap: 6px;
-            align-items: center;
-        }
-        .custom-in-result textarea {
-            flex: 1;
-            min-height: 36px;
-            padding: 4px 8px;
-            background: #0a0a0a;
-            border: 1px solid #555;
-            border-radius: 6px;
-            color: #fff;
-            font-size: 13px;
-            resize: vertical;
-            font-family: inherit;
-        }
-        .custom-in-result textarea:focus {
-            border-color: #ff6b6b;
-            outline: none;
-        }
-        .custom-in-result .hint {
-            color: #888;
-            font-size: 10px;
-            white-space: nowrap;
-        }
-        .custom-in-result .btn-custom {
-            background: #ff6b6b;
-            color: #000;
-            border: none;
-            border-radius: 16px;
-            padding: 4px 14px;
-            font-weight: bold;
-            font-size: 12px;
-            cursor: pointer;
-            transition: 0.2s;
-            white-space: nowrap;
-        }
-        .custom-in-result .btn-custom:hover {
-            background: #ff4757;
-            transform: scale(1.03);
-            box-shadow: 0 0 15px #ff6b6b;
-        }
-        .custom-in-result .btn-custom:disabled {
-            opacity: 0.4;
-            cursor: not-allowed;
-            transform: none;
-            box-shadow: none;
-        }
-        @media (max-width: 700px) {
-            .custom-in-result .input-wrap { flex-wrap: wrap; }
-            .custom-in-result .hint { display: none; }
-        }
+        @media (max-width: 700px) { .formula-grid { grid-template-columns: 1fr; } .combo-grid { grid-template-columns: 1fr; } .filter-group input[type="number"] { width: 60px; } }
     </style>
 </head>
 <body>
     <h1>📊 v27.1 – 대기전용 자동제거 + 수동입력 + 방정식TOP10 + 커스텀모드 (결정적)</h1>
+
+    <!-- 커스텀 입력창 (상단 고정) -->
+    <div class="custom-top-bar">
+        <span class="label">✏️ 커스텀 모드</span>
+        <input type="checkbox" id="customMode">
+        <div class="input-wrap" id="customInputWrap">
+            <textarea id="customNumbersInput" placeholder="1, 2, 3, 4, 5, 6 ... (공백, 쉼표, 줄바꿈 구분)" disabled></textarea>
+            <button class="btn-custom" id="customRunBtn" disabled onclick="runCustomAnalysis()">▶ 실행</button>
+        </div>
+        <span class="hint">6개=모든 엔진 동일, 7개↑=각 엔진 다른 조합</span>
+    </div>
 
     <div class="update-notice">
         ✅ 예상회차↔시작회차 연동 | 수동테스트 연동 | 유사회차 개수만 표시 | 9MAX/최종10수/v23.0 구간강제 | TOP10 제외 10전략 | 강력 1/2/3순위 | 이월수 자동구분 | 미래데이터 미참조 | 대기TOP10/9MAX 합집합 & 전용수 표시 | <strong style="color:#e74c3c;">🚫대기전용 자동제거</strong> | <strong style="color:#3498db;">✏️수동 제외/포함</strong> | <strong style="color:#9b59b6;">🧬방정식 기반 TOP10 (9MAX 완전 제외)</strong> | <strong style="color:#ff6b6b;">✏️커스텀 모드 (숫자만 복사해도 자동 분석, 결정적)</strong>
@@ -958,7 +967,7 @@
         const sortMode = document.getElementById('similarSort')?.value || 'high';
         const topN = parseInt(document.getElementById('topCount').value) || 40;
 
-        // 유사 회차 분석 수행 (pool3, pool4, pool5 정보를 얻기 위해)
+        // 유사 회차 분석 수행 (커스텀 모드에서도 pool3, pool4, pool5 정보를 얻기 위해)
         const result = findTrueSimilar(base, start, minMatch, topN, offset);
         let pool3 = [], pool4 = [], pool5 = [];
         let only3 = [], only4 = [];
@@ -1102,14 +1111,14 @@
         
         const maxHit = Math.max(...results.map(r => r.totalHit));
         
-        // HTML 조립 (pool 정보를 먼저 표시)
+        // HTML 조립
         let html = `
             <div class="custom-area">
                 <div class="label">✏️ 커스텀 모드 결과 (입력: ${nums.join(', ')})</div>
                 <div style="font-size:13px;color:#aaa;margin-bottom:6px;">※ 당첨번호는 적중 확인용으로만 사용됨 (시드: ${seed})</div>
         `;
 
-        // pool 정보 (③,④,⑤)를 엔진 결과보다 먼저 표시
+        // pool 정보 표시 (③, ④, ⑤)
         if (pool3.length > 0 || pool4.length > 0) {
             html += `<div class="pool-info">
                 <div><span class="tag">③ 상위 개 유사다음회차 동반수 (기본+점수제, ${pool3.length}개):</span> <span class="nums">${pool3.map(n => colorNumSimple(n, winMain, winBonus)).join(', ')}</span></div>
@@ -1504,7 +1513,7 @@
         const totalFinalHit = hitFinal10.length + (hitFinal10Bonus.length ? 1 : 0);
         const totalEqHit = hitEquation.length + (hitEquationBonus.length ? 1 : 0);
 
-        // UI 렌더링 - 여기에 커스텀 입력창을 '📋 10개 조합' 바로 위에 삽입
+        // UI 렌더링
         const uniqueStrategies = {};
         const seen = new Set();
         Object.entries(baseStrategies).forEach(([name, nums]) => {
@@ -1622,21 +1631,6 @@
             <div style="color:#888;font-size:10px;margin-top:4px;">📌 대기TOP10과 9MAX의 합집합, 대기 전용은 자동 제거됨</div>
         </div>`;
 
-        // ============================================================
-        // ★★★ 여기에 커스텀 입력창 삽입 (📋 10개 조합 바로 위) ★★★
-        // ============================================================
-        html += `
-        <div class="custom-in-result" id="customInputInResult">
-            <span class="label">✏️ 커스텀 모드</span>
-            <input type="checkbox" id="customModeInside">
-            <div class="input-wrap">
-                <textarea id="customNumbersInputInside" placeholder="1, 2, 3, 4, 5, 6 ... (공백, 쉼표, 줄바꿈 구분)" disabled></textarea>
-                <button class="btn-custom" id="customRunBtnInside" disabled onclick="runCustomAnalysis()">▶ 실행</button>
-            </div>
-            <span class="hint">6개=모든 엔진 동일, 7개↑=각 엔진 다른 조합</span>
-        </div>
-        `;
-
         // 10개 조합
         html += `<div style="background:#0a0a0a;border:3px solid #ffd700;border-radius:10px;padding:8px 12px;margin:8px 0;">
             <div style="display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;">
@@ -1693,33 +1687,6 @@
         </div>`;
 
         document.getElementById('resultArea').innerHTML = html;
-
-        // 내부 커스텀 입력창 이벤트 연결
-        const insideCheckbox = document.getElementById('customModeInside');
-        const insideTextarea = document.getElementById('customNumbersInputInside');
-        const insideBtn = document.getElementById('customRunBtnInside');
-        if (insideCheckbox) {
-            insideCheckbox.addEventListener('change', function() {
-                const isChecked = this.checked;
-                insideTextarea.disabled = !isChecked;
-                insideBtn.disabled = !isChecked;
-                if (isChecked) insideTextarea.focus();
-                // 외부 체크박스와 동기화
-                document.getElementById('customMode').checked = isChecked;
-                document.getElementById('customNumbersInput').disabled = !isChecked;
-                document.getElementById('customRunBtn').disabled = !isChecked;
-            });
-            // 외부 체크박스와 동기화
-            document.getElementById('customMode').addEventListener('change', function() {
-                const isChecked = this.checked;
-                insideCheckbox.checked = isChecked;
-                insideTextarea.disabled = !isChecked;
-                insideBtn.disabled = !isChecked;
-                if (isChecked) insideTextarea.focus();
-                document.getElementById('customNumbersInput').disabled = !isChecked;
-                document.getElementById('customRunBtn').disabled = !isChecked;
-            });
-        }
     }
 
     // ========================================================================
@@ -2047,20 +2014,15 @@
         runAnalysis();
     }
 
-    // 외부 커스텀 체크박스 이벤트 (상단에 있는 것)
+    // 커스텀 모드 토글 시 입력창 활성화/비활성화
     document.getElementById('customMode').addEventListener('change', function() {
         const isChecked = this.checked;
         const textarea = document.getElementById('customNumbersInput');
         const btn = document.getElementById('customRunBtn');
         textarea.disabled = !isChecked;
         btn.disabled = !isChecked;
-        if (isChecked) textarea.focus();
-        // 내부 체크박스와 동기화 (이미 존재하면)
-        const insideCheckbox = document.getElementById('customModeInside');
-        if (insideCheckbox) {
-            insideCheckbox.checked = isChecked;
-            document.getElementById('customNumbersInputInside').disabled = !isChecked;
-            document.getElementById('customRunBtnInside').disabled = !isChecked;
+        if (isChecked) {
+            textarea.focus();
         }
     });
 
