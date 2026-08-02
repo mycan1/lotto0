@@ -224,9 +224,6 @@
         .equation-block .numbers { font-size: 24px; font-weight: bold; letter-spacing: 2px; margin: 5px 0; }
         .custom-area { background: #1a1a2a; border: 2px solid #ff6b6b; border-radius: 10px; padding: 10px 15px; margin: 10px 0; }
         .custom-area .label { color: #ff6b6b; font-weight: bold; font-size: 15px; }
-        .custom-area .pool-info { background: #0a1a2a; border: 2px solid #3498db; border-radius: 8px; padding: 6px 12px; margin: 6px 0; font-size: 13px; }
-        .custom-area .pool-info .tag { color: #3498db; font-weight: bold; }
-        .custom-area .pool-info .nums { color: #fff; }
         .custom-area .input-group { display: flex; gap: 8px; flex-wrap: wrap; align-items: center; margin-top: 6px; }
         .custom-area textarea { width: 100%; min-height: 60px; background: #0a0a0a; border: 1px solid #555; color: #fff; padding: 6px; border-radius: 6px; font-size: 13px; resize: vertical; }
         .custom-area .hint { color: #888; font-size: 11px; margin-top: 4px; }
@@ -941,7 +938,7 @@
     }
 
     // ========================================================================
-    // ★★★ 수정된 커스텀 분석 함수 (결정적, 시드 사용, pool 정보 표시) ★★★
+    // ★★★ 수정된 커스텀 분석 함수 (결정적, 시드 사용) ★★★
     // ========================================================================
     function runCustomAnalysis() {
         const raw = document.getElementById('customNumbersInput').value;
@@ -959,39 +956,12 @@
         nums.sort((a,b) => a-b);
         
         const base = parseInt(document.getElementById('baseRound').value) || 1232;
-        const start = parseInt(document.getElementById('startRound').value) || 1200;
-        const minMatch = parseInt(document.getElementById('minMatch').value) || 1;
-        const offset = parseInt(document.getElementById('refOffset').value) || -1;
-        const seed = parseInt(document.getElementById('randomSeed').value) || 0;
-        const excludeBonus = isBonusExcluded();
-        const sortMode = document.getElementById('similarSort')?.value || 'high';
-        const topN = parseInt(document.getElementById('topCount').value) || 40;
-
-        // 유사 회차 분석 수행 (커스텀 모드에서도 pool3, pool4, pool5 정보를 얻기 위해)
-        const result = findTrueSimilar(base, start, minMatch, topN, offset);
-        let pool3 = [], pool4 = [], pool5 = [];
-        let only3 = [], only4 = [];
-        if (result.similar.length > 0) {
-            const freq = calcFreqWeighted(result.similar, base);
-            const allSimNums = [], allNextNums = [];
-            result.similar.forEach(s => { s.remainedNums.forEach(n => allSimNums.push(n)); s.nextNums.forEach(n => allNextNums.push(n)); });
-            const freqMap = {}; allSimNums.forEach(n => freqMap[n] = (freqMap[n] || 0) + 1);
-            const nextFreqMap = {}; allNextNums.forEach(n => nextFreqMap[n] = (nextFreqMap[n] || 0) + 1);
-            pool3 = Object.keys(nextFreqMap).filter(k => nextFreqMap[k] >= 2).map(Number);
-            const oneHit = Object.keys(nextFreqMap).filter(k => nextFreqMap[k] === 1).map(Number);
-            const scoredOne = oneHit.map(n => ({ num: Number(n), score: 0 })).sort((a,b)=>b.score - a.score);
-            const additional = scoredOne.slice(0, 6).map(item => item.num);
-            pool3 = [...new Set([...pool3, ...additional])].sort((a,b)=>a-b);
-            const simFreqMap = {}; allSimNums.forEach(n => simFreqMap[n] = (simFreqMap[n] || 0) + 1);
-            pool4 = Object.keys(simFreqMap).filter(k => simFreqMap[k] >= 2).map(Number).sort((a,b)=>a-b);
-            pool5 = pool3.filter(n => pool4.includes(n));
-            only3 = pool3.filter(n => !pool4.includes(n));
-            only4 = pool4.filter(n => !pool3.includes(n));
-        }
-
         const winData = getWinning(base);
         const winMain = winData ? winData.main : [];
         const winBonus = winData ? winData.bonus : null;
+        
+        // ★★★ 결정적 시드 사용 ★★★
+        const seed = parseInt(document.getElementById('randomSeed').value) || 0;
         
         const engineNames = [
             '① ③만 우선', '② ③∩④∩③만', '③ ③만+④만',
@@ -1010,6 +980,7 @@
             let combos = [];
             const maxComb = 5000;
             if (pool.length >= 6) {
+                // ★★★ seed 기반 셔플로 결정적 조합 생성 ★★★
                 for (let t = 0; t < Math.min(1000, maxComb); t++) {
                     const shuffled = SeedCache.seededShuffle(pool, seed + t + 1000);
                     const comb = shuffled.slice(0, 6).sort((a,b) => a-b);
@@ -1084,6 +1055,7 @@
                 chosen = { score: 0, comb: fallback };
             }
             
+            // 사용자 입력 번호만 남기고 부족분은 nums에서 보충
             let best = chosen.comb.filter(n => nums.includes(n));
             if (best.length < 6) {
                 const additional = nums.filter(n => !best.includes(n));
@@ -1110,26 +1082,12 @@
         });
         
         const maxHit = Math.max(...results.map(r => r.totalHit));
-        
-        // HTML 조립
         let html = `
             <div class="custom-area">
                 <div class="label">✏️ 커스텀 모드 결과 (입력: ${nums.join(', ')})</div>
                 <div style="font-size:13px;color:#aaa;margin-bottom:6px;">※ 당첨번호는 적중 확인용으로만 사용됨 (시드: ${seed})</div>
+                <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;">
         `;
-
-        // pool 정보 표시 (③, ④, ⑤)
-        if (pool3.length > 0 || pool4.length > 0) {
-            html += `<div class="pool-info">
-                <div><span class="tag">③ 상위 개 유사다음회차 동반수 (기본+점수제, ${pool3.length}개):</span> <span class="nums">${pool3.map(n => colorNumSimple(n, winMain, winBonus)).join(', ')}</span></div>
-                <div><span class="tag">④ 상위개 유사회차 2회 이상 동반수 (${pool4.length}개):</span> <span class="nums">${pool4.map(n => colorNumSimple(n, winMain, winBonus)).join(', ')}</span></div>
-                <div><span class="tag">⑤ 교집합 (③∩④, ${pool5.length}개):</span> <span class="nums">${pool5.map(n => colorNumSimple(n, winMain, winBonus)).join(', ')}</span></div>
-                <div style="font-size:11px;color:#888;margin-top:4px;">📌 ③:유사다음회차 동반수 | ④:2회 이상 동반수</div>
-            </div>`;
-        }
-
-        // 엔진 결과
-        html += `<div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-top:8px;">`;
         results.forEach((r, idx) => {
             const isBest = r.totalHit === maxHit;
             html += `
