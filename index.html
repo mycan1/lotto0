@@ -2,91 +2,11 @@
 <html lang="ko">
 <head>
     <meta charset="UTF-8">
-    <title>📊 v27.1 – 대기전용 자동제거 + 수동입력 + 방정식TOP10 + 커스텀모드 (결정적)</title>
+    <title>📊 v27.1 – 결정적 난수 + 집합 계산기 (당첨 표시 강화)</title>
     <style>
         * { box-sizing: border-box; margin: 0; padding: 0; }
         body { background: #0a0a0a; color: #fff; font-family: 'Segoe UI', sans-serif; padding: 20px; max-width: 1400px; margin: 0 auto; }
         h1 { color: #ffd700; text-align: center; border-bottom: 3px solid #ffd700; padding-bottom: 10px; margin-bottom: 20px; font-size: 28px; }
-        
-        .custom-top-bar {
-            background: #1a1a2a;
-            border: 2px solid #ff6b6b;
-            border-radius: 12px;
-            padding: 12px 18px;
-            margin-bottom: 20px;
-            display: flex;
-            flex-wrap: wrap;
-            align-items: center;
-            gap: 12px;
-        }
-        .custom-top-bar .label {
-            color: #ff6b6b;
-            font-weight: bold;
-            font-size: 15px;
-            white-space: nowrap;
-        }
-        .custom-top-bar input[type="checkbox"] {
-            width: 20px;
-            height: 20px;
-            accent-color: #ff6b6b;
-            cursor: pointer;
-        }
-        .custom-top-bar .input-wrap {
-            flex: 1;
-            min-width: 200px;
-            display: flex;
-            gap: 8px;
-            align-items: center;
-        }
-        .custom-top-bar textarea {
-            flex: 1;
-            min-height: 44px;
-            padding: 8px 12px;
-            background: #0a0a0a;
-            border: 1px solid #555;
-            border-radius: 8px;
-            color: #fff;
-            font-size: 14px;
-            resize: vertical;
-            font-family: inherit;
-        }
-        .custom-top-bar textarea:focus {
-            border-color: #ff6b6b;
-            outline: none;
-        }
-        .custom-top-bar .hint {
-            color: #888;
-            font-size: 11px;
-            white-space: nowrap;
-        }
-        .custom-top-bar .btn-custom {
-            background: #ff6b6b;
-            color: #000;
-            border: none;
-            border-radius: 20px;
-            padding: 6px 18px;
-            font-weight: bold;
-            font-size: 13px;
-            cursor: pointer;
-            transition: 0.2s;
-            white-space: nowrap;
-        }
-        .custom-top-bar .btn-custom:hover {
-            background: #ff4757;
-            transform: scale(1.03);
-            box-shadow: 0 0 20px #ff6b6b;
-        }
-        .custom-top-bar .btn-custom:disabled {
-            opacity: 0.4;
-            cursor: not-allowed;
-            transform: none;
-            box-shadow: none;
-        }
-        @media (max-width: 700px) {
-            .custom-top-bar .input-wrap { flex-wrap: wrap; }
-            .custom-top-bar .hint { display: none; }
-        }
-
         .filters { background: #1a1a1a; border: 2px solid #ffd700; border-radius: 15px; padding: 12px 15px; margin-bottom: 20px; display: flex; flex-wrap: wrap; gap: 10px; align-items: center; }
         .filter-group { display: flex; flex-direction: column; gap: 2px; }
         .filter-group label { color: #ffd700; font-size: 11px; font-weight: bold; }
@@ -224,31 +144,129 @@
         .equation-block .numbers { font-size: 24px; font-weight: bold; letter-spacing: 2px; margin: 5px 0; }
         .custom-area { background: #1a1a2a; border: 2px solid #ff6b6b; border-radius: 10px; padding: 10px 15px; margin: 10px 0; }
         .custom-area .label { color: #ff6b6b; font-weight: bold; font-size: 15px; }
+        .custom-area .pool-info { background: #0a1a2a; border: 2px solid #3498db; border-radius: 8px; padding: 6px 12px; margin: 6px 0; font-size: 13px; }
+        .custom-area .pool-info .tag { color: #3498db; font-weight: bold; }
+        .custom-area .pool-info .nums { color: #fff; }
         .custom-area .input-group { display: flex; gap: 8px; flex-wrap: wrap; align-items: center; margin-top: 6px; }
         .custom-area textarea { width: 100%; min-height: 60px; background: #0a0a0a; border: 1px solid #555; color: #fff; padding: 6px; border-radius: 6px; font-size: 13px; resize: vertical; }
         .custom-area .hint { color: #888; font-size: 11px; margin-top: 4px; }
-        @media (max-width: 700px) { .formula-grid { grid-template-columns: 1fr; } .combo-grid { grid-template-columns: 1fr; } .filter-group input[type="number"] { width: 60px; } }
+        .custom-in-result {
+            background: #1a1a2a;
+            border: 2px solid #ff6b6b;
+            border-radius: 12px;
+            padding: 10px 15px;
+            margin-bottom: 12px;
+            display: none;
+            flex-wrap: wrap;
+            align-items: center;
+            gap: 10px;
+        }
+        .custom-in-result.active { display: flex; }
+        .custom-in-result .label { color: #ff6b6b; font-weight: bold; font-size: 14px; white-space: nowrap; }
+        .custom-in-result input[type="checkbox"] { width: 18px; height: 18px; accent-color: #ff6b6b; cursor: pointer; }
+        .custom-in-result .input-wrap { flex: 1; min-width: 150px; display: flex; gap: 6px; align-items: center; }
+        .custom-in-result textarea { flex: 1; min-height: 36px; padding: 4px 8px; background: #0a0a0a; border: 1px solid #555; border-radius: 6px; color: #fff; font-size: 13px; resize: vertical; font-family: inherit; }
+        .custom-in-result textarea:focus { border-color: #ff6b6b; outline: none; }
+        .custom-in-result .hint { color: #888; font-size: 10px; white-space: nowrap; }
+        .custom-in-result .btn-custom { background: #ff6b6b; color: #000; border: none; border-radius: 16px; padding: 4px 14px; font-weight: bold; font-size: 12px; cursor: pointer; transition: 0.2s; white-space: nowrap; }
+        .custom-in-result .btn-custom:hover { background: #ff4757; transform: scale(1.03); box-shadow: 0 0 15px #ff6b6b; }
+        .custom-in-result .btn-custom:disabled { opacity: 0.4; cursor: not-allowed; transform: none; box-shadow: none; }
+        @media (max-width: 700px) { .custom-in-result .input-wrap { flex-wrap: wrap; } .custom-in-result .hint { display: none; } }
+        .filter-custom-wrap { display: flex; align-items: center; gap: 8px; flex-wrap: wrap; background: #1a1a2a; padding: 4px 10px; border-radius: 10px; border: 1px solid #ff6b6b; margin-top: 4px; width: 100%; }
+        .filter-custom-wrap .label { color: #ff6b6b; font-weight: bold; font-size: 12px; white-space: nowrap; }
+        .filter-custom-wrap input[type="checkbox"] { width: 16px; height: 16px; accent-color: #ff6b6b; cursor: pointer; }
+        .filter-custom-wrap .input-wrap { flex: 1; min-width: 120px; display: flex; gap: 6px; align-items: center; }
+        .filter-custom-wrap textarea { flex: 1; min-height: 32px; padding: 3px 6px; background: #0a0a0a; border: 1px solid #555; border-radius: 6px; color: #fff; font-size: 12px; resize: vertical; font-family: inherit; }
+        .filter-custom-wrap textarea:focus { border-color: #ff6b6b; outline: none; }
+        .filter-custom-wrap .btn-custom { background: #ff6b6b; color: #000; border: none; border-radius: 14px; padding: 3px 12px; font-weight: bold; font-size: 11px; cursor: pointer; transition: 0.2s; white-space: nowrap; }
+        .filter-custom-wrap .btn-custom:hover { background: #ff4757; transform: scale(1.03); box-shadow: 0 0 15px #ff6b6b; }
+        .filter-custom-wrap .btn-custom:disabled { opacity: 0.4; cursor: not-allowed; transform: none; box-shadow: none; }
+        .filter-custom-wrap .hint { color: #888; font-size: 9px; white-space: nowrap; }
+        @media (max-width: 700px) { .filter-custom-wrap .input-wrap { flex-wrap: wrap; } .filter-custom-wrap .hint { display: none; } }
+        /* 집합 계산기 스타일 */
+        .set-calculator { background: #0a0a0a; border: 2px solid #9b59b6; border-radius: 8px; padding: 8px 12px; margin: 5px 0; }
+        .set-calculator .title { color: #9b59b6; font-weight: bold; font-size: 13px; }
+        .set-calculator .input-row { display: flex; gap: 10px; flex-wrap: wrap; margin-top: 4px; }
+        .set-calculator .input-row > div { flex: 1; min-width: 120px; }
+        .set-calculator .input-row input { width: 100%; padding: 3px 6px; border-radius: 4px; border: 1px solid #555; background: #2a2a2a; color: #fff; font-size: 12px; }
+        .set-calculator .btn-row { display: flex; gap: 6px; flex-wrap: wrap; margin-top: 4px; }
+        .set-calculator .btn-row button { background: #3498db; color: #fff; border: none; border-radius: 12px; padding: 2px 12px; font-size: 12px; cursor: pointer; transition: 0.2s; }
+        .set-calculator .btn-row button:hover { transform: scale(1.05); box-shadow: 0 0 10px rgba(52,152,219,0.5); }
+        .set-calculator .btn-row button:nth-child(2) { background: #2ecc71; }
+        .set-calculator .btn-row button:nth-child(2):hover { box-shadow: 0 0 10px rgba(46,204,113,0.5); }
+        .set-calculator .btn-row button:nth-child(3) { background: #e67e22; }
+        .set-calculator .btn-row button:nth-child(3):hover { box-shadow: 0 0 10px rgba(230,126,34,0.5); }
+        .set-calculator .btn-row button:nth-child(4) { background: #9b59b6; }
+        .set-calculator .btn-row button:nth-child(4):hover { box-shadow: 0 0 10px rgba(155,89,182,0.5); }
+        .set-calculator .result { margin-top: 4px; font-size: 13px; color: #fff; line-height: 1.6; }
+        .set-calculator .result .label { color: #ffd700; }
+        .set-calculator .result .hit-green { color: #2ecc71; font-weight: bold; }
+        .set-calculator .result .hit-number { display: inline-block; margin: 0 1px; }
+        .set-calculator .result .winning-num { color: #2ecc71; font-weight: bold; }
+        .set-calculator .result .bonus-num { color: #ff6b6b; font-weight: bold; }
+        /* 풀 정보 블록 (③④) */
+        .pool-info-block { background: #0a1a2a; border: 2px solid #3498db; border-radius: 8px; padding: 6px 12px; margin: 5px 0; font-size: 13px; }
+        .pool-info-block .tag { color: #3498db; font-weight: bold; }
+        .pool-info-block .nums { color: #fff; }
+        /* 당첨번호 표시 안내 */
+        .winning-notice { background: #1a2a1a; border: 1px solid #2ecc71; border-radius: 6px; padding: 4px 10px; font-size: 12px; color: #2ecc71; margin: 4px 0; }
+        /* 집합 계산기 결과 - 당첨 강조 */
+        .set-result-box { background: #0a0a0a; border: 2px solid #2ecc71; border-radius: 8px; padding: 6px 12px; margin: 4px 0; }
+        .set-result-box .match-summary { font-size: 13px; color: #ffd700; }
+        .set-result-box .match-count { font-size: 15px; font-weight: bold; }
+        .set-result-box .winning-info-box { background: #1a2a1a; border: 1px solid #2ecc71; border-radius: 6px; padding: 3px 8px; margin: 3px 0; font-size: 12px; color: #2ecc71; }
+        /* 숫자 강조 */
+        .highlight-win { color: #2ecc71 !important; font-weight: bold !important; }
+        .highlight-bonus { color: #ff6b6b !important; font-weight: bold !important; }
+
+        /* Top 10 집계 스타일 */
+        .top10-aggregate {
+            background: #0a1a2a;
+            border: 3px solid #ffd700;
+            border-radius: 12px;
+            padding: 10px 15px;
+            margin-top: 12px;
+        }
+        .top10-aggregate .title {
+            color: #ffd700;
+            font-weight: bold;
+            font-size: 16px;
+            text-align: center;
+        }
+        .top10-aggregate .numbers {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 8px;
+            justify-content: center;
+            margin-top: 6px;
+            font-size: 18px;
+            font-weight: bold;
+        }
+        .top10-aggregate .numbers .item {
+            background: #1a1a1a;
+            padding: 4px 12px;
+            border-radius: 20px;
+            border: 1px solid #555;
+        }
+        .top10-aggregate .numbers .item .count {
+            font-size: 12px;
+            color: #888;
+        }
+        .top10-aggregate .sub {
+            text-align: center;
+            font-size: 12px;
+            color: #888;
+            margin-top: 4px;
+        }
     </style>
 </head>
 <body>
-    <h1>📊 v27.1 – 대기전용 자동제거 + 수동입력 + 방정식TOP10 + 커스텀모드 (결정적)</h1>
-
-    <!-- 커스텀 입력창 (상단 고정) -->
-    <div class="custom-top-bar">
-        <span class="label">✏️ 커스텀 모드</span>
-        <input type="checkbox" id="customMode">
-        <div class="input-wrap" id="customInputWrap">
-            <textarea id="customNumbersInput" placeholder="1, 2, 3, 4, 5, 6 ... (공백, 쉼표, 줄바꿈 구분)" disabled></textarea>
-            <button class="btn-custom" id="customRunBtn" disabled onclick="runCustomAnalysis()">▶ 실행</button>
-        </div>
-        <span class="hint">6개=모든 엔진 동일, 7개↑=각 엔진 다른 조합</span>
-    </div>
-
+    <h1>📊 v27.1 – 결정적 난수 + 집합 계산기 (당첨 표시 강화)</h1>
     <div class="update-notice">
-        ✅ 예상회차↔시작회차 연동 | 수동테스트 연동 | 유사회차 개수만 표시 | 9MAX/최종10수/v23.0 구간강제 | TOP10 제외 10전략 | 강력 1/2/3순위 | 이월수 자동구분 | 미래데이터 미참조 | 대기TOP10/9MAX 합집합 & 전용수 표시 | <strong style="color:#e74c3c;">🚫대기전용 자동제거</strong> | <strong style="color:#3498db;">✏️수동 제외/포함</strong> | <strong style="color:#9b59b6;">🧬방정식 기반 TOP10 (9MAX 완전 제외)</strong> | <strong style="color:#ff6b6b;">✏️커스텀 모드 (숫자만 복사해도 자동 분석, 결정적)</strong>
+        ✅ 예상회차↔시작회차 연동 | 수동테스트 연동 | 유사회차 개수만 표시 | 9MAX/최종10수/v23.0 구간강제 | TOP10 제외 10전략 | 강력 1/2/3순위 | 이월수 자동구분 | 미래데이터 미참조 | 대기TOP10/9MAX 합집합 & 전용수 표시 | <strong style="color:#e74c3c;">🚫대기전용 자동제거</strong> | <strong style="color:#3498db;">✏️수동 제외/포함</strong> | <strong style="color:#9b59b6;">🧬방정식 기반 TOP10 (9MAX 완전 제외)</strong> | <strong style="color:#ff6b6b;">✏️커스텀 모드</strong> | <strong style="color:#00e6b8;">🔒 결정적 난수 (시드 기반)</strong> | <strong style="color:#9b59b6;">🧮 집합 계산기 (당첨 ★ 녹색/☆ 보너스 - 강조 표시)</strong> | <strong style="color:#ffd700;">📊 10개 엔진 통합 Top 10 집계</strong>
     </div>
 
-    <!-- 기존 필터 영역 -->
+    <!-- 필터 영역 -->
     <div class="filters">
         <div class="filter-group">
             <label>📅 예상</label>
@@ -315,9 +333,19 @@
             <input type="text" id="manualInclude" placeholder="4,5,6" style="width:80px;padding:3px 6px;border-radius:5px;border:1px solid #555;background:#2a2a2a;color:#fff;font-size:12px;">
             <span style="color:#666;font-size:10px;">(분석 시 자동 적용)</span>
         </div>
+        <!-- 커스텀 입력창 -->
+        <div class="filter-custom-wrap" id="filterCustomWrap">
+            <span class="label">✏️ 커스텀 모드</span>
+            <input type="checkbox" id="filterCustomMode">
+            <div class="input-wrap">
+                <textarea id="filterCustomInput" placeholder="1, 2, 3, 4, 5, 6 ... (공백, 쉼표, 줄바꿈 구분)" disabled></textarea>
+                <button class="btn-custom" id="filterCustomRunBtn" disabled onclick="runCustomAnalysis()">▶ 실행</button>
+            </div>
+            <span class="hint">6개=동일, 7개↑=각 엔진 다른 조합</span>
+        </div>
     </div>
 
-    <div class="result-area" id="resultArea"><div class="loading">🟢 v27.1 준비 완료 (방정식TOP10 + 커스텀모드 결정적)! "🚀 분석"을 눌러주세요.</div></div>
+    <div class="result-area" id="resultArea"><div class="loading">🟢 준비 완료 (결정적 모드). "🚀 분석"을 눌러주세요.</div></div>
 
     <div class="modal-overlay" id="backtestModal">
         <div class="modal-box">
@@ -341,7 +369,18 @@
     <script>
     'use strict';
     // ========================================================================
-    // SeedCache 모듈 (결정적 난수 생성을 위해)
+    // ★★★ 결정적 난수 생성기 (시드 기반) ★★★
+    // ========================================================================
+    function createRNG(seed) {
+        let s = seed >>> 0;
+        return function() {
+            s = (s * 1664525 + 1013904223) & 0xffffffff;
+            return (s >>> 0) / 4294967296;
+        };
+    }
+
+    // ========================================================================
+    // SeedCache (결정적 셔플)
     // ========================================================================
     const SeedCache = (function() {
         function mulberry32(seed) {
@@ -370,7 +409,7 @@
     })();
 
     // ========================================================================
-    // ★★★ 방정식 기반 TOP10 생성 함수 (보충 없이 그대로, 9MAX 제외) ★★★
+    // 방정식 TOP10 (9MAX 제외, 보충 없음)
     // ========================================================================
     function generateEquationTop10({
         pool5,
@@ -394,13 +433,12 @@
             if (result.length >= 10) break;
             if (!result.includes(n)) result.push(n);
         }
-        // fallback 제거 → 10개 미만이면 그대로 반환
         result.sort((a, b) => a - b);
         return result;
     }
 
     // ========================================================================
-    // DATA (1001~1234회) - 기존과 동일
+    // DATA
     // ========================================================================
     const DATA = [
         [1234,1,15,19,31,35,43,27],[1233,2,7,20,25,37,40,29],[1232,12,15,19,22,24,36,3],[1231,4,13,14,18,31,38,15],
@@ -464,7 +502,9 @@
         [1002,17,25,33,35,38,45,15],[1001,6,10,12,14,20,42,15]
     ];
 
+    // ========================================================================
     // 전역 변수
+    // ========================================================================
     let winData = null, baseNums = [], similarData = null;
     let lastTop9 = [], lastV23Result = [], globalFreqData = {};
     let lastTopPred = [];
@@ -483,6 +523,132 @@
     let lastOnlyNineSorted = [];
     let lastWaitTop10 = [];
     let lastEquationTop10 = [];
+
+    // ========================================================================
+    // ★★★ 집합 계산기 함수 (당첨번호 자동 표시 - 강화된 녹색 표시) ★★★
+    // ========================================================================
+    function calculateSet(type) {
+        const inputA = document.getElementById('setAInput');
+        const inputB = document.getElementById('setBInput');
+        if (!inputA || !inputB) return;
+
+        // ★★★★★ 수정된 부분: 숫자만 추출 (★, ☆, 공백, 쉼표 모두 무시)
+        const parseSet = (str) => {
+            const nums = (str.match(/\d+/g) || [])
+                .map(Number)
+                .filter(n => n >= 1 && n <= 45);
+            return new Set(nums);
+        };
+
+        const setA = parseSet(inputA.value);
+        const setB = parseSet(inputB.value);
+
+        let resultSet;
+        let label;
+        switch(type) {
+            case 'union':
+                resultSet = new Set([...setA, ...setB]);
+                label = '합집합 (A ∪ B)';
+                break;
+            case 'intersection':
+                resultSet = new Set([...setA].filter(x => setB.has(x)));
+                label = '교집합 (A ∩ B)';
+                break;
+            case 'difference':
+                resultSet = new Set([...setA].filter(x => !setB.has(x)));
+                label = '차집합 (A - B)';
+                break;
+            case 'symmetricDifference':
+                resultSet = new Set([...setA].filter(x => !setB.has(x)).concat([...setB].filter(x => !setA.has(x))));
+                label = '대칭차집합 (A △ B)';
+                break;
+            default:
+                resultSet = new Set();
+                label = '';
+        }
+
+        const sorted = Array.from(resultSet).sort((a,b) => a-b);
+        const resultDiv = document.getElementById('setResult');
+        if (!resultDiv) return;
+
+        // ★★★ 당첨번호 가져오기 (분석 실행 여부와 무관) ★★★
+        const baseRound = parseInt(document.getElementById('baseRound').value) || 1232;
+        let winMain = [];
+        let winBonus = null;
+
+        // 1. 먼저 전역 winData 사용 (분석 실행 시 저장됨)
+        if (winData && winData.main) {
+            winMain = winData.main;
+            winBonus = winData.bonus;
+        }
+        // 2. 없으면 직접 조회
+        else {
+            const win = getWinning(baseRound);
+            if (win) {
+                winMain = win.main;
+                winBonus = win.bonus;
+            }
+        }
+
+        // 당첨번호 집합 (본번호)
+        const winMainSet = new Set(winMain);
+        const isBonus = (n) => n === winBonus;
+
+        // 결과 HTML 구성 - 숫자에 직접 인라인 스타일 적용하여 강제 표시
+        let resultHtml = `<div class="set-result-box">`;
+        resultHtml += `<div><span class="label">${label}:</span> `;
+
+        if (sorted.length === 0) {
+            resultHtml += '∅ (공집합)';
+        } else {
+            const marked = sorted.map(n => {
+                let color = '#fff';
+                let symbol = '';
+                if (winMainSet.has(n)) {
+                    color = '#2ecc71'; // 녹색
+                    symbol = ' ★';
+                } else if (isBonus(n)) {
+                    color = '#ff6b6b'; // 빨간색 (보너스)
+                    symbol = ' ☆';
+                }
+                // 인라인 스타일로 강제 적용
+                return `<span style="color:${color}; font-weight:bold; font-size:1.1em;">${n}${symbol}</span>`;
+            }).join(', ');
+            resultHtml += marked;
+        }
+
+        resultHtml += `</div>`;
+
+        // 일치 개수 요약
+        const hitMainNums = sorted.filter(n => winMainSet.has(n));
+        const hitBonusNums = sorted.filter(n => isBonus(n));
+        const totalHits = hitMainNums.length + hitBonusNums.length;
+
+        if (winMain.length > 0) {
+            resultHtml += `<div class="match-summary" style="margin-top:4px;">`;
+            if (totalHits > 0) {
+                let parts = [];
+                if (hitMainNums.length > 0) parts.push(`본번호 일치: <strong style="color:#2ecc71;">${hitMainNums.join(', ')}</strong>`);
+                if (hitBonusNums.length > 0) parts.push(`보너스 일치: <strong style="color:#ff6b6b;">${hitBonusNums[0]}</strong>`);
+                resultHtml += `<span class="match-count">✅ ${totalHits}개 일치 (${parts.join(' / ')})</span>`;
+            } else {
+                resultHtml += `<span style="color:#888;">❌ 일치하는 당첨번호 없음</span>`;
+            }
+            resultHtml += `</div>`;
+        } else {
+            resultHtml += `<div style="color:#888;font-size:11px;margin-top:4px;">⚠️ ${baseRound}회 당첨번호 정보 없음 (분석 실행 시 자동 표시)</div>`;
+        }
+
+        // 당첨번호 회차 정보
+        if (winMain.length > 0) {
+            resultHtml += `<div class="winning-info-box" style="margin-top:4px;">📌 ${baseRound}회 당첨번호: <strong style="color:#2ecc71;">${winMain.join(', ')}</strong> | 보너스: <strong style="color:#ff6b6b;">${winBonus}</strong></div>`;
+        } else {
+            resultHtml += `<div class="winning-info-box" style="color:#888;border-color:#555;">⚠️ ${baseRound}회 당첨번호 정보 없음</div>`;
+        }
+
+        resultHtml += `</div>`;
+        resultDiv.innerHTML = resultHtml;
+    }
 
     // ========================================================================
     // 기본 함수
@@ -525,7 +691,7 @@
         lastStartRound = parseInt(this.value) || 1200;
     });
 
-    // 3연번 필터링
+    // 3연번 검사 및 수정 (rng 사용)
     function hasConsecutive3(arr) {
         if (arr.length < 3) return false;
         const sorted = [...arr].sort((a,b) => a-b);
@@ -534,7 +700,7 @@
         }
         return false;
     }
-    function filterNoConsecutive3(arr, excludeSet, maxAttempts = 100) {
+    function filterNoConsecutive3(arr, excludeSet, rng, maxAttempts = 100) {
         let attempts = 0, result = [...arr];
         while (hasConsecutive3(result) && attempts < maxAttempts) {
             attempts++;
@@ -552,7 +718,7 @@
                 if (!result.includes(c) && !excludeSet.has(c)) candidates.push(c);
             }
             for (let i = candidates.length - 1; i > 0; i--) {
-                const j = Math.floor(Math.random() * (i + 1));
+                const j = Math.floor(rng() * (i + 1));
                 [candidates[i], candidates[j]] = [candidates[j], candidates[i]];
             }
             let replaced = false;
@@ -568,7 +734,7 @@
             if (!replaced && attempts > 30) {
                 const indices = [0,1,2,3,4,5];
                 for (let i = indices.length - 1; i > 0; i--) {
-                    const j = Math.floor(Math.random() * (i + 1));
+                    const j = Math.floor(rng() * (i + 1));
                     [indices[i], indices[j]] = [indices[j], indices[i]];
                 }
                 const toReplace = indices.slice(0, 2);
@@ -583,8 +749,8 @@
         return result;
     }
 
-    // 구간 강제 (fallbackPool 사용)
-    function getBalanced6FromCandidates(candidates, excludeSet, lowTarget = 2, midTarget = 2, highTarget = 2, fallbackPool = null) {
+    // 구간 강제 (rng 사용)
+    function getBalanced6FromCandidates(candidates, excludeSet, lowTarget, midTarget, highTarget, fallbackPool, rng) {
         const low = [], mid = [], high = [];
         candidates.forEach(n => {
             if (!excludeSet.has(n)) {
@@ -606,7 +772,7 @@
         const pickRandom = (arr, count) => {
             const shuffled = [...arr];
             for (let i = shuffled.length - 1; i > 0; i--) {
-                const j = Math.floor(Math.random() * (i + 1));
+                const j = Math.floor(rng() * (i + 1));
                 [shuffled[i], shuffled[j]] = [shuffled[j], shuffled[i]];
             }
             return shuffled.slice(0, count);
@@ -632,7 +798,7 @@
             } else {
                 const shuffled = [...pool];
                 for (let i = shuffled.length - 1; i > 0; i--) {
-                    const j = Math.floor(Math.random() * (i + 1));
+                    const j = Math.floor(rng() * (i + 1));
                     [shuffled[i], shuffled[j]] = [shuffled[j], shuffled[i]];
                 }
                 for (const n of shuffled) {
@@ -641,9 +807,10 @@
                 }
             }
         }
-        return filterNoConsecutive3(result, excludeSet);
+        return filterNoConsecutive3(result, excludeSet, rng);
     }
-    function getBalanced9FromCandidates(candidates, excludeSet, count = 9, fallbackPool = null) {
+
+    function getBalanced9FromCandidates(candidates, excludeSet, count, fallbackPool, rng) {
         const sections = { low: [], mid: [], high: [] };
         candidates.forEach(n => {
             if (!excludeSet.has(n)) {
@@ -674,7 +841,7 @@
                 break;
             } else {
                 for (let i = pool.length - 1; i > 0; i--) {
-                    const j = Math.floor(Math.random() * (i + 1));
+                    const j = Math.floor(rng() * (i + 1));
                     [pool[i], pool[j]] = [pool[j], pool[i]];
                 }
                 for (const n of pool) {
@@ -683,7 +850,7 @@
                 }
             }
         }
-        result = filterNoConsecutive3(result, excludeSet);
+        result = filterNoConsecutive3(result, excludeSet, rng);
         return result.sort((a,b) => a-b);
     }
 
@@ -843,64 +1010,64 @@
         return Object.entries(freqMap).filter(([n, f]) => f >= minMatch).map(([n, f]) => ({ num: parseInt(n), score: Math.round(f*10)/10, freq: Math.round(f*10)/10 })).sort((a,b) => b.score - a.score || b.freq - a.freq).slice(0, 10);
     }
 
-    // TOP10 제외 전략
+    // TOP10 제외 전략 (rng 추가)
     function getExcludeSet(topNums) { return new Set(topNums); }
-    function getExcludeTop10_Only3(pool3, pool4, topNums, fallbackPool = null) {
+    function getExcludeTop10_Only3(pool3, pool4, topNums, fallbackPool, rng) {
         const excludeSet = getExcludeSet(topNums);
         const only3 = pool3.filter(n => !pool4.includes(n) && !excludeSet.has(n));
         const rest = pool3.filter(n => !only3.includes(n) && !excludeSet.has(n));
-        return getBalanced6FromCandidates([...only3, ...rest], excludeSet, 2, 2, 2, fallbackPool);
+        return getBalanced6FromCandidates([...only3, ...rest], excludeSet, 2, 2, 2, fallbackPool, rng);
     }
-    function getExcludeTop10_TripleWithOnly3(pool3, pool4, topNums, fallbackPool = null) {
+    function getExcludeTop10_TripleWithOnly3(pool3, pool4, topNums, fallbackPool, rng) {
         const excludeSet = getExcludeSet(topNums);
         const intersect = pool3.filter(n => pool4.includes(n) && !excludeSet.has(n));
         const only3 = pool3.filter(n => !pool4.includes(n) && !excludeSet.has(n));
-        return getBalanced6FromCandidates([...intersect, ...only3], excludeSet, 2, 2, 2, fallbackPool);
+        return getBalanced6FromCandidates([...intersect, ...only3], excludeSet, 2, 2, 2, fallbackPool, rng);
     }
-    function getExcludeTop10_Only3And4(pool3, pool4, topNums, fallbackPool = null) {
+    function getExcludeTop10_Only3And4(pool3, pool4, topNums, fallbackPool, rng) {
         const excludeSet = getExcludeSet(topNums);
         const only3 = pool3.filter(n => !pool4.includes(n) && !excludeSet.has(n));
         const only4 = pool4.filter(n => !pool3.includes(n) && !excludeSet.has(n));
-        return getBalanced6FromCandidates([...only3, ...only4], excludeSet, 2, 2, 2, fallbackPool);
+        return getBalanced6FromCandidates([...only3, ...only4], excludeSet, 2, 2, 2, fallbackPool, rng);
     }
-    function getExcludeTop10_HighLow24(pool3, topNums, fallbackPool = null) {
+    function getExcludeTop10_HighLow24(pool3, topNums, fallbackPool, rng) {
         const excludeSet = getExcludeSet(topNums);
         const filtered = pool3.filter(n => !excludeSet.has(n));
         const lows = filtered.filter(n => n <= 22), highs = filtered.filter(n => n >= 23);
-        return getBalanced6FromCandidates([...lows, ...highs], excludeSet, 2, 2, 2, fallbackPool);
+        return getBalanced6FromCandidates([...lows, ...highs], excludeSet, 2, 2, 2, fallbackPool, rng);
     }
-    function getExcludeTop10_LowHigh42(pool3, topNums, fallbackPool = null) {
+    function getExcludeTop10_LowHigh42(pool3, topNums, fallbackPool, rng) {
         const excludeSet = getExcludeSet(topNums);
         const filtered = pool3.filter(n => !excludeSet.has(n));
         const lows = filtered.filter(n => n <= 22), highs = filtered.filter(n => n >= 23);
-        return getBalanced6FromCandidates([...lows, ...highs], excludeSet, 2, 2, 2, fallbackPool);
+        return getBalanced6FromCandidates([...lows, ...highs], excludeSet, 2, 2, 2, fallbackPool, rng);
     }
-    function getExcludeTop10_HighLow33(pool3, topNums, fallbackPool = null) {
+    function getExcludeTop10_HighLow33(pool3, topNums, fallbackPool, rng) {
         const excludeSet = getExcludeSet(topNums);
         const filtered = pool3.filter(n => !excludeSet.has(n));
         const lows = filtered.filter(n => n <= 22), highs = filtered.filter(n => n >= 23);
-        return getBalanced6FromCandidates([...lows, ...highs], excludeSet, 2, 2, 2, fallbackPool);
+        return getBalanced6FromCandidates([...lows, ...highs], excludeSet, 2, 2, 2, fallbackPool, rng);
     }
-    function getExcludeTop10_OddEven24(pool3, topNums, fallbackPool = null) {
+    function getExcludeTop10_OddEven24(pool3, topNums, fallbackPool, rng) {
         const excludeSet = getExcludeSet(topNums);
         const filtered = pool3.filter(n => !excludeSet.has(n));
         const odds = filtered.filter(n => n % 2 === 1), evens = filtered.filter(n => n % 2 === 0);
-        return getBalanced6FromCandidates([...odds, ...evens], excludeSet, 2, 2, 2, fallbackPool);
+        return getBalanced6FromCandidates([...odds, ...evens], excludeSet, 2, 2, 2, fallbackPool, rng);
     }
-    function getExcludeTop10_Only4(pool3, pool4, topNums, fallbackPool = null) {
+    function getExcludeTop10_Only4(pool3, pool4, topNums, fallbackPool, rng) {
         const excludeSet = getExcludeSet(topNums);
         const only4 = pool4.filter(n => !pool3.includes(n) && !excludeSet.has(n));
         const rest = pool4.filter(n => !only4.includes(n) && !excludeSet.has(n));
-        return getBalanced6FromCandidates([...only4, ...rest], excludeSet, 2, 2, 2, fallbackPool);
+        return getBalanced6FromCandidates([...only4, ...rest], excludeSet, 2, 2, 2, fallbackPool, rng);
     }
-    function getExcludeTop10_EndDigit334(pool3, topNums, fallbackPool = null) {
+    function getExcludeTop10_EndDigit334(pool3, topNums, fallbackPool, rng) {
         const excludeSet = getExcludeSet(topNums);
         const filtered = pool3.filter(n => !excludeSet.has(n));
         const group1 = filtered.filter(n => n % 10 >= 0 && n % 10 <= 4);
         const group2 = filtered.filter(n => n % 10 >= 5 && n % 10 <= 9);
-        return getBalanced6FromCandidates([...group1, ...group2], excludeSet, 2, 2, 2, fallbackPool);
+        return getBalanced6FromCandidates([...group1, ...group2], excludeSet, 2, 2, 2, fallbackPool, rng);
     }
-    function getExcludeTop10_Sum150(pool3, topNums, fallbackPool = null) {
+    function getExcludeTop10_Sum150(pool3, topNums, fallbackPool, rng) {
         const excludeSet = getExcludeSet(topNums);
         const filtered = pool3.filter(n => !excludeSet.has(n));
         const pool = filtered.slice(0, 20);
@@ -908,7 +1075,7 @@
         for (let tries = 0; tries < 500; tries++) {
             let comb = [], temp = [...pool];
             for (let i = 0; i < 6; i++) {
-                const idx = Math.floor(Math.random() * temp.length);
+                const idx = Math.floor(rng() * temp.length);
                 comb.push(temp[idx]);
                 temp.splice(idx, 1);
             }
@@ -919,7 +1086,7 @@
             if (diff < bestDiff) { bestDiff = diff; best = comb.slice(); }
         }
         if (best.length === 0) best = filtered.slice(0, 6);
-        return filterNoConsecutive3(best, excludeSet);
+        return filterNoConsecutive3(best, excludeSet, rng);
     }
 
     // 색상 함수
@@ -938,13 +1105,20 @@
     }
 
     // ========================================================================
-    // ★★★ 수정된 커스텀 분석 함수 (결정적, 시드 사용) ★★★
+    // ★★★ 커스텀 분석 (수정 버전) - 성적 낮은 엔진(④⑤⑥⑦⑩)만 교체 + Top 10 집계 추가 ★★★
     // ========================================================================
     function runCustomAnalysis() {
-        const raw = document.getElementById('customNumbersInput').value;
+        let raw = document.getElementById('filterCustomInput').value;
+        if (!raw || raw.trim() === '') {
+            raw = document.getElementById('customNumbersInputInside')?.value || '';
+        }
+        if (!raw || raw.trim() === '') {
+            alert('⚠️ 커스텀 번호를 입력해주세요.');
+            return;
+        }
         const tokens = raw.match(/\d+/g);
         if (!tokens) {
-            alert('⚠️ 유효한 숫자를 입력해주세요. (예: 1 2 3 4 5 6)');
+            alert('⚠️ 유효한 숫자를 입력해주세요.');
             return;
         }
         let nums = tokens.map(Number).filter(n => n >= 1 && n <= 45);
@@ -954,33 +1128,25 @@
             return;
         }
         nums.sort((a,b) => a-b);
-        
         const base = parseInt(document.getElementById('baseRound').value) || 1232;
+        const seed = parseInt(document.getElementById('randomSeed').value) || 0;
         const winData = getWinning(base);
         const winMain = winData ? winData.main : [];
         const winBonus = winData ? winData.bonus : null;
-        
-        // ★★★ 결정적 시드 사용 ★★★
-        const seed = parseInt(document.getElementById('randomSeed').value) || 0;
-        
         const engineNames = [
             '① ③만 우선', '② ③∩④∩③만', '③ ③만+④만',
             '④ 고저 2:4', '⑤ 저/고 4:2', '⑥ 고저 3:3',
             '⑦ 홀짝 2:4', '⑧ ④만 우선', '⑨ 끝수 3:3:4', '⑩ 합계 150'
         ];
-        
         const pool = nums;
         const selectedCombos = [];
         const results = [];
-        
         engineNames.forEach((name, idx) => {
             const freq = {};
             nums.forEach(n => freq[n] = (freq[n] || 0) + 1);
-            
             let combos = [];
             const maxComb = 5000;
             if (pool.length >= 6) {
-                // ★★★ seed 기반 셔플로 결정적 조합 생성 ★★★
                 for (let t = 0; t < Math.min(1000, maxComb); t++) {
                     const shuffled = SeedCache.seededShuffle(pool, seed + t + 1000);
                     const comb = shuffled.slice(0, 6).sort((a,b) => a-b);
@@ -995,45 +1161,52 @@
                 const shuffled = SeedCache.seededShuffle(pool, seed + 9999);
                 combos.push(shuffled.slice(0, 6).sort((a,b) => a-b));
             }
-            
+
+            // ★★★ 수정된 점수 계산 (성적 낮은 엔진 ④⑤⑥⑦⑩ 조건 완화) ★★★
             const scored = combos.map(comb => {
                 let score = 0;
+                // 기본 빈도 점수
                 comb.forEach(n => score += freq[n] || 0);
-                if (hasConsecutive3(comb)) score -= 1.0;
                 
-                if (idx === 3) {
+                // 3연속 제외 패널티
+                if (hasConsecutive3(comb)) score -= 10;
+
+                // ★★★ 엔진별 제약 조건 (감점 대폭 완화 - 당첨번호 가중치 제거) ★★★
+                if (idx === 3) { // ④ 고저 2:4 → 저/고 3:3으로 완화
                     const low = comb.filter(n => n <= 22).length;
                     const high = comb.filter(n => n >= 23).length;
-                    score -= Math.abs(low - 2) * 10;
-                    score -= Math.abs(high - 4) * 10;
-                } else if (idx === 4) {
+                    score -= Math.abs(low - 3) * 2;   // 원래 10 -> 2
+                    score -= Math.abs(high - 3) * 2;
+                } else if (idx === 4) { // ⑤ 저/고 4:2 → 저/고 3:3
                     const low = comb.filter(n => n <= 22).length;
                     const high = comb.filter(n => n >= 23).length;
-                    score -= Math.abs(low - 4) * 10;
-                    score -= Math.abs(high - 2) * 10;
-                } else if (idx === 5) {
+                    score -= Math.abs(low - 3) * 2;
+                    score -= Math.abs(high - 3) * 2;
+                } else if (idx === 5) { // ⑥ 고저 3:3 → 감점 완화
                     const low = comb.filter(n => n <= 22).length;
                     const high = comb.filter(n => n >= 23).length;
-                    score -= Math.abs(low - 3) * 10;
-                    score -= Math.abs(high - 3) * 10;
-                } else if (idx === 6) {
+                    score -= Math.abs(low - 3) * 2;
+                    score -= Math.abs(high - 3) * 2;
+                } else if (idx === 6) { // ⑦ 홀짝 2:4 → 홀/짝 3:3
                     const odd = comb.filter(n => n % 2 === 1).length;
                     const even = comb.filter(n => n % 2 === 0).length;
-                    score -= Math.abs(odd - 2) * 10;
-                    score -= Math.abs(even - 4) * 10;
-                } else if (idx === 9) {
+                    score -= Math.abs(odd - 3) * 2;
+                    score -= Math.abs(even - 3) * 2;
+                } else if (idx === 9) { // ⑩ 합계 150 → 목표 100~150으로 완화
                     const sum = comb.reduce((a,b) => a+b, 0);
-                    score -= Math.abs(sum - 150) * 0.2;
+                    score -= Math.abs(sum - 150) * 0.05; // 원래 0.2 -> 0.05
                 }
+
+                // 저/중/고 균형 (최소 1개씩은 있어야 함)
                 const lowCnt = comb.filter(n => n <= 15).length;
                 const midCnt = comb.filter(n => n >= 16 && n <= 30).length;
                 const highCnt = comb.filter(n => n >= 31).length;
                 if (lowCnt === 0 || midCnt === 0 || highCnt === 0) score -= 20;
+
                 return { score, comb };
             });
-            
+
             scored.sort((a, b) => b.score - a.score);
-            
             let chosen = null;
             for (const item of scored) {
                 let ok = true;
@@ -1054,8 +1227,6 @@
                 const fallback = pool.slice(0, 6).sort((a,b) => a-b);
                 chosen = { score: 0, comb: fallback };
             }
-            
-            // 사용자 입력 번호만 남기고 부족분은 nums에서 보충
             let best = chosen.comb.filter(n => nums.includes(n));
             if (best.length < 6) {
                 const additional = nums.filter(n => !best.includes(n));
@@ -1066,11 +1237,9 @@
             }
             best.sort((a,b) => a-b);
             selectedCombos.push(best);
-            
             const hitMain = best.filter(n => winMain.includes(n));
             const hitBonus = best.filter(n => n === winBonus);
             const totalHit = hitMain.length + (hitBonus.length ? 1 : 0);
-            
             results.push({
                 name: name,
                 nums: best,
@@ -1080,15 +1249,33 @@
                 score: chosen.score
             });
         });
-        
+
+        // ============================================================
+        // ★★★ 10개 엔진 통합 Top 10 집계 (추가 기능) ★★★
+        // ============================================================
+        const freqMap = {};
+        results.forEach(r => {
+            r.nums.forEach(n => {
+                freqMap[n] = (freqMap[n] || 0) + 1;
+            });
+        });
+
+        const top10Freq = Object.entries(freqMap)
+            .map(([num, count]) => ({ num: parseInt(num), count }))
+            .sort((a, b) => b.count - a.count || a.num - b.num)
+            .slice(0, 10);
+
+        // ============================================================
+        // UI 렌더링
+        // ============================================================
         const maxHit = Math.max(...results.map(r => r.totalHit));
         let html = `
             <div class="custom-area">
                 <div class="label">✏️ 커스텀 모드 결과 (입력: ${nums.join(', ')})</div>
-                <div style="font-size:13px;color:#aaa;margin-bottom:6px;">※ 당첨번호는 적중 확인용으로만 사용됨 (시드: ${seed})</div>
-                <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;">
+                <div style="font-size:13px;color:#aaa;margin-bottom:6px;">※ 당첨번호는 적중 확인용 (시드: ${seed})</div>
+                <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-top:8px;">
         `;
-        results.forEach((r, idx) => {
+        results.forEach((r) => {
             const isBest = r.totalHit === maxHit;
             html += `
                 <div style="background:${isBest ? '#0a2a0a' : '#1a1a1a'};border:2px solid ${isBest ? '#2ecc71' : '#555'};border-radius:8px;padding:6px 10px;">
@@ -1123,8 +1310,29 @@
                 <div style="margin-top:6px;font-size:11px;color:#888;text-align:center;">
                     📌 ${base}회 당첨: ${winMain.join(', ')} (보: ${winBonus})
                 </div>
+        `;
+
+        // ============================================================
+        // ★★★ Top 10 집계 표시 (추가) ★★★
+        // ============================================================
+        html += `
+            <div class="top10-aggregate">
+                <div class="title">📊 10개 엔진 통합 Top 10 (출현 빈도 기준)</div>
+                <div class="numbers">
+                    ${top10Freq.map(item => {
+                        const n = item.num;
+                        let color = '#fff';
+                        let mark = '';
+                        if (winMain.includes(n)) { color = '#2ecc71'; mark = '★'; }
+                        else if (n === winBonus) { color = '#ff6b6b'; mark = '☆'; }
+                        return `<span class="item" style="border-color:${color};"><span style="color:${color};">${n}${mark}</span> <span class="count">(${item.count}회)</span></span>`;
+                    }).join('')}
+                </div>
+                <div class="sub">⭐ 빈도수가 높은 숫자일수록 여러 엔진에서 동시에 선택된 신뢰도 높은 번호입니다.</div>
             </div>
         `;
+
+        html += `</div>`;
         document.getElementById('resultArea').innerHTML = html;
     }
 
@@ -1132,7 +1340,7 @@
     // runAnalysis - 통합 진입점
     // ========================================================================
     function runAnalysis() {
-        const customMode = document.getElementById('customMode').checked;
+        const customMode = document.getElementById('filterCustomMode')?.checked || false;
         if (customMode) {
             runCustomAnalysis();
             return;
@@ -1141,10 +1349,13 @@
     }
 
     // ========================================================================
-    // v27.1 자동 분석 (방정식TOP10에 9MAX 완전 제외 적용)
+    // ★★★ v27.1 자동 분석 ★★★
     // ========================================================================
     function runV27Analysis() {
-        console.log('🚀 v27.1 실행 (대기전용 자동제거 + 방정식TOP10, 9MAX 제외)');
+        console.log('🚀 v27.1 실행 (결정적 모드)');
+        const seed = parseInt(document.getElementById('randomSeed').value) || 0;
+        const rng = createRNG(seed);
+
         winData = null; similarData = null;
         const excludeBonus = isBonusExcluded(), sortMode = document.getElementById('similarSort')?.value || 'high';
         const offset = parseInt(document.getElementById('refOffset').value) || -1;
@@ -1162,9 +1373,9 @@
         let manualIncludeNums = manualIncludeVal ? manualIncludeVal.split(',').map(s => parseInt(s.trim())).filter(n => !isNaN(n) && n>=1 && n<=45) : [];
 
         const result = findTrueSimilar(base, start, minMatch, topN, offset);
-        if (result.similar.length === 0) { 
-            document.getElementById('resultArea').innerHTML = `<div style="color:#f39c12; padding:20px; font-size:20px;">⚠️ 유사회차 없음</div>`; 
-            return; 
+        if (result.similar.length === 0) {
+            document.getElementById('resultArea').innerHTML = `<div style="color:#f39c12; padding:20px; font-size:20px;">⚠️ 유사회차 없음</div>`;
+            return;
         }
         similarData = result.similar; baseNums = result.prevNums;
         lastSimilarCount = result.similar.length;
@@ -1173,7 +1384,7 @@
         globalFreqData = freq;
         const tempWinData = getWinning(base); winData = tempWinData || null;
         const winMain = winData ? winData.main : [], winBonus = winData ? winData.bonus : null;
-        
+
         const carryoverInfo = getCarryoverInfo(base);
         lastCarryoverInfo = carryoverInfo;
         const actualCarryovers = carryoverInfo.numbers;
@@ -1191,7 +1402,6 @@
         const simFreqMap = {}; allSimNums.forEach(n => simFreqMap[n] = (simFreqMap[n] || 0) + 1);
         const pool4 = Object.keys(simFreqMap).filter(k => simFreqMap[k] >= 2).map(Number).sort((a,b)=>a-b);
         const pool5 = finalPool3.filter(n => pool4.includes(n));
-        
         const only3 = finalPool3.filter(n => !pool4.includes(n));
         const only4 = pool4.filter(n => !finalPool3.includes(n));
         lastOnly3 = only3; lastOnly4 = only4;
@@ -1218,7 +1428,7 @@
         const pool3Numbers = finalPool3;
         const pool4Numbers = pool4;
 
-        // --- 9MAX / v23.0 / 기타 계산 ---
+        // 9MAX
         const oneHitCandidates = [...validSet].filter(n => !excludeSet.has(n));
         let guaranteed = [...pool4].filter(n => !excludeSet.has(n));
         while (guaranteed.length > 9) guaranteed.pop();
@@ -1249,7 +1459,7 @@
             const extra = oneHitCandidates.filter(n => !final9Candidates.includes(n) && !excludeSet.has(n));
             for (const n of extra) { if (final9Candidates.length >= 9) break; final9Candidates.push(n); }
         }
-        let final9 = getBalanced9FromCandidates(final9Candidates, excludeSet, 9);
+        let final9 = getBalanced9FromCandidates(final9Candidates, excludeSet, 9, null, rng);
 
         // v23.0
         const scoreMapV23 = {};
@@ -1277,22 +1487,22 @@
                 if (!v23Result.includes(i) && !excludeSet.has(i)) v23Result.push(i);
             }
         }
-        v23Result = filterNoConsecutive3(v23Result, excludeSet);
+        v23Result = filterNoConsecutive3(v23Result, excludeSet, rng);
         v23Result.sort((a,b) => a-b);
 
-        // 최종 10수 (임시)
+        // 최종 10수
         const freqCountAll = {};
         const tempStrategies = {
-            '① ③만 우선': getExcludeTop10_Only3(pool3Numbers, pool4Numbers, topPredNums),
-            '② ③∩④∩③만': getExcludeTop10_TripleWithOnly3(pool3Numbers, pool4Numbers, topPredNums),
-            '③ ③만+④만': getExcludeTop10_Only3And4(pool3Numbers, pool4Numbers, topPredNums),
-            '④ 고저 2:4': getExcludeTop10_HighLow24(pool3Numbers, topPredNums),
-            '⑤ 저/고 4:2': getExcludeTop10_LowHigh42(pool3Numbers, topPredNums),
-            '⑥ 고저 3:3': getExcludeTop10_HighLow33(pool3Numbers, topPredNums),
-            '⑦ 홀짝 2:4': getExcludeTop10_OddEven24(pool3Numbers, topPredNums),
-            '⑧ ④만 우선': getExcludeTop10_Only4(pool3Numbers, pool4Numbers, topPredNums),
-            '⑨ 끝수 3:3:4': getExcludeTop10_EndDigit334(pool3Numbers, topPredNums),
-            '⑩ 합계 150': getExcludeTop10_Sum150(pool3Numbers, topPredNums)
+            '① ③만 우선': getExcludeTop10_Only3(pool3Numbers, pool4Numbers, topPredNums, null, rng),
+            '② ③∩④∩③만': getExcludeTop10_TripleWithOnly3(pool3Numbers, pool4Numbers, topPredNums, null, rng),
+            '③ ③만+④만': getExcludeTop10_Only3And4(pool3Numbers, pool4Numbers, topPredNums, null, rng),
+            '④ 고저 2:4': getExcludeTop10_HighLow24(pool3Numbers, topPredNums, null, rng),
+            '⑤ 저/고 4:2': getExcludeTop10_LowHigh42(pool3Numbers, topPredNums, null, rng),
+            '⑥ 고저 3:3': getExcludeTop10_HighLow33(pool3Numbers, topPredNums, null, rng),
+            '⑦ 홀짝 2:4': getExcludeTop10_OddEven24(pool3Numbers, topPredNums, null, rng),
+            '⑧ ④만 우선': getExcludeTop10_Only4(pool3Numbers, pool4Numbers, topPredNums, null, rng),
+            '⑨ 끝수 3:3:4': getExcludeTop10_EndDigit334(pool3Numbers, topPredNums, null, rng),
+            '⑩ 합계 150': getExcludeTop10_Sum150(pool3Numbers, topPredNums, null, rng)
         };
         for (const [name, nums] of Object.entries(tempStrategies)) {
             nums.forEach(n => {
@@ -1332,12 +1542,10 @@
                 if (!final10.includes(i) && !excludeSet.has(i)) final10.push(i);
             }
         }
-        final10 = filterNoConsecutive3(final10, excludeSet);
+        final10 = filterNoConsecutive3(final10, excludeSet, rng);
         final10.sort((a,b) => a-b);
 
-        // ============================================================
-        // ★★★ 대기 전용(onlyWait) 제거 및 수동제외 적용 ★★★
-        // ============================================================
+        // 대기 전용 제거
         const waitSet = new Set(waitTop10);
         const nineSet = new Set(final9);
         const onlyWait = waitTop10.filter(n => !nineSet.has(n));
@@ -1361,44 +1569,41 @@
 
         const filteredPool3 = pool3Numbers.filter(n => !finalExcludeSet.has(n));
         const filteredPool4 = pool4Numbers.filter(n => !finalExcludeSet.has(n));
-        
+
         let baseStrategies = {};
         let allValid = false;
         let attempts = 0;
         const maxAttempts = 50;
-        
         while (!allValid && attempts < maxAttempts) {
             attempts++;
             const tempStrategies = {
-                '① ③만 우선': getExcludeTop10_Only3(filteredPool3, filteredPool4, finalExcludeList, fallbackPool),
-                '② ③∩④∩③만': getExcludeTop10_TripleWithOnly3(filteredPool3, filteredPool4, finalExcludeList, fallbackPool),
-                '③ ③만+④만': getExcludeTop10_Only3And4(filteredPool3, filteredPool4, finalExcludeList, fallbackPool),
-                '④ 고저 2:4': getExcludeTop10_HighLow24(filteredPool3, finalExcludeList, fallbackPool),
-                '⑤ 저/고 4:2': getExcludeTop10_LowHigh42(filteredPool3, finalExcludeList, fallbackPool),
-                '⑥ 고저 3:3': getExcludeTop10_HighLow33(filteredPool3, finalExcludeList, fallbackPool),
-                '⑦ 홀짝 2:4': getExcludeTop10_OddEven24(filteredPool3, finalExcludeList, fallbackPool),
-                '⑧ ④만 우선': getExcludeTop10_Only4(filteredPool3, filteredPool4, finalExcludeList, fallbackPool),
-                '⑨ 끝수 3:3:4': getExcludeTop10_EndDigit334(filteredPool3, finalExcludeList, fallbackPool),
-                '⑩ 합계 150': getExcludeTop10_Sum150(filteredPool3, finalExcludeList, fallbackPool)
+                '① ③만 우선': getExcludeTop10_Only3(filteredPool3, filteredPool4, finalExcludeList, fallbackPool, rng),
+                '② ③∩④∩③만': getExcludeTop10_TripleWithOnly3(filteredPool3, filteredPool4, finalExcludeList, fallbackPool, rng),
+                '③ ③만+④만': getExcludeTop10_Only3And4(filteredPool3, filteredPool4, finalExcludeList, fallbackPool, rng),
+                '④ 고저 2:4': getExcludeTop10_HighLow24(filteredPool3, finalExcludeList, fallbackPool, rng),
+                '⑤ 저/고 4:2': getExcludeTop10_LowHigh42(filteredPool3, finalExcludeList, fallbackPool, rng),
+                '⑥ 고저 3:3': getExcludeTop10_HighLow33(filteredPool3, finalExcludeList, fallbackPool, rng),
+                '⑦ 홀짝 2:4': getExcludeTop10_OddEven24(filteredPool3, finalExcludeList, fallbackPool, rng),
+                '⑧ ④만 우선': getExcludeTop10_Only4(filteredPool3, filteredPool4, finalExcludeList, fallbackPool, rng),
+                '⑨ 끝수 3:3:4': getExcludeTop10_EndDigit334(filteredPool3, finalExcludeList, fallbackPool, rng),
+                '⑩ 합계 150': getExcludeTop10_Sum150(filteredPool3, finalExcludeList, fallbackPool, rng)
             };
             allValid = Object.values(tempStrategies).every(nums => isValidCombination(nums));
-            if (allValid) {
-                baseStrategies = tempStrategies;
-            }
+            if (allValid) baseStrategies = tempStrategies;
         }
         if (!allValid) {
             console.warn('⚠️ 일부 조합이 필터를 통과하지 못함, 마지막 결과 사용');
             baseStrategies = {
-                '① ③만 우선': getExcludeTop10_Only3(filteredPool3, filteredPool4, finalExcludeList, fallbackPool),
-                '② ③∩④∩③만': getExcludeTop10_TripleWithOnly3(filteredPool3, filteredPool4, finalExcludeList, fallbackPool),
-                '③ ③만+④만': getExcludeTop10_Only3And4(filteredPool3, filteredPool4, finalExcludeList, fallbackPool),
-                '④ 고저 2:4': getExcludeTop10_HighLow24(filteredPool3, finalExcludeList, fallbackPool),
-                '⑤ 저/고 4:2': getExcludeTop10_LowHigh42(filteredPool3, finalExcludeList, fallbackPool),
-                '⑥ 고저 3:3': getExcludeTop10_HighLow33(filteredPool3, finalExcludeList, fallbackPool),
-                '⑦ 홀짝 2:4': getExcludeTop10_OddEven24(filteredPool3, finalExcludeList, fallbackPool),
-                '⑧ ④만 우선': getExcludeTop10_Only4(filteredPool3, filteredPool4, finalExcludeList, fallbackPool),
-                '⑨ 끝수 3:3:4': getExcludeTop10_EndDigit334(filteredPool3, finalExcludeList, fallbackPool),
-                '⑩ 합계 150': getExcludeTop10_Sum150(filteredPool3, finalExcludeList, fallbackPool)
+                '① ③만 우선': getExcludeTop10_Only3(filteredPool3, filteredPool4, finalExcludeList, fallbackPool, rng),
+                '② ③∩④∩③만': getExcludeTop10_TripleWithOnly3(filteredPool3, filteredPool4, finalExcludeList, fallbackPool, rng),
+                '③ ③만+④만': getExcludeTop10_Only3And4(filteredPool3, filteredPool4, finalExcludeList, fallbackPool, rng),
+                '④ 고저 2:4': getExcludeTop10_HighLow24(filteredPool3, finalExcludeList, fallbackPool, rng),
+                '⑤ 저/고 4:2': getExcludeTop10_LowHigh42(filteredPool3, finalExcludeList, fallbackPool, rng),
+                '⑥ 고저 3:3': getExcludeTop10_HighLow33(filteredPool3, finalExcludeList, fallbackPool, rng),
+                '⑦ 홀짝 2:4': getExcludeTop10_OddEven24(filteredPool3, finalExcludeList, fallbackPool, rng),
+                '⑧ ④만 우선': getExcludeTop10_Only4(filteredPool3, filteredPool4, finalExcludeList, fallbackPool, rng),
+                '⑨ 끝수 3:3:4': getExcludeTop10_EndDigit334(filteredPool3, finalExcludeList, fallbackPool, rng),
+                '⑩ 합계 150': getExcludeTop10_Sum150(filteredPool3, finalExcludeList, fallbackPool, rng)
             };
         }
         lastBaseStrategies = baseStrategies;
@@ -1409,7 +1614,7 @@
             if (pool.length === 0) break;
             final9Filtered.push(pool[0]);
         }
-        final9Filtered = getBalanced9FromCandidates(final9Filtered, finalExcludeSet, 9, fallbackPool);
+        final9Filtered = getBalanced9FromCandidates(final9Filtered, finalExcludeSet, 9, fallbackPool, rng);
         lastTop9 = final9Filtered;
 
         let v23Filtered = v23Result.filter(n => !finalExcludeSet.has(n));
@@ -1418,7 +1623,7 @@
             if (pool.length === 0) break;
             v23Filtered.push(pool[0]);
         }
-        v23Filtered = filterNoConsecutive3(v23Filtered, finalExcludeSet);
+        v23Filtered = filterNoConsecutive3(v23Filtered, finalExcludeSet, rng);
         v23Filtered.sort((a,b) => a-b);
         lastV23Result = v23Filtered;
 
@@ -1428,7 +1633,7 @@
             if (pool.length === 0) break;
             final10Filtered.push(pool[0]);
         }
-        final10Filtered = filterNoConsecutive3(final10Filtered, finalExcludeSet);
+        final10Filtered = filterNoConsecutive3(final10Filtered, finalExcludeSet, rng);
         final10Filtered.sort((a,b) => a-b);
         lastFinal10 = final10Filtered;
 
@@ -1441,7 +1646,7 @@
         lastIntersect_9_10 = i9_10;
         lastIntersect_23_10 = i23_10;
 
-        // 방정식 TOP10 생성 (9MAX 완전 제외)
+        // 방정식 TOP10
         const extendedExcludeSet = new Set([...finalExcludeSet, ...lastTop9]);
         const equationTop10 = generateEquationTop10({
             pool5,
@@ -1471,7 +1676,7 @@
         const totalFinalHit = hitFinal10.length + (hitFinal10Bonus.length ? 1 : 0);
         const totalEqHit = hitEquation.length + (hitEquationBonus.length ? 1 : 0);
 
-        // UI 렌더링
+        // UI 렌더링 (집합 계산기 결과는 별도로 표시, 여기서는 생략 - 기존 분석 결과 유지)
         const uniqueStrategies = {};
         const seen = new Set();
         Object.entries(baseStrategies).forEach(([name, nums]) => {
@@ -1500,6 +1705,46 @@
             📊 유사회차 (오프셋 ${offset}) → ${lastSimilarCount}개 회차
         </div>`;
 
+        // ============================================================
+        // ★★★ 집합 계산기 ★★★
+        // ============================================================
+        html += `
+        <div class="set-calculator">
+            <div class="title">🧮 집합 계산기</div>
+            <div class="input-row">
+                <div>
+                    <span style="color:#ffd700;">집합 A</span>
+                    <input type="text" id="setAInput" placeholder="1,2,3,4,5" value="">
+                </div>
+                <div>
+                    <span style="color:#ffd700;">집합 B</span>
+                    <input type="text" id="setBInput" placeholder="4,5,6,7,8" value="">
+                </div>
+            </div>
+            <div class="btn-row">
+                <button onclick="calculateSet('union')">합집합</button>
+                <button onclick="calculateSet('intersection')">교집합</button>
+                <button onclick="calculateSet('difference')">차집합 (A-B)</button>
+                <button onclick="calculateSet('symmetricDifference')">대칭차</button>
+            </div>
+            <div class="result" id="setResult">결과가 여기에 표시됩니다.<br><span style="color:#888;font-size:11px;">※ 당첨번호는 ★(본) / ☆(보너스)로 표시, 숫자는 녹색/빨간색으로 강조</span></div>
+        </div>
+        `;
+
+        // ============================================================
+        // ★★★ ③④ 풀 정보 (⑤는 제거) ★★★
+        // ============================================================
+        if (finalPool3.length > 0 || pool4.length > 0) {
+            html += `<div class="pool-info-block">
+                <div><span class="tag">③ 상위 개 유사다음회차 동반수 (기본+점수제, ${finalPool3.length}개):</span> <span class="nums">${finalPool3.map(n => colorNumSimple(n, winMain, winBonus)).join(', ')}</span></div>
+                <div><span class="tag">④ 상위개 유사회차 2회 이상 동반수 (${pool4.length}개):</span> <span class="nums">${pool4.map(n => colorNumSimple(n, winMain, winBonus)).join(', ')}</span></div>
+                <div style="font-size:11px;color:#888;margin-top:4px;">📌 ③:유사다음회차 동반수 | ④:2회 이상 동반수</div>
+            </div>`;
+        }
+
+        // ============================================================
+        // ★★★ '출현 횟수별 번호 분리' 블록 ★★★
+        // ============================================================
         html += `<div style="background:#0a0a0a;border:2px solid #9b59b6;border-radius:8px;padding:6px 10px;margin:5px 0;">
             <div style="color:#9b59b6;font-weight:bold;font-size:13px;">📊 출현 횟수별 번호 분리</div>
             <div style="font-size:13px;line-height:1.6;">
@@ -1510,26 +1755,11 @@
             <div style="color:#888;font-size:10px;">📌 ③:유사다음회차 동반수 | ④:2회 이상 동반수</div>
         </div>`;
 
-        const pick1 = topPred.length > 0 ? topPred[0].num : (lastTop9.length > 0 ? lastTop9[0] : '?');
-        const pick2 = tripleFinal.length > 0 ? tripleFinal[0] : (top10Intersect.length > 0 ? top10Intersect[0] : (lastTop9.length > 1 ? lastTop9[1] : '?'));
-        const pick3 = top10Intersect.length > 0 ? top10Intersect[0] : (lastTop9.length > 2 ? lastTop9[2] : '?');
+        // ============================================================
+        // ★★★ 강력픽 제거됨 ★★★
+        // ============================================================
 
-        let p1c='#e74c3c', p1l='❌', p2c='#e74c3c', p2l='❌', p3c='#e74c3c', p3l='❌';
-        if (winData) {
-            if (winMain.includes(pick1) || pick1 === winBonus) { p1c = winMain.includes(pick1) ? '#2ecc71' : '#f39c12'; p1l = winMain.includes(pick1) ? '★' : '☆'; }
-            if (winMain.includes(pick2) || pick2 === winBonus) { p2c = winMain.includes(pick2) ? '#2ecc71' : '#f39c12'; p2l = winMain.includes(pick2) ? '★' : '☆'; }
-            if (winMain.includes(pick3) || pick3 === winBonus) { p3c = winMain.includes(pick3) ? '#2ecc71' : '#f39c12'; p3l = winMain.includes(pick3) ? '★' : '☆'; }
-        }
-
-        html += `<div class="strong-pick-box" style="padding:4px 10px;">
-            <div style="display:flex;flex-wrap:wrap;gap:12px;align-items:center;justify-content:center;font-size:13px;">
-                <span style="color:#ffd700;font-weight:bold;">💪</span>
-                <span><span style="color:#ffd700;">1순위:</span> <span style="color:${p1c};font-weight:bold;font-size:16px;">${pick1}${p1l}</span> <span style="color:#888;font-size:11px;">(제거TOP10 1위)</span> <span style="color:${p1c};">${winMain && winMain.includes(pick1) ? '✅' : pick1 === winBonus ? '☆' : '❌'}</span></span>
-                <span><span style="color:#f39c12;">2순위:</span> <span style="color:${p2c};font-weight:bold;font-size:16px;">${pick2}${p2l}</span> <span style="color:#888;font-size:11px;">(3중 교집합)</span> <span style="color:${p2c};">${winMain && winMain.includes(pick2) ? '✅' : pick2 === winBonus ? '☆' : '❌'}</span></span>
-                <span><span style="color:#2ecc71;">3순위:</span> <span style="color:${p3c};font-weight:bold;font-size:16px;">${pick3}${p3l}</span> <span style="color:#888;font-size:11px;">(TOP10∩⑤)</span> <span style="color:${p3c};">${winMain && winMain.includes(pick3) ? '✅' : pick3 === winBonus ? '☆' : '❌'}${pick3 === pick1 || pick3 === pick2 ? ' (중복)' : ''}</span></span>
-            </div>
-        </div>`;
-
+        // 교집합, TOP10 등은 유지
         html += `<div class="intersect-process" style="padding:4px 10px;">
             <div style="display:flex;flex-wrap:wrap;gap:6px;align-items:center;font-size:13px;">
                 <span style="color:#ffd700;font-weight:bold;">📊 교집합:</span>
@@ -1635,7 +1865,7 @@
             </div>
         </div>`;
 
-        // 방정식 TOP10 블록
+        // 방정식 TOP10
         html += `<div class="equation-block">
             <div class="title">🧬 방정식 기반 TOP10 <span class="badge-v23">NEW (9MAX 완전 제외)</span></div>
             <div class="numbers">${equationTop10.map(n => colorNum(n, winMain, winBonus, true, actualCarryovers)).join(' ')}</div>
@@ -1687,7 +1917,7 @@
     }
 
     // ========================================================================
-    // 💪 강력 1수 / 5수 (기존과 동일)
+    // 💪 강력 1수 / 5수 (버튼은 유지)
     // ========================================================================
     function recommendStrong1() {
         if (!lastTop9 || lastTop9.length === 0) { alert('⚠️ 먼저 분석 실행'); return; }
@@ -1850,16 +2080,16 @@
             const topPred = top10Result.map(item => item.num);
             const excludeSet = new Set(topPred);
             const strategies = [
-                getExcludeTop10_Only3(finalPool3, pool4, topPred),
-                getExcludeTop10_TripleWithOnly3(finalPool3, pool4, topPred),
-                getExcludeTop10_Only3And4(finalPool3, pool4, topPred),
-                getExcludeTop10_HighLow24(finalPool3, topPred),
-                getExcludeTop10_LowHigh42(finalPool3, topPred),
-                getExcludeTop10_HighLow33(finalPool3, topPred),
-                getExcludeTop10_OddEven24(finalPool3, topPred),
-                getExcludeTop10_Only4(finalPool3, pool4, topPred),
-                getExcludeTop10_EndDigit334(finalPool3, topPred),
-                getExcludeTop10_Sum150(finalPool3, topPred)
+                getExcludeTop10_Only3(finalPool3, pool4, topPred, null, createRNG(0)),
+                getExcludeTop10_TripleWithOnly3(finalPool3, pool4, topPred, null, createRNG(0)),
+                getExcludeTop10_Only3And4(finalPool3, pool4, topPred, null, createRNG(0)),
+                getExcludeTop10_HighLow24(finalPool3, topPred, null, createRNG(0)),
+                getExcludeTop10_LowHigh42(finalPool3, topPred, null, createRNG(0)),
+                getExcludeTop10_HighLow33(finalPool3, topPred, null, createRNG(0)),
+                getExcludeTop10_OddEven24(finalPool3, topPred, null, createRNG(0)),
+                getExcludeTop10_Only4(finalPool3, pool4, topPred, null, createRNG(0)),
+                getExcludeTop10_EndDigit334(finalPool3, topPred, null, createRNG(0)),
+                getExcludeTop10_Sum150(finalPool3, topPred, null, createRNG(0))
             ];
             const roundHit = {};
             strategies.forEach((nums, idx) => {
@@ -1962,9 +2192,11 @@
         document.getElementById('backtestResult').innerHTML = '<div style="text-align:center;padding:20px;color:#aaa;">⏳ "백테스트 실행" 버튼을 누르세요.</div>';
         document.getElementById('btProgress').textContent = '';
     }
-    function resetAll() { 
-        document.getElementById('resultArea').innerHTML = '<div class="loading">🟢 초기화 완료! "🚀 분석"을 눌러주세요.</div>'; 
+
+    function resetAll() {
+        document.getElementById('resultArea').innerHTML = '<div class="loading">🟢 초기화 완료! "🚀 분석"을 눌러주세요.</div>';
     }
+
     function runManualTest() {
         const round = parseInt(document.getElementById('manualRound').value) || 1232;
         document.getElementById('baseRound').value = round;
@@ -1972,15 +2204,19 @@
         runAnalysis();
     }
 
-    // 커스텀 모드 토글 시 입력창 활성화/비활성화
-    document.getElementById('customMode').addEventListener('change', function() {
+    // 커스텀 체크박스 이벤트
+    document.getElementById('filterCustomMode').addEventListener('change', function() {
         const isChecked = this.checked;
-        const textarea = document.getElementById('customNumbersInput');
-        const btn = document.getElementById('customRunBtn');
+        const textarea = document.getElementById('filterCustomInput');
+        const btn = document.getElementById('filterCustomRunBtn');
         textarea.disabled = !isChecked;
         btn.disabled = !isChecked;
-        if (isChecked) {
-            textarea.focus();
+        if (isChecked) textarea.focus();
+        const insideCheckbox = document.getElementById('customModeInside');
+        if (insideCheckbox) {
+            insideCheckbox.checked = isChecked;
+            document.getElementById('customNumbersInputInside').disabled = !isChecked;
+            document.getElementById('customRunBtnInside').disabled = !isChecked;
         }
     });
 
@@ -2001,8 +2237,8 @@
         document.getElementById('manualInclude').value = '';
         lastBaseRound = baseVal;
         lastStartRound = 1200;
-        document.getElementById('resultArea').innerHTML = '<div class="loading">🟢 v27.1 준비 완료 (방정식TOP10 9MAX 제외, 결정적)! "🚀 분석"을 눌러주세요.</div>';
-        console.log('🟢 v27.1 로드 완료 (방정식TOP10 9MAX 제외, 결정적)');
+        document.getElementById('resultArea').innerHTML = '<div class="loading">🟢 v27.1 준비 완료 (방정식TOP10 9MAX 제외, 결정적, 집합 계산기 당첨 표시 강화, 커스텀 Top 10 집계)! "🚀 분석"을 눌러주세요.</div>';
+        console.log('🟢 v27.1 로드 완료 (방정식TOP10 9MAX 제외, 결정적, 집합 계산기 당첨 표시 강화, 커스텀 Top 10 집계)');
     };
     </script>
 </body>
