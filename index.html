@@ -971,7 +971,7 @@ function getBalanced9FromCandidates(candidates, excludeSet, count, fallbackPool,
 }
 
 // ========================================================================
-// runV27Analysis (메인)
+// runV27Analysis (메인) - v23.0 / 최종10수 / 방정식TOP10 출력 제거됨
 // ========================================================================
 function runV27Analysis() {
     console.log('🚀 v27.2 실행 (합집합 명확화)');
@@ -1083,7 +1083,7 @@ function runV27Analysis() {
     }
     let final9 = getBalanced9FromCandidates(final9Candidates, excludeSet, 9, null, rng);
 
-    // v23.0
+    // v23.0 (내부 계산용)
     const scoreMapV23={};
     for (let i=1; i<=45; i++) {
         let score=0;
@@ -1111,8 +1111,9 @@ function runV27Analysis() {
     }
     v23Result = filterNoConsecutive3(v23Result, excludeSet, rng);
     v23Result.sort((a,b)=>a-b);
+    lastV23Result = v23Result;
 
-    // 최종 10수
+    // 최종 10수 (내부 계산용)
     const tempStrategies = {
         '① ③만 우선': getExcludeTop10_Only3(pool3Numbers, pool4Numbers, topPredNums, null, rng),
         '② ③∩④∩③만': getExcludeTop10_TripleWithOnly3(pool3Numbers, pool4Numbers, topPredNums, null, rng),
@@ -1158,6 +1159,7 @@ function runV27Analysis() {
     }
     final10 = filterNoConsecutive3(final10, excludeSet, rng);
     final10.sort((a,b)=>a-b);
+    lastFinal10 = final10;
 
     // 대기 전용 제거
     const waitSet = new Set(waitTop10);
@@ -1269,7 +1271,7 @@ function runV27Analysis() {
     );
     lastEquationTop10 = equationTop10;
 
-    // 적중 계산
+    // 적중 계산 (화면에 표시는 9MAX + 합집합만)
     let hit9=[], hit9Bonus=[], hitV23=[], hitV23Bonus=[], hitFinal10=[], hitFinal10Bonus=[], hitEquation=[], hitEquationBonus=[];
     if (winData) {
         lastTop9.forEach(n=>{ if(winMain.includes(n)) hit9.push(n); else if(n===winBonus) hit9Bonus.push(n); });
@@ -1395,38 +1397,13 @@ function runV27Analysis() {
         <div style="color:#888;font-size:10px;text-align:center;">본:녹색 / 보너스:빨간색</div>
     </div>`;
 
+    // 9MAX 박스 (유일하게 남은 개별 박스)
     html += `<div class="optimize-result" style="padding:8px 12px;border-color:${total9Hit>=3?'#2ecc71':'#e67e22'};">
         <div class="label" style="font-size:15px;">🎯 9MAX <span class="badge-9max">9MAX</span></div>
         <div class="numbers" style="font-size:22px;">${lastTop9.map(n=>colorNum(n,winMain,winBonus,true,actualCarryovers)).join(' ')}</div>
         <div style="font-size:13px;">📊 본: ${hit9.length}개 (${hit9.join(', ')||'없음'})${hit9Bonus.length?` | 보너스: ${hit9Bonus.join(', ')}`:''}</div>
         <div style="font-size:18px;font-weight:bold;color:${total9Hit>=3?'#2ecc71':'#f1c40f'};">✅ ${winData?'총 '+total9Hit+'개 적중':'⚠️ 검증 데이터 없음'}</div>
         <div class="source">📌 저3/중3/고3</div>
-    </div>`;
-
-    html += `<div class="v23-box" style="padding:8px 12px;">
-        <div class="title" style="font-size:15px;">🧬 v23.0 <span class="badge-v23">1회 이상</span></div>
-        <div class="numbers" style="font-size:22px;">${lastV23Result.map(n=>colorNum(n,winMain,winBonus,true,actualCarryovers)).join(' ')}</div>
-        <div class="stats">📊 본: ${hitV23.length}개 (${hitV23.join(', ')||'없음'})${hitV23Bonus.length?` | 보너스: ${hitV23Bonus.join(', ')}`:''}</div>
-        <div class="stats" style="color:${totalV23Hit>=3?'#2ecc71':'#e74c3c'};font-size:18px;font-weight:bold;">✅ ${winData?'총 '+totalV23Hit+'개 적중':'⚠️ 검증 데이터 없음'}</div>
-        <div class="source">📌 저3/중3/고4</div>
-    </div>`;
-
-    html += `<div class="optimize-result" style="padding:8px 12px;border-color:${totalFinalHit>=5?'#2ecc71':'#ff6b6b'};background:${totalFinalHit>=5?'#0a2a1a':'#1a1a2a'};">
-        <div class="label" style="font-size:15px;color:${totalFinalHit>=5?'#2ecc71':'#ff6b6b'};">🏆 최종 10수 <span class="badge-final">통합</span> ${totalFinalHit>=5?'✅ 목표!':`(${hitFinal10.length}개/5)`}</div>
-        <div class="numbers" style="font-size:22px;">${lastFinal10.map(n=>colorNum(n,winMain,winBonus,true,actualCarryovers)).join(' ')}</div>
-        <div class="source">📌 저2/중4/고4</div>
-        <div style="font-size:18px;font-weight:bold;color:${totalFinalHit>=5?'#2ecc71':'#f1c40f'};">
-            ${winData?(totalFinalHit>=5?`✅ ${totalFinalHit}개 포함 (${hitFinal10.join(', ')}${hitFinal10Bonus.length?`, ${winBonus}`:''})`:`❌ ${hitFinal10.length}개 (${hitFinal10.join(', ')||'없음'})`):'⚠️ 검증 데이터 없음'}
-        </div>
-    </div>`;
-
-    // 방정식 TOP10
-    html += `<div class="equation-block">
-        <div class="title">🧬 방정식 기반 TOP10 <span class="badge-v23">NEW (9MAX 완전 제외)</span></div>
-        <div class="numbers">${equationTop10.map(n=>colorNum(n,winMain,winBonus,true,actualCarryovers)).join(' ')}</div>
-        <div class="stats">📊 본: ${hitEquation.length}개 (${hitEquation.join(', ')||'없음'})${hitEquationBonus.length?` | 보너스: ${hitEquationBonus.join(', ')}`:''}</div>
-        <div class="stats" style="color:${totalEqHit>=3?'#2ecc71':'#e74c3c'};font-size:18px;font-weight:bold;">✅ ${winData?'총 '+totalEqHit+'개 적중':'⚠️ 검증 데이터 없음'}</div>
-        <div class="source">📌 (pool5 - 9MAX - 대기TOP10) + 교집합 우선 (보충 없음)</div>
     </div>`;
 
     // ========================================================================
@@ -1465,7 +1442,7 @@ function runV27Analysis() {
 }
 
 // ========================================================================
-// 커스텀 분석, 계산기, 이벤트 바인딩 등
+// 커스텀 분석, 계산기, 이벤트 바인딩 등 (변경 없음)
 // ========================================================================
 function runCustomAnalysis() {
     let raw = document.getElementById('filterCustomInput').value;
