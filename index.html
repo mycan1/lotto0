@@ -2,7 +2,7 @@
 <html lang="ko">
 <head>
 <meta charset="UTF-8">
-<title>📊 v27.2 – 인터리빙 엔진 (3개 집합 연산)</title>
+<title>📊 v27.2 – 인터리빙 엔진 (합집합 명확화)</title>
 <style>
 * { box-sizing: border-box; margin: 0; padding: 0; }
 body { background: #0a0a0a; color: #fff; font-family: 'Segoe UI', sans-serif; padding: 20px; max-width: 1400px; margin: 0 auto; }
@@ -194,9 +194,9 @@ button.secondary:hover { background: #777; }
 </style>
 </head>
 <body>
-<h1>📊 v27.2 – 인터리빙 엔진 (3개 집합 연산)</h1>
+<h1>📊 v27.2 – 인터리빙 엔진 (합집합 명확화)</h1>
 <div class="update-notice">
-✅ 인터리빙 기반 통합 엔진 | <strong>⑦ 홀짝 2:4 → 홀2/짝4 강제 적용</strong> | ④/⑤/⑥ 고저 비율 강제 적용 | <strong>모든 엔진 중복 숫자 제거 완료</strong> | <strong>3개 집합(1,2,3) 연산 결과 추가</strong>
+✅ 인터리빙 기반 통합 엔진 | <strong>⑦ 홀짝 2:4 → 홀2/짝4 강제 적용</strong> | ④/⑤/⑥ 고저 비율 강제 적용 | <strong>모든 엔진 중복 숫자 제거 완료</strong> | <strong>(v23∪최종10) ∪ (대기10∪9MAX) 합집합 추가</strong>
 </div>
 
 <!-- 필터 영역 -->
@@ -974,7 +974,7 @@ function getBalanced9FromCandidates(candidates, excludeSet, count, fallbackPool,
 // runV27Analysis (메인)
 // ========================================================================
 function runV27Analysis() {
-    console.log('🚀 v27.2 실행 (3개 집합 연산 추가)');
+    console.log('🚀 v27.2 실행 (합집합 명확화)');
     const seed = parseInt(document.getElementById('randomSeed').value) || 0;
     const rng = createRNG(seed);
 
@@ -1430,7 +1430,7 @@ function runV27Analysis() {
     </div>`;
 
     // ========================================================================
-    // ★★★ 3개 집합(1,2,3) 합집합 및 연산 결과 ★★★
+    // ★★★ 합집합 3개 출력 ★★★
     // ========================================================================
 
     // 1. v23.0 ∪ 최종10수
@@ -1442,17 +1442,7 @@ function runV27Analysis() {
         <div class="sub">총 ${v23FinalUnion.length}개 (중복 제거)</div>
     </div>`;
 
-    // 2. (v23.0 ∪ 최종10수) ∪ (대기10 ∪ 9MAX) 합집합
-    const waitUnion = [...new Set([...waitTop10, ...lastTop9])].sort((a,b)=>a-b);
-    const combinedUnion = [...new Set([...v23FinalUnion, ...waitUnion])].sort((a,b)=>a-b);
-    html += `
-    <div class="union-box" style="border-color: #2ecc71; background: #0a2a0a;">
-        <div class="title" style="color: #2ecc71;">📊 (v23.0 ∪ 최종10수) ∪ (대기10 ∪ 9MAX) 합집합</div>
-        <div class="numbers">${combinedUnion.map(n=>colorNumSimple(n,winMain,winBonus)).join(' ')}</div>
-        <div class="sub">총 ${combinedUnion.length}개 (중복 제거)</div>
-    </div>`;
-
-    // 3. 4가지 전체 합집합
+    // 2. 4가지 전체 합집합
     const allUnion = [...new Set([...lastTop9, ...lastV23Result, ...lastFinal10, ...lastEquationTop10])].sort((a,b)=>a-b);
     html += `
     <div class="union-box">
@@ -1461,48 +1451,14 @@ function runV27Analysis() {
         <div class="sub">총 ${allUnion.length}개 (중복 제거)</div>
     </div>`;
 
-    // ========================================================================
-    // ★★★ 3개 집합(1,2,3) 연산 결과 (자동) ★★★
-    // ========================================================================
-
-    const A = v23FinalUnion;        // 1번
-    const B = combinedUnion;        // 2번
-    const C = allUnion;             // 3번
-
-    // 합집합 (A ∪ B ∪ C)
-    const unionAll = [...new Set([...A, ...B, ...C])].sort((a,b)=>a-b);
-    // 교집합 (A ∩ B ∩ C)
-    const intersectAll = A.filter(x => B.includes(x) && C.includes(x)).sort((a,b)=>a-b);
-    // 차집합 (A - B)
-    const diffAB = A.filter(x => !B.includes(x)).sort((a,b)=>a-b);
-    // 대칭차 ((A∪B∪C) - (A∩B∩C))
-    const symDiff = unionAll.filter(x => !intersectAll.includes(x)).sort((a,b)=>a-b);
-
+    // 3. (v23.0 ∪ 최종10수) ∪ (대기10 ∪ 9MAX) 합집합
+    const waitUnion = [...new Set([...waitTop10, ...lastTop9])].sort((a,b)=>a-b);
+    const combinedUnion = [...new Set([...v23FinalUnion, ...waitUnion])].sort((a,b)=>a-b);
     html += `
-    <div style="background: #0a0a0a; border: 3px solid #ffd700; border-radius: 12px; padding: 12px 15px; margin: 12px 0;">
-        <div style="color: #ffd700; font-weight: bold; font-size: 17px; text-align: center; margin-bottom: 10px;">📊 3개 집합(1,2,3) 연산 결과</div>
-        <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 10px; font-size: 13px;">
-            <div style="background: #1a1a1a; padding: 8px 12px; border-radius: 8px; border-left: 4px solid #2ecc71;">
-                <div style="color: #2ecc71; font-weight: bold;">합집합 (A ∪ B ∪ C)</div>
-                <div style="color: #fff; font-size: 16px; letter-spacing: 1px; margin: 4px 0;">${unionAll.map(n=>colorNumSimple(n, winMain, winBonus)).join(' ')}</div>
-                <div style="color: #888; font-size: 11px;">총 ${unionAll.length}개</div>
-            </div>
-            <div style="background: #1a1a1a; padding: 8px 12px; border-radius: 8px; border-left: 4px solid #e74c3c;">
-                <div style="color: #e74c3c; font-weight: bold;">교집합 (A ∩ B ∩ C)</div>
-                <div style="color: #fff; font-size: 16px; letter-spacing: 1px; margin: 4px 0;">${intersectAll.map(n=>colorNumSimple(n, winMain, winBonus)).join(' ')}</div>
-                <div style="color: #888; font-size: 11px;">총 ${intersectAll.length}개</div>
-            </div>
-            <div style="background: #1a1a1a; padding: 8px 12px; border-radius: 8px; border-left: 4px solid #3498db;">
-                <div style="color: #3498db; font-weight: bold;">차집합 (A - B)</div>
-                <div style="color: #fff; font-size: 16px; letter-spacing: 1px; margin: 4px 0;">${diffAB.map(n=>colorNumSimple(n, winMain, winBonus)).join(' ')}</div>
-                <div style="color: #888; font-size: 11px;">총 ${diffAB.length}개</div>
-            </div>
-            <div style="background: #1a1a1a; padding: 8px 12px; border-radius: 8px; border-left: 4px solid #9b59b6;">
-                <div style="color: #9b59b6; font-weight: bold;">대칭차 ((A∪B∪C) - (A∩B∩C))</div>
-                <div style="color: #fff; font-size: 16px; letter-spacing: 1px; margin: 4px 0;">${symDiff.map(n=>colorNumSimple(n, winMain, winBonus)).join(' ')}</div>
-                <div style="color: #888; font-size: 11px;">총 ${symDiff.length}개</div>
-            </div>
-        </div>
+    <div class="union-box" style="border-color: #2ecc71; background: #0a2a0a;">
+        <div class="title" style="color: #2ecc71;">📊 (v23.0 ∪ 최종10수) ∪ (대기10 ∪ 9MAX) 합집합</div>
+        <div class="numbers">${combinedUnion.map(n=>colorNumSimple(n,winMain,winBonus)).join(' ')}</div>
+        <div class="sub">총 ${combinedUnion.length}개 (중복 제거)</div>
     </div>`;
 
     document.getElementById('resultArea').innerHTML = html;
@@ -1750,8 +1706,8 @@ window.onload = function() {
     document.getElementById('manualInclude').value='';
     lastBaseRound=baseVal;
     lastStartRound=1200;
-    document.getElementById('resultArea').innerHTML = '<div class="loading">🟢 v27.2 (3개 집합 연산) 준비 완료! "🚀 분석"을 눌러주세요.</div>';
-    console.log('🟢 v27.2 (3개 집합 연산) 준비 완료');
+    document.getElementById('resultArea').innerHTML = '<div class="loading">🟢 v27.2 (합집합 명확화) 준비 완료! "🚀 분석"을 눌러주세요.</div>';
+    console.log('🟢 v27.2 (합집합 명확화) 준비 완료');
 };
 </script>
 </body>
