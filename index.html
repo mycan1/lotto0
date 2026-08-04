@@ -2,7 +2,7 @@
 <html lang="ko">
 <head>
 <meta charset="UTF-8">
-<title>📊 v27.4 – 멀티 오프셋 인터리빙 엔진 (안정화)</title>
+<title>📊 v27.4 – 멀티 오프셋 인터리빙 엔진 (교집합 표시 추가)</title>
 <style>
 * { box-sizing: border-box; margin: 0; padding: 0; }
 body { background: #0a0a0a; color: #fff; font-family: 'Segoe UI', sans-serif; padding: 20px; max-width: 1400px; margin: 0 auto; }
@@ -159,9 +159,9 @@ button.secondary:hover { background: #777; }
 </style>
 </head>
 <body>
-<h1>📊 v27.4 – 멀티 오프셋 인터리빙 엔진 (안정화 버전)</h1>
+<h1>📊 v27.4 – 멀티 오프셋 인터리빙 엔진 (교집합 분석 추가)</h1>
 <div class="update-notice">
-✅ 인터리빙 기반 통합 엔진 | <strong>멀티 오프셋(-1,-2) 결합 지원</strong> | ③④ 풀 모두 유사회차 번호에서 추출 | <strong>커스텀 모드 10개 엔진 완전 다양화 (교집합 ≤ 1)</strong>
+✅ 인터리빙 기반 통합 엔진 | <strong>멀티 오프셋(-1,-2) 결합 지원</strong> | ③④ 풀 모두 유사회차 번호에서 추출 | <strong>오프셋별 유사회차 교집합 표시 (예상 다음회차 제외)</strong>
 </div>
 
 <!-- 필터 영역 -->
@@ -280,7 +280,7 @@ button.secondary:hover { background: #777; }
     </div>
 </div>
 
-<div class="result-area" id="resultArea"><div class="loading">🟢 v27.4 안정화 버전 준비 완료! "🚀 분석"을 눌러주세요.</div></div>
+<div class="result-area" id="resultArea"><div class="loading">🟢 v27.4 교집합 분석 추가 준비 완료! "🚀 분석"을 눌러주세요.</div></div>
 
 <!-- 백테스트 모달 -->
 <div class="modal-overlay" id="backtestModal">
@@ -1013,10 +1013,10 @@ function getBalanced9FromCandidates(candidates, excludeSet, count, fallbackPool,
 }
 
 // ========================================================================
-// ★★★ runV27Analysis (멀티 오프셋 + 모든 상세표 복원 + 최종 제외 번호 표시) ★★★
+// ★★★ runV27Analysis (멀티 오프셋 + 교집합 표시 추가) ★★★
 // ========================================================================
 function runV27Analysis() {
-    console.log('🚀 v27.4 멀티 오프셋 + 상세표 실행 (방정식 TOP10 제거)');
+    console.log('🚀 v27.4 멀티 오프셋 + 교집합 분석 실행');
     const seed = parseInt(document.getElementById('randomSeed').value) || 0;
     const rng = createRNG(seed);
 
@@ -1043,10 +1043,11 @@ function runV27Analysis() {
     let manualExcludeNums = manualExcludeVal ? manualExcludeVal.split(',').map(s=>parseInt(s.trim())).filter(n=>!isNaN(n)&&n>=1&&n<=45) : [];
     let manualIncludeNums = manualIncludeVal ? manualIncludeVal.split(',').map(s=>parseInt(s.trim())).filter(n=>!isNaN(n)&&n>=1&&n<=45) : [];
 
-    // ---- 멀티 오프셋 빈도 합산 ----
+    // ---- 멀티 오프셋 빈도 합산 + 오프셋별 원본 번호 수집 ----
     const combinedSimFreq = {};
     let combinedSimilarData = [];
     let combinedPrevNums = [];
+    let offsetRemainedNums = {}; // ★★★ 추가: 오프셋별 유사회차 번호 (remainedNums)
 
     offsets.forEach((offset, idx) => {
         const weight = idx === 0 ? 1.2 : (idx === 1 ? 1.0 : 0.8);
@@ -1054,6 +1055,14 @@ function runV27Analysis() {
         if (result.similar.length === 0) return;
         combinedSimilarData = combinedSimilarData.concat(result.similar);
         combinedPrevNums.push(...result.prevNums);
+        
+        // ★★★ 오프셋별 remainedNums 수집 (예상 다음회차 제외)
+        let rems = [];
+        result.similar.forEach(s => {
+            s.remainedNums.forEach(n => rems.push(n));
+        });
+        offsetRemainedNums[offset] = [...new Set(rems)].sort((a,b)=>a-b);
+
         const freq = calcFreqWeighted(result.similar, base);
         Object.keys(freq).forEach(key => {
             combinedSimFreq[key] = (combinedSimFreq[key] || 0) + freq[key] * weight;
@@ -1228,7 +1237,7 @@ function runV27Analysis() {
     const onlyWait = waitTop10.filter(n=>!nineSet.has(n));
     const onlyNine = final9.filter(n=>!waitSet.has(n));
     lastOnlyNineSorted = onlyNine.sort((a,b)=>a-b);
-    const onlyWaitSorted = onlyWait.sort((a,b)=>a-b); // 첫 번째 선언 (유지)
+    const onlyWaitSorted = onlyWait.sort((a,b)=>a-b);
 
     const finalExcludeList = [...new Set([...topPredNums, ...onlyWait, ...manualExcludeNums])];
     const finalExcludeSet = new Set(finalExcludeList);
@@ -1340,7 +1349,7 @@ function runV27Analysis() {
     });
 
     // ========================================================================
-    // ★★★ HTML 구성 (방정식 TOP10 제외 + 최종 제외 번호 표시) ★★★
+    // ★★★ HTML 구성 (방정식 TOP10 제외 + 최종 제외 번호 표시 + 오프셋 교집합) ★★★
     // ========================================================================
     let html = '';
 
@@ -1350,6 +1359,43 @@ function runV27Analysis() {
     const badgeLabel = carryoverInfo.type==='actual'?'✅ 실제':'🔮 예측';
     html += `<div class="carryover-box" style="font-size:13px;padding:3px 10px;">🔥 이월수 <span class="${badgeClass}">${badgeLabel}</span>: <strong style="color:#f39c12;">${actualCarryovers.length>0?actualCarryovers.join(', '):'없음 (0개)'}</strong> ${carryoverInfo.type==='actual'?'(직전 회차 실제)':'(유사 패턴 예측)'}</div>`;
     html += `<div class="recent-summary" style="padding:3px 10px;font-size:12px;">📊 유사회차 (멀티 오프셋) → ${lastSimilarCount}개 회차</div>`;
+
+    // ========================================================================
+    // ★★★ 1.5 추가: 오프셋별 유사회차 교집합 분석 (예상 다음회차 제외) ★★★
+    // ========================================================================
+    if (offsets.length >= 2) {
+        html += `<div class="similar-detail-box" style="border-color: #9b59b6; background: #0a0a2a; margin: 8px 0;">
+            <div class="title" style="color: #9b59b6;">📊 오프셋별 유사회차 번호 교집합 (예상 다음회차 제외)</div>`;
+        
+        let sortedOffsets = [...offsets].sort((a,b)=>a-b);
+        sortedOffsets.forEach(off => {
+            let nums = offsetRemainedNums[off] || [];
+            html += `<div style="font-size:13px;margin-top:4px;">
+                <span style="color:#ffd700;">🔹 오프셋 ${off} 유사회차 번호 (${nums.length}개):</span>
+                <span>${nums.length > 0 ? nums.map(n => colorNum(n, winMain, winBonus, true, actualCarryovers)).join(' ') : '없음'}</span>
+            </div>`;
+        });
+
+        let keys = Object.keys(offsetRemainedNums).map(Number).sort((a,b)=>a-b);
+        if (keys.length >= 2) {
+            // 교집합
+            let common = offsetRemainedNums[keys[0]].filter(n => offsetRemainedNums[keys[1]].includes(n));
+            common.sort((a,b)=>a-b);
+            html += `<div style="font-size:13px;margin-top:4px;border-top:1px solid #444;padding-top:4px;">
+                <span style="color:#2ecc71;font-weight:bold;">🔺 공통 교집합 (${common.length}개):</span>
+                <span>${common.length > 0 ? common.map(n => colorNum(n, winMain, winBonus, true, actualCarryovers)).join(' ') : '없음'}</span>
+            </div>`;
+
+            // 합집합
+            let union = [...new Set([...offsetRemainedNums[keys[0]], ...offsetRemainedNums[keys[1]]])].sort((a,b)=>a-b);
+            html += `<div style="font-size:13px;margin-top:4px;border-top:1px solid #444;padding-top:4px;">
+                <span style="color:#f39c12;font-weight:bold;">🟡 합집합 (${union.length}개):</span>
+                <span>${union.length > 0 ? union.map(n => colorNum(n, winMain, winBonus, true, actualCarryovers)).join(' ') : '없음'}</span>
+            </div>`;
+        }
+        html += `<div style="color:#888;font-size:10px;margin-top:4px;">📌 기준 번호(${baseNums.slice(0,6).join(',')})는 제외됨 (유사회차 자체 번호만)</div>`;
+        html += `</div>`;
+    }
 
     // 2. 유사회차 상세 Top 5
     const topSimilar = combinedSimilarData.slice(0, 5);
@@ -1433,11 +1479,10 @@ function runV27Analysis() {
         <span style="color:#888;font-size:10px;">(참고용)</span>
     </div></div>`;
 
-    // 10. 합집합 (대기10 ∪ 9MAX) - onlyWaitSorted 중복 선언 제거 (이미 선언됨)
+    // 10. 합집합 (대기10 ∪ 9MAX)
     const unionSet = new Set([...waitTop10, ...lastTop9]);
     const unionArray = Array.from(unionSet).sort((a,b)=>a-b);
-    // onlyWaitSorted는 이미 선언됨
-    const onlyNineSorted = onlyNine.sort((a,b)=>a-b); // 첫 선언이 없으므로 여기서 선언
+    const onlyNineSorted = onlyNine.sort((a,b)=>a-b);
     html += `<div class="wait-union-box" style="border-color:#9b59b6;">
         <div style="display:flex;flex-wrap:wrap;gap:8px;align-items:center;font-size:13px;">
             <span style="color:#9b59b6;font-weight:bold;">📌 합집합 (대기10 ∪ 9MAX) (${unionArray.length}개):</span>
@@ -1455,7 +1500,7 @@ function runV27Analysis() {
         <div style="color:#888;font-size:10px;margin-top:4px;">📌 대기TOP10과 9MAX의 합집합, 대기 전용은 자동 제거됨</div>
     </div>`;
 
-    // 10.5 최종 제외 번호 (명확히 표시)
+    // 10.5 최종 제외 번호
     const finalExcludeCombined = [...new Set([...topPredNums, ...onlyWait, ...manualExcludeNums])].sort((a,b)=>a-b);
     html += `<div class="top10-box" style="border-color: #e74c3c; background: #1a0a0a; border: 2px solid #e74c3c; margin: 8px 0;">
         <div style="display:flex;flex-wrap:wrap;gap:4px;align-items:center;font-size:13px;">
@@ -1929,8 +1974,8 @@ window.onload = function() {
     document.getElementById('excludeBonus').checked=false;
     document.getElementById('startOffset').value=0;
     document.getElementById('stepSize').value=2;
-    document.getElementById('resultArea').innerHTML = '<div class="loading">🟢 v27.4 안정화 버전 준비 완료! "🚀 분석"을 눌러주세요.</div>';
-    console.log('🟢 v27.4 안정화 버전 준비 완료');
+    document.getElementById('resultArea').innerHTML = '<div class="loading">🟢 v27.4 교집합 분석 추가 준비 완료! "🚀 분석"을 눌러주세요.</div>';
+    console.log('🟢 v27.4 교집합 분석 추가 준비 완료');
 };
 </script>
 </body>
