@@ -2,7 +2,7 @@
 <html lang="ko">
 <head>
 <meta charset="UTF-8">
-<title>📊 v27.4 – 멀티 오프셋 인터리빙 엔진 (완전 복원)</title>
+<title>📊 v27.4 – 멀티 오프셋 인터리빙 엔진 (빈도 색상 표시)</title>
 <style>
 * { box-sizing: border-box; margin: 0; padding: 0; }
 body { background: #0a0a0a; color: #fff; font-family: 'Segoe UI', sans-serif; padding: 20px; max-width: 1400px; margin: 0 auto; }
@@ -159,9 +159,9 @@ button.secondary:hover { background: #777; }
 </style>
 </head>
 <body>
-<h1>📊 v27.4 – 멀티 오프셋 인터리빙 엔진 (완전 복원)</h1>
+<h1>📊 v27.4 – 멀티 오프셋 인터리빙 엔진 (빈도 색상 표시)</h1>
 <div class="update-notice">
-✅ 인터리빙 기반 통합 엔진 | <strong>멀티 오프셋(-1,-2) 결합 지원</strong> | ③④ 풀 모두 유사회차 번호에서 추출 | <strong>커스텀 모드 할당 풀 미사용 표시</strong>
+✅ 인터리빙 기반 통합 엔진 | <strong>멀티 오프셋(-1,-2) 결합 지원</strong> | ③④ 풀 분석표 제거 | <strong>유사회차 빈도에 당첨 색상 표시</strong>
 </div>
 
 <!-- 필터 영역 -->
@@ -280,7 +280,7 @@ button.secondary:hover { background: #777; }
     </div>
 </div>
 
-<div class="result-area" id="resultArea"><div class="loading">🟢 v27.4 완전 버전 준비 완료! "🚀 분석"을 눌러주세요.</div></div>
+<div class="result-area" id="resultArea"><div class="loading">🟢 v27.4 준비 완료! "🚀 분석"을 눌러주세요.</div></div>
 
 <!-- 백테스트 모달 -->
 <div class="modal-overlay" id="backtestModal">
@@ -1013,10 +1013,10 @@ function getBalanced9FromCandidates(candidates, excludeSet, count, fallbackPool,
 }
 
 // ========================================================================
-// ★★★ runV27Analysis (멀티 오프셋 + 교집합 표시) ★★★
+// ★★★ runV27Analysis (멀티 오프셋 + 교집합 표시, ③④ 분석표 제거, 빈도 색상 표시) ★★★
 // ========================================================================
 function runV27Analysis() {
-    console.log('🚀 v27.4 멀티 오프셋 + 교집합 분석 실행');
+    console.log('🚀 v27.4 실행 (③④ 분석표 제거, 빈도 색상 표시)');
     const seed = parseInt(document.getElementById('randomSeed').value) || 0;
     const rng = createRNG(seed);
 
@@ -1348,7 +1348,7 @@ function runV27Analysis() {
     });
 
     // ========================================================================
-    // ★★★ HTML 구성 (방정식 TOP10 제외 + 최종 제외 번호 표시 + 오프셋 교집합) ★★★
+    // ★★★ HTML 구성 (③④ 분석표 제거됨 + 빈도 색상 표시) ★★★
     // ========================================================================
     let html = '';
 
@@ -1359,7 +1359,7 @@ function runV27Analysis() {
     html += `<div class="carryover-box" style="font-size:13px;padding:3px 10px;">🔥 이월수 <span class="${badgeClass}">${badgeLabel}</span>: <strong style="color:#f39c12;">${actualCarryovers.length>0?actualCarryovers.join(', '):'없음 (0개)'}</strong> ${carryoverInfo.type==='actual'?'(직전 회차 실제)':'(유사 패턴 예측)'}</div>`;
     html += `<div class="recent-summary" style="padding:3px 10px;font-size:12px;">📊 유사회차 (멀티 오프셋) → ${lastSimilarCount}개 회차</div>`;
 
-    // 오프셋별 교집합
+    // 1.5 오프셋별 교집합
     if (offsets.length >= 2) {
         html += `<div class="similar-detail-box" style="border-color: #9b59b6; background: #0a0a2a; margin: 8px 0;">
             <div class="title" style="color: #9b59b6;">📊 오프셋별 유사회차 번호 교집합 (예상 다음회차 제외)</div>`;
@@ -1401,31 +1401,20 @@ function runV27Analysis() {
         <div style="color:#888;font-size:11px;margin-top:3px;">⭐ 유사도가 높을수록 기준 회차와 패턴이 유사합니다.</div>
     </div>`;
 
-    // 3. 유사회차 번호 빈도 분포
+    // 3. 유사회차 번호 빈도 분포 - ★★★ 수정: 당첨 색상 표시 ★★★
     const freqSorted = Object.entries(simFreqMap).sort((a,b)=>b[1]-a[1] || a[0]-b[0]);
     const topFreqNums = freqSorted.slice(0, 10);
     html += `<div class="freq-dist-box">
         <div class="title">📊 유사회차 번호 빈도 (Top 10)</div>
         <div style="font-size:13px;margin-top:4px;">
             ${topFreqNums.map(([num, count]) => 
-                `<span class="freq-dist-item">${num} (${count.toFixed(1)}회)</span>`
+                `<span class="freq-dist-item">${colorNum(parseInt(num), winMain, winBonus, true, actualCarryovers)} (${count.toFixed(1)}회)</span>`
             ).join(' ')}
         </div>
-        <div style="color:#888;font-size:11px;margin-top:3px;">⭐ 유사회차 내에서 자주 등장한 번호일수록 신뢰도가 높습니다.</div>
+        <div style="color:#888;font-size:11px;margin-top:3px;">⭐ 유사회차 내에서 자주 등장한 번호일수록 신뢰도가 높습니다. (본:녹색 / 보너스:빨간색)</div>
     </div>`;
 
-    // 4. ③④ 풀 정보
-    if (pool3.length>0 || pool4.length>0) {
-        html += `<div class="pool-info-block"><div><span class="tag">③ 상위 유사회차 동반수 (${pool3.length}개):</span> <span class="nums">${pool3.map(n=>colorNumSimple(n,winMain,winBonus)).join(', ')}</span></div>
-        <div><span class="tag">④ 상위 유사회차 2회 이상 동반수 (${pool4.length}개):</span> <span class="nums">${pool4.map(n=>colorNumSimple(n,winMain,winBonus)).join(', ')}</span></div>
-        <div style="font-size:11px;color:#888;margin-top:4px;">📌 유사회차 자체에서 추출 (다음 회차 미사용)</div>`;
-        const allNums = Array.from({length:45}, (_,i)=>i+1);
-        const missingNums = allNums.filter(n=>!pool3.includes(n) && !pool4.includes(n));
-        if (missingNums.length>0) {
-            html += `<div class="missing-numbers-box"><span class="label">🚫 ③④ 모두 빠진 번호 (${missingNums.length}개):</span><span class="numbers">${missingNums.map(n=>colorNumSimple(n,winMain,winBonus)).join(', ')}</span><span class="sub">(현재 분석에서 완전히 제외됨)</span></div>`;
-        }
-        html += `</div>`;
-    }
+    // ★★★ ③④ 풀 분석표 제거됨 ★★★
 
     // 5. 출현 횟수별 번호 분리
     html += `<div style="background:#0a0a0a;border:2px solid #9b59b6;border-radius:8px;padding:6px 10px;margin:5px 0;">
@@ -1579,7 +1568,7 @@ function runV27Analysis() {
 }
 
 // ========================================================================
-// ★★★ runCustomAnalysis (할당 풀 미사용 번호 표시 추가) ★★★
+// ★★★ runCustomAnalysis (완전 복원) ★★★
 // ========================================================================
 function runCustomAnalysis() {
     let raw = document.getElementById('filterCustomInput').value;
@@ -1712,7 +1701,7 @@ function runCustomAnalysis() {
         .sort((a, b) => b.count - a.count || a.num - b.num).slice(0, 10);
     const maxHit = Math.max(...results.map(r => r.totalHit));
 
-    // ★★★ 할당 풀에서 한 번도 사용되지 않은 번호 찾기 ★★★
+    // 할당 풀에서 한 번도 사용되지 않은 번호 찾기
     const unusedInPools = nums.filter(n => freq9[n] === undefined);
     let unusedHtml = '';
     if (unusedInPools.length > 0) {
@@ -1764,7 +1753,7 @@ function runCustomAnalysis() {
         </div>`;
     }
 
-    // ---- 기존 미출현 번호 분석 (최종 조합 기준) ----
+    // 기존 미출현 번호 분석 (최종 조합 기준)
     const allAppeared = new Set();
     results.forEach(r => r.nums.forEach(n => allAppeared.add(n)));
     const missingNums = nums.filter(n => !allAppeared.has(n));
