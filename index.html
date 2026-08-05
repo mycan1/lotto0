@@ -839,76 +839,6 @@ function generateDiversePools(nums, count, size, seed) {
 }
 
 // ========================================================================
-// ★★★ 커스텀 모드 균형 선택 헬퍼 ★★★
-// ========================================================================
-function selectBalancedFromPool(pool, lowTarget, midTarget, highTarget, rng, maxAttempts=100) {
-    const low = pool.filter(n => n <= 15);
-    const mid = pool.filter(n => n >= 16 && n <= 30);
-    const high = pool.filter(n => n >= 31);
-    
-    const shuffle = (arr) => {
-        for (let i = arr.length - 1; i > 0; i--) {
-            const j = Math.floor(rng() * (i + 1));
-            [arr[i], arr[j]] = [arr[j], arr[i]];
-        }
-        return arr;
-    };
-    
-    let selected = [];
-    let candidates = [];
-    
-    // 1. 각 구간에서 목표치만큼 랜덤 추출
-    const shuffledLow = shuffle([...low]);
-    const shuffledMid = shuffle([...mid]);
-    const shuffledHigh = shuffle([...high]);
-    
-    selected.push(...shuffledLow.slice(0, lowTarget));
-    selected.push(...shuffledMid.slice(0, midTarget));
-    selected.push(...shuffledHigh.slice(0, highTarget));
-    
-    // 2. 남은 후보 풀 (이미 선택된 것 제외)
-    const usedSet = new Set(selected);
-    const remainingPool = pool.filter(n => !usedSet.has(n));
-    const shuffledRemaining = shuffle([...remainingPool]);
-    
-    // 3. 목표 개수만큼 채우기
-    const totalTarget = lowTarget + midTarget + highTarget;
-    let idx = 0;
-    while (selected.length < totalTarget && idx < shuffledRemaining.length) {
-        selected.push(shuffledRemaining[idx]);
-        idx++;
-    }
-    
-    // 4. 그래도 부족하면 중복 허용하여 채움 (이론상 pool.size >= totalTarget이면 발생 안 함)
-    while (selected.length < totalTarget) {
-        const fallback = pool[Math.floor(rng() * pool.length)];
-        if (!selected.includes(fallback) || selected.length < totalTarget) {
-            selected.push(fallback);
-        }
-        // 무한 루프 방지
-        if (selected.length >= totalTarget) break;
-    }
-    
-    selected.sort((a,b)=>a-b);
-    
-    // 5. 연속된 3개 숫자 필터링 (excludeSet 없이)
-    const excludeSet = new Set();
-    let filtered = filterNoConsecutive3(selected, excludeSet, rng);
-    
-    // 필터링 후 개수가 줄었으면 다시 채움 (간단하게)
-    while (filtered.length < totalTarget) {
-        const extra = pool.filter(n => !filtered.includes(n));
-        if (extra.length === 0) break;
-        const pick = extra[Math.floor(rng() * extra.length)];
-        filtered.push(pick);
-        filtered.sort((a,b)=>a-b);
-        filtered = filterNoConsecutive3(filtered, excludeSet, rng);
-    }
-    
-    return filtered.slice(0, totalTarget);
-}
-
-// ========================================================================
 // 유사 패턴 분석 함수
 // ========================================================================
 function findTrueSimilar(baseRound, startRound, minMatch, topN, offset=-1) {
@@ -1089,7 +1019,7 @@ function getBalanced9FromCandidates(candidates, excludeSet, count, fallbackPool,
 }
 
 // ========================================================================
-// ★★★ runV27Analysis (멀티 오프셋 + 교집합 확장) ★★★
+// ★★★ runV27Analysis (멀티 오프셋 + 교집합 확장) - 전체 구현 ★★★
 // ========================================================================
 function runV27Analysis() {
     console.log('🚀 v27.4 실행 (교집합 확장)');
@@ -1775,7 +1705,7 @@ function runV27Analysis() {
 }
 
 // ========================================================================
-// ★★★ runCustomAnalysis (커스텀 입력 기반 분석) - 균형 분배 적용 ★★★
+// ★★★ runCustomAnalysis (커스텀 입력 기반 분석) - v23.0만 빈도 낮은 순 ★★★
 // ========================================================================
 function runCustomAnalysis() {
     const input = document.getElementById('filterCustomInput').value;
@@ -1793,12 +1723,10 @@ function runCustomAnalysis() {
     let strategies = {};
     
     if (uniqueNums.length === 6) {
-        // 6개 입력: 모든 조합 동일
         for (let i = 1; i <= 10; i++) {
             strategies[`조합 ${i}`] = uniqueNums.slice();
         }
     } else {
-        // 7개 이상: 모든 입력 번호를 커버하는 10개 조합 생성 (중복 없이)
         let shuffled = [...uniqueNums];
         for (let i = shuffled.length - 1; i > 0; i--) {
             const j = Math.floor(rng() * (i + 1));
@@ -1837,26 +1765,30 @@ function runCustomAnalysis() {
     }
     lastBaseStrategies = strategies;
 
-    // ============================================================
-    // ★★★ 개선된 선별 방식 적용 (구간 균형 분배) ★★★
-    // ============================================================
-    if (uniqueNums.length === 6) {
-        lastTop9 = uniqueNums.slice().sort((a,b)=>a-b);
-        lastV23Result = uniqueNums.slice().sort((a,b)=>a-b);
-        lastFinal10 = uniqueNums.slice().sort((a,b)=>a-b);
-    } else {
-        // 9MAX: 저3 / 중3 / 고3
-        lastTop9 = selectBalancedFromPool(uniqueNums, 3, 3, 3, rng);
-        // v23.0: 저3 / 중3 / 고4
-        lastV23Result = selectBalancedFromPool(uniqueNums, 3, 3, 4, rng);
-        // 최종 10수: 저3 / 중3 / 고4 (v23.0과 다른 랜덤성)
-        lastFinal10 = selectBalancedFromPool(uniqueNums, 3, 3, 4, rng);
-        
-        // 만약 9개 미만으로 나오면 재시도 (풀이 너무 작을 경우)
-        if (lastTop9.length < 9 && uniqueNums.length >= 9) {
-            lastTop9 = selectBalancedFromPool(uniqueNums, 3, 3, 3, rng);
-        }
-    }
+    // ★★★ 빈도 계산 ★★★
+    const freqMap = {};
+    Object.values(strategies).forEach(combo => {
+        combo.forEach(num => {
+            freqMap[num] = (freqMap[num] || 0) + 1;
+        });
+    });
+
+    // 1. 9MAX: 빈도 높은 순 (상위 9개)
+    const sortedByFreqHigh = Object.keys(freqMap).map(Number).sort((a, b) => {
+        if (freqMap[b] !== freqMap[a]) return freqMap[b] - freqMap[a];
+        return a - b;
+    });
+    lastTop9 = sortedByFreqHigh.slice(0, 9);
+
+    // 2. v23.0: 빈도 낮은 순 (상위 10개) ★★★ 변경됨 ★★★
+    const sortedByFreqLow = Object.keys(freqMap).map(Number).sort((a, b) => {
+        if (freqMap[a] !== freqMap[b]) return freqMap[a] - freqMap[b];
+        return a - b;
+    });
+    lastV23Result = sortedByFreqLow.slice(0, 10);
+
+    // 3. 최종10수: 빈도 높은 순 (상위 10개)
+    lastFinal10 = sortedByFreqHigh.slice(0, 10);
 
     const baseRound = parseInt(document.getElementById('baseRound').value) || 1234;
     const win = getWinning(baseRound);
@@ -1864,7 +1796,6 @@ function runCustomAnalysis() {
     const winMain = win ? win.main : [];
     const winBonus = win ? win.bonus : null;
 
-    // 적중 계산
     let hit9 = lastTop9.filter(n => winMain.includes(n));
     let hit9Bonus = lastTop9.filter(n => n === winBonus);
     let hitV23 = lastV23Result.filter(n => winMain.includes(n));
@@ -1876,7 +1807,6 @@ function runCustomAnalysis() {
     const totalV23Hit = hitV23.length + (hitV23Bonus.length ? 1 : 0);
     const totalFinalHit = hitFinal10.length + (hitFinal10Bonus.length ? 1 : 0);
 
-    // HTML 생성
     let html = `<div style="color:#ffd700; padding:4px 10px; border-bottom:2px solid #ffd700;">🎯 커스텀 분석 (입력 번호: ${uniqueNums.join(', ')})</div>`;
     html += `<div class="winning-info" style="font-size:13px;padding:4px 10px;">${win ? `✅ ${baseRound}회: <span style="color:#2ecc71;">${win.main.join(', ')}</span> | 보: <span style="color:#ff6b6b;">${win.bonus}</span>` : `⚠️ ${baseRound}회 미추첨`}</div>`;
 
@@ -1891,31 +1821,30 @@ function runCustomAnalysis() {
     </div>`;
 
     html += `<div class="optimize-result" style="padding:8px 12px;border-color:${total9Hit>=3?'#2ecc71':'#e67e22'};">
-        <div class="label" style="font-size:15px;">🎯 9MAX <span class="badge-9max">9MAX</span> (저3/중3/고3)</div>
+        <div class="label" style="font-size:15px;">🎯 9MAX <span class="badge-9max">9MAX</span> (출현 빈도 상위 9개)</div>
         <div class="numbers" style="font-size:22px;">${lastTop9.map(n=>colorNum(n,winMain,winBonus,true,[])).join(' ')}</div>
         <div style="font-size:13px;">📊 본: ${hit9.length}개 (${hit9.join(', ')||'없음'})${hit9Bonus.length?` | 보너스: ${hit9Bonus.join(', ')}`:''}</div>
         <div style="font-size:18px;font-weight:bold;color:${total9Hit>=3?'#2ecc71':'#f1c40f'};">✅ ${win?'총 '+total9Hit+'개 적중':'⚠️ 검증 데이터 없음'}</div>
-        <div class="source">📌 커스텀 (균형 분배)</div>
+        <div class="source">📌 커스텀 (빈도 상위)</div>
     </div>`;
 
     html += `<div class="v23-box" style="padding:8px 12px;">
-        <div class="title" style="font-size:15px;">🧬 v23.0 <span class="badge-v23">커스텀</span> (저3/중3/고4)</div>
+        <div class="title" style="font-size:15px;">🧬 v23.0 <span class="badge-v23">커스텀</span> (출현 빈도 하위 10개) ★</div>
         <div class="numbers" style="font-size:22px;">${lastV23Result.map(n=>colorNum(n,winMain,winBonus,true,[])).join(' ')}</div>
         <div class="stats">📊 본: ${hitV23.length}개 (${hitV23.join(', ')||'없음'})${hitV23Bonus.length?` | 보너스: ${hitV23Bonus.join(', ')}`:''}</div>
         <div class="stats" style="color:${totalV23Hit>=3?'#2ecc71':'#e74c3c'};font-size:18px;font-weight:bold;">✅ ${win?'총 '+totalV23Hit+'개 적중':'⚠️ 검증 데이터 없음'}</div>
-        <div class="source">📌 커스텀 (균형 분배)</div>
+        <div class="source">📌 커스텀 (빈도 하위)</div>
     </div>`;
 
     html += `<div class="optimize-result" style="padding:8px 12px;border-color:${totalFinalHit>=5?'#2ecc71':'#ff6b6b'};background:${totalFinalHit>=5?'#0a2a1a':'#1a1a2a'};">
-        <div class="label" style="font-size:15px;color:${totalFinalHit>=5?'#2ecc71':'#ff6b6b'};">🏆 최종 10수 <span class="badge-final">커스텀</span> (저3/중3/고4) ${totalFinalHit>=5?'✅ 목표!':`(${hitFinal10.length}개/5)`}</div>
+        <div class="label" style="font-size:15px;color:${totalFinalHit>=5?'#2ecc71':'#ff6b6b'};">🏆 최종 10수 <span class="badge-final">커스텀</span> (출현 빈도 상위 10개) ${totalFinalHit>=5?'✅ 목표!':`(${hitFinal10.length}개/5)`}</div>
         <div class="numbers" style="font-size:22px;">${lastFinal10.map(n=>colorNum(n,winMain,winBonus,true,[])).join(' ')}</div>
-        <div class="source">📌 커스텀 (균형 분배)</div>
+        <div class="source">📌 커스텀 (빈도 상위)</div>
         <div style="font-size:18px;font-weight:bold;color:${totalFinalHit>=5?'#2ecc71':'#f1c40f'};">
             ${win?(totalFinalHit>=5?`✅ ${totalFinalHit}개 포함 (${hitFinal10.join(', ')}${hitFinal10Bonus.length?`, ${winBonus}`:''})`:`❌ ${hitFinal10.length}개 (${hitFinal10.join(', ')||'없음'})`):'⚠️ 검증 데이터 없음'}
         </div>
     </div>`;
 
-    // 10개 엔진이 선택하지 않은 번호
     const allSelected = new Set();
     Object.values(strategies).forEach(nums => nums.forEach(n => allSelected.add(n)));
     const unselected = [];
@@ -1941,7 +1870,7 @@ function runAnalysis() {
 }
 
 // ========================================================================
-// 기타 함수들
+// 기타 함수들 (resetAll, openBacktestModal, runManualTest, copyOnlyNumbers, autoExtractNumbers, parseSet, 집합 계산기 함수 등)
 // ========================================================================
 function resetAll() {
     document.getElementById('resultArea').innerHTML = '<div class="loading">🟢 초기화 완료! "🚀 분석"을 눌러주세요.</div>';
@@ -1991,10 +1920,6 @@ function parseSet(id) {
     if (!val.trim()) return [];
     return val.split(',').map(s => parseInt(s.trim())).filter(n => !isNaN(n) && n >= 1 && n <= 45);
 }
-
-// ========================================================================
-// 집합 계산기 함수 (A, B, C) - 빈 집합 자동 무시
-// ========================================================================
 function calcUnion() {
     const sets = [parseSet('setA'), parseSet('setB'), parseSet('setC')].filter(arr => arr.length > 0);
     if (sets.length === 0) { document.getElementById('setResult').innerHTML = '🧩 합집합: 없음'; return; }
