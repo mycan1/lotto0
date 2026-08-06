@@ -1571,15 +1571,8 @@ function runV27Analysis() {
         <div class="source">📌 저3/중3/고4</div>
     </div>`;
 
-    // 14. 최종 10수 결과
-    html += `<div class="optimize-result" style="padding:8px 12px;border-color:${totalFinalHit>=5?'#2ecc71':'#ff6b6b'};background:${totalFinalHit>=5?'#0a2a1a':'#1a1a2a'};">
-        <div class="label" style="font-size:15px;color:${totalFinalHit>=5?'#2ecc71':'#ff6b6b'};">🏆 최종 10수 <span class="badge-final">통합</span> ${totalFinalHit>=5?'✅ 목표!':`(${hitFinal10.length}개/5)`}</div>
-        <div class="numbers" style="font-size:22px;">${lastFinal10.map(n=>colorNum(n,winMain,winBonus,true,actualCarryovers)).join(' ')}</div>
-        <div class="source">📌 저2/중4/고4</div>
-        <div style="font-size:18px;font-weight:bold;color:${totalFinalHit>=5?'#2ecc71':'#f1c40f'};">
-            ${winData?(totalFinalHit>=5?`✅ ${totalFinalHit}개 포함 (${hitFinal10.join(', ')}${hitFinal10Bonus.length?`, ${winBonus}`:''})`:`❌ ${hitFinal10.length}개 (${hitFinal10.join(', ')||'없음'})`):'⚠️ 검증 데이터 없음'}
-        </div>
-    </div>`;
+    // 14. 최종 10수 결과 (삭제 요청된 부분 → 제거)
+    // (해당 블록을 완전히 삭제함)
 
     // 15. 합집합 3개
     const v23FinalUnion = [...new Set([...lastV23Result, ...lastFinal10])].sort((a,b)=>a-b);
@@ -1891,6 +1884,7 @@ function runCustomAnalysis() {
         lastV23Result.sort((a,b)=>a-b);
     }
 
+    // ★★★ 최종 10수 생성 (9MAX, v23.0 제외) ★★★
     let finalPool = uniqueNums.filter(n => !lastTop9.includes(n) && !lastV23Result.includes(n));
     let shuffledFinal = [...finalPool];
     for (let j = shuffledFinal.length - 1; j > 0; j--) {
@@ -1952,14 +1946,7 @@ function runCustomAnalysis() {
         <div class="source">📌 커스텀 (글로벌 시드)</div>
     </div>`;
 
-    html += `<div class="optimize-result" style="padding:8px 12px;border-color:${totalFinalHit>=5?'#2ecc71':'#ff6b6b'};background:${totalFinalHit>=5?'#0a2a1a':'#1a1a2a'};">
-        <div class="label" style="font-size:15px;color:${totalFinalHit>=5?'#2ecc71':'#ff6b6b'};">🏆 최종 10수 <span class="badge-final">커스텀</span> (9MAX∪v23.0 제외 후 선택) ${totalFinalHit>=5?'✅ 목표!':`(${hitFinal10.length}개/5)`}</div>
-        <div class="numbers" style="font-size:22px;">${lastFinal10.map(n=>colorNum(n,winMain,winBonus,true,[])).join(' ')}</div>
-        <div class="source">📌 커스텀 (글로벌 시드)</div>
-        <div style="font-size:18px;font-weight:bold;color:${totalFinalHit>=5?'#2ecc71':'#f1c40f'};">
-            ${win?(totalFinalHit>=5?`✅ ${totalFinalHit}개 포함 (${hitFinal10.join(', ')}${hitFinal10Bonus.length?`, ${winBonus}`:''})`:`❌ ${hitFinal10.length}개 (${hitFinal10.join(', ')||'없음'})`):'⚠️ 검증 데이터 없음'}
-        </div>
-    </div>`;
+    // ★★★ 최종 10수 블록 삭제됨 ★★★
 
     const allSelected = new Set();
     Object.values(strategies).forEach(nums => nums.forEach(n => allSelected.add(n)));
