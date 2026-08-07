@@ -24,37 +24,42 @@ button.backtest-btn { background: #f39c12; color: #000; font-size: 13px; padding
 button.backtest-btn:hover { background: #e67e22; transform: scale(1.05); box-shadow: 0 0 20px #f39c12; }
 button.secondary { background: #555; color: #fff; }
 button.secondary:hover { background: #777; }
-.result-area { background: #1a1a1a; border: 2px solid #ffd700; border-radius: 12px; padding: 15px; margin-top: 20px; overflow-x: auto; }
-.winning-info { background: #2a2a2a; border-left: 4px solid #f1c40f; padding: 6px 12px; border-radius: 6px; margin: 5px 0; font-size: 14px; }
+.result-area { background: #1a1a1a; border: 2px solid #ffd700; border-radius: 12px; padding: 15px; margin-top: 20px; overflow-x: auto; text-align: center; }
+.winning-info { background: #2a2a2a; border-left: 4px solid #f1c40f; padding: 6px 12px; border-radius: 6px; margin: 5px 0; font-size: 14px; text-align: left; display: inline-block; }
 .winning-info span { color: #f1c40f; font-weight: bold; }
 .loading { text-align: center; padding: 30px; color: #aaa; font-size: 18px; }
-.carryover-box { background: #1a1a2a; border: 2px solid #f39c12; border-radius: 8px; padding: 5px 10px; margin: 4px 0; font-size: 14px; }
+.carryover-box { background: #1a1a2a; border: 2px solid #f39c12; border-radius: 8px; padding: 5px 10px; margin: 4px auto; font-size: 14px; text-align: center; max-width: fit-content; }
 .carryover-box .label { color: #f39c12; font-weight: bold; }
-.recent-summary { background: #1a1a2a; border: 2px solid #3498db; border-radius: 8px; padding: 5px 12px; margin: 5px 0; font-size: 13px; }
+.recent-summary { background: #1a1a2a; border: 2px solid #3498db; border-radius: 8px; padding: 5px 12px; margin: 5px auto; font-size: 13px; text-align: center; display: inline-block; }
 .recent-summary strong { color: #3498db; }
-.pool-info-block { background: #0a1a2a; border: 2px solid #3498db; border-radius: 8px; padding: 6px 12px; margin: 5px 0; font-size: 13px; }
+.pool-info-block { background: #0a1a2a; border: 2px solid #3498db; border-radius: 8px; padding: 6px 12px; margin: 5px auto; font-size: 13px; display: inline-block; }
 .pool-info-block .tag { color: #3498db; font-weight: bold; }
 .pool-info-block .nums { color: #fff; }
-.intersect-process { background: #0a0a1a; border: 2px solid #ffd700; border-radius: 8px; padding: 8px 12px; margin: 8px 0; }
-.cross-verify-box { background: #0a1a0a; border: 3px solid #2ecc71; border-radius: 10px; padding: 8px 12px; margin: 8px 0; }
+.intersect-process { background: #0a0a1a; border: 2px solid #ffd700; border-radius: 8px; padding: 8px 12px; margin: 8px auto; display: inline-block; width: auto; }
+.intersect-process > div { display: flex; flex-wrap: wrap; gap: 6px; align-items: center; font-size: 13px; justify-content: center; }
+.cross-verify-box { background: #0a1a0a; border: 3px solid #2ecc71; border-radius: 10px; padding: 8px 12px; margin: 8px auto; display: inline-block; width: auto; }
+.cross-verify-box > div { display: flex; flex-wrap: wrap; gap: 4px; align-items: center; font-size: 13px; justify-content: center; }
 .cross-verify-box .title { color: #2ecc71; font-weight: bold; font-size: 14px; }
-.top10-box { background: #0a1a0a; border: 2px solid #ffd700; border-radius: 8px; padding: 8px 12px; margin: 8px 0; }
+.top10-box { background: #0a1a0a; border: 2px solid #ffd700; border-radius: 8px; padding: 8px 12px; margin: 8px auto; display: inline-block; width: auto; }
+.top10-box > div { display: flex; flex-wrap: wrap; gap: 4px; align-items: center; font-size: 13px; justify-content: center; }
 .top10-box .title { color: #ffd700; font-weight: bold; font-size: 14px; }
-.wait-top10-box { background: #1a1a2a; border: 2px solid #3498db; border-radius: 8px; padding: 8px 12px; margin: 8px 0; }
+.wait-top10-box { background: #1a1a2a; border: 2px solid #3498db; border-radius: 8px; padding: 8px 12px; margin: 8px auto; display: inline-block; width: auto; }
+.wait-top10-box > div { display: flex; flex-wrap: wrap; gap: 4px; align-items: center; font-size: 13px; justify-content: center; }
 .wait-top10-box .title { color: #3498db; font-weight: bold; font-size: 14px; }
-.wait-union-box { background: #1a1a2a; border: 2px solid #9b59b6; border-radius: 8px; padding: 8px 12px; margin: 8px 0; }
+.wait-union-box { background: #1a1a2a; border: 2px solid #9b59b6; border-radius: 8px; padding: 8px 12px; margin: 8px auto; display: inline-block; width: auto; }
+.wait-union-box > div { display: flex; flex-wrap: wrap; gap: 8px; align-items: center; font-size: 13px; justify-content: center; }
 .wait-union-box .title { color: #9b59b6; font-weight: bold; font-size: 14px; }
-.combo-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 4px; font-size: 13px; }
+.combo-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 4px; font-size: 13px; max-width: 800px; margin: 0 auto; text-align: left; }
 .combo-item { background: #1a1a1a; padding: 4px 8px; border-radius: 4px; border-left: 2px solid #ffd700; }
 .combo-item .cname { color: #ffd700; font-size: 11px; }
 .combo-item .cnums { font-size: 14px; letter-spacing: 1px; }
-.optimize-result { background: #0a1a0a; border: 3px solid #00b894; border-radius: 12px; padding: 12px 15px; margin: 8px 0; text-align: center; }
+.optimize-result { background: #0a1a0a; border: 3px solid #00b894; border-radius: 12px; padding: 12px 15px; margin: 8px auto; text-align: center; max-width: fit-content; }
 .optimize-result .label { color: #ffd700; font-weight: bold; font-size: 16px; }
 .optimize-result .numbers { font-size: 24px; font-weight: bold; letter-spacing: 2px; }
-.v23-box { background: #0a1a2a; border: 3px solid #9b59b6; border-radius: 12px; padding: 12px 15px; margin: 8px 0; }
+.v23-box { background: #0a1a2a; border: 3px solid #9b59b6; border-radius: 12px; padding: 12px 15px; margin: 8px auto; text-align: center; max-width: fit-content; }
 .v23-box .title { color: #9b59b6; font-size: 16px; font-weight: bold; }
 .v23-box .numbers { font-size: 24px; font-weight: bold; letter-spacing: 2px; margin: 5px 0; }
-.v23-box .stats { font-size: 13px; color: #aaa; }
+.v23-box .stats { font-size: 13px; color: #aaa; text-align: center; }
 .source { display: inline-block; background: #333; padding: 3px 12px; border-radius: 15px; color: #88ccff; font-size: 11px; margin-top: 3px; }
 .badge-9max { background: #e67e22; color: #fff; padding: 2px 10px; border-radius: 15px; font-size: 11px; margin-left: 6px; }
 .badge-v23 { background: #9b59b6; color: #fff; padding: 2px 10px; border-radius: 15px; font-size: 11px; margin-left: 6px; }
@@ -87,7 +92,7 @@ button.secondary:hover { background: #777; }
 .bonus-toggle { display: flex; align-items: center; gap: 6px; background: #1a1a2a; padding: 4px 10px; border-radius: 15px; border: 1px solid #555; }
 .bonus-toggle label { color: #ffd700; font-size: 12px; font-weight: bold; cursor: pointer; }
 .bonus-toggle input[type="checkbox"] { width: 16px; height: 16px; accent-color: #ffd700; cursor: pointer; }
-.update-notice { background: #2a1a2a; border: 2px solid #2ecc71; border-radius: 8px; padding: 6px 12px; margin-bottom: 12px; color: #2ecc71; font-size: 13px; }
+.update-notice { background: #2a1a2a; border: 2px solid #2ecc71; border-radius: 8px; padding: 6px 12px; margin-bottom: 12px; color: #2ecc71; font-size: 13px; text-align: center; }
 .update-notice strong { color: #ffd700; }
 .filter-custom-wrap { display: flex; align-items: center; gap: 8px; flex-wrap: wrap; background: #1a1a2a; padding: 4px 10px; border-radius: 10px; border: 1px solid #ff6b6b; margin-top: 4px; width: 100%; }
 .filter-custom-wrap .label { color: #ff6b6b; font-weight: bold; font-size: 12px; white-space: nowrap; }
@@ -101,7 +106,7 @@ button.secondary:hover { background: #777; }
 .filter-custom-wrap .hint { color: #888; font-size: 9px; white-space: nowrap; }
 .custom-area { background: #1a1a2a; border: 2px solid #ff6b6b; border-radius: 10px; padding: 10px 15px; margin: 10px 0; }
 .custom-area .label { color: #ff6b6b; font-weight: bold; font-size: 15px; }
-.set-calculator { background: #0a0a0a; border: 2px solid #9b59b6; border-radius: 8px; padding: 8px 12px; margin: 5px 0; }
+.set-calculator { background: #0a0a0a; border: 2px solid #9b59b6; border-radius: 8px; padding: 8px 12px; margin: 5px 0; text-align: left; }
 .set-calculator .title { color: #9b59b6; font-weight: bold; font-size: 13px; }
 .set-calculator .input-row { display: flex; gap: 10px; flex-wrap: wrap; margin-top: 4px; }
 .set-calculator .input-row > div { flex: 1; min-width: 120px; }
@@ -126,7 +131,9 @@ button.secondary:hover { background: #777; }
     border: 3px solid #ffd700;
     border-radius: 12px;
     padding: 10px 15px;
-    margin: 12px 0;
+    margin: 12px auto;
+    max-width: fit-content;
+    text-align: center;
 }
 .union-box .title {
     color: #ffd700;
@@ -150,10 +157,10 @@ button.secondary:hover { background: #777; }
     color: #888;
     margin-top: 4px;
 }
-.similar-detail-box { background: #0a1a1a; border: 2px solid #2ecc71; border-radius: 8px; padding: 8px 12px; margin: 6px 0; }
+.similar-detail-box { background: #0a1a1a; border: 2px solid #2ecc71; border-radius: 8px; padding: 8px 12px; margin: 6px auto; display: inline-block; width: auto; text-align: left; }
 .similar-detail-box .title { color: #2ecc71; font-weight: bold; font-size: 14px; }
 .similar-detail-item { display: inline-block; background: #1a1a1a; padding: 2px 8px; border-radius: 12px; margin: 2px 4px 2px 0; border-left: 2px solid #f39c12; font-size: 12px; }
-.freq-dist-box { background: #0a0a2a; border: 2px solid #9b59b6; border-radius: 8px; padding: 6px 12px; margin: 6px 0; }
+.freq-dist-box { background: #0a0a2a; border: 2px solid #9b59b6; border-radius: 8px; padding: 6px 12px; margin: 6px auto; text-align: center; display: inline-block; width: auto; }
 .freq-dist-box .title { color: #9b59b6; font-weight: bold; font-size: 14px; }
 .freq-dist-item { display: inline-block; background: #1a1a1a; padding: 1px 10px; border-radius: 10px; margin: 2px; border: 1px solid #555; }
 .strong-inline { display: inline-block; margin: 2px 6px 2px 0; padding: 2px 12px; border-radius: 12px; font-weight: bold; }
@@ -1006,7 +1013,7 @@ function runV27Analysis() {
     const strongPool=[...lastTop9,...lastV23Result,...lastFinal10];
     const strongFreq={}; strongPool.forEach(n=>{ strongFreq[n]=(strongFreq[n]||0)+1; });
     const winMainSet=new Set(winMain); const winBonusSet=winBonus!==null?new Set([winBonus]):new Set(); const carryoverSet=new Set(actualCarryovers);
-    const strongScores={}; Object.keys(strongFreq).forEach(num=>{ const n=parseInt(num); let score=strongFreq[num]*1.0; if(enablePastWeight) { if(winMainSet.has(n)) score+=5; if(winBonusSet.has(n)) score+=3; if(carryoverSet.has(n)) score+=2; } strongScores[num]=score; });
+    const strongScores={}; Object.keys(strongFreq).forEach(num=>{ const n=parseInt(num); let score=strongFreq[n]*1.0; if(enablePastWeight) { if(winMainSet.has(n)) score+=5; if(winBonusSet.has(n)) score+=3; if(carryoverSet.has(n)) score+=2; } strongScores[num]=score; });
     const strongSorted=Object.entries(strongScores).sort((a,b)=>{ if(b[1]!==a[1]) return b[1]-a[1]; return parseInt(a[0])-parseInt(b[0]); });
     const strong1=strongSorted.slice(0,1).map(([num])=>parseInt(num));
     const strong5=strongSorted.slice(0,5).map(([num])=>parseInt(num));
@@ -1042,11 +1049,26 @@ function runV27Analysis() {
     html+=`<div style="background:#0a0a0a;border:3px solid #ffd700;border-radius:10px;padding:8px 12px;margin:8px 0;"><div style="display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;"><span style="color:#ffd700;font-weight:bold;font-size:14px;">📋 10개 조합 (제외 적용, 중복제거)</span><button onclick="copyOnlyNumbers()" class="copy-btn" style="padding:2px 12px;font-size:11px;">📋 복사</button></div><div class="combo-grid">${Object.entries(uniqueStrategies).map(([name,nums])=>`<div class="combo-item"><span class="cname">${name}</span><span class="cnums">${nums.map(n=>colorNumSimple(n,winMain,winBonus)).join(' ')}</span></div>`).join('')}</div><div style="display:flex;flex-wrap:wrap;gap:10px;font-size:13px;margin-top:4px;padding-top:4px;border-top:1px solid #333;"><div><span style="color:#ffd700;">9MAX:</span> ${lastTop9.map(n=>colorNumSimple(n,winMain,winBonus)).join(' ')}</div><div><span style="color:#ffd700;">최종10수:</span> ${lastFinal10.map(n=>colorNumSimple(n,winMain,winBonus)).join(' ')}</div></div><div style="color:#888;font-size:10px;text-align:center;">본:녹색 / 보너스:빨간색</div></div>`;
     html+=`<div class="optimize-result" style="padding:8px 12px;border-color:${total9Hit>=3?'#2ecc71':'#e67e22'};"><div class="label" style="font-size:15px;">🎯 9MAX <span class="badge-9max">9MAX</span></div><div class="numbers" style="font-size:22px;">${lastTop9.map(n=>colorNum(n,winMain,winBonus,true,actualCarryovers)).join(' ')}</div><div style="font-size:13px;">📊 본: ${hit9.length}개 (${hit9.join(', ')||'없음'})${hit9Bonus.length?` | 보너스: ${hit9Bonus.join(', ')}`:''}</div><div style="font-size:18px;font-weight:bold;color:${total9Hit>=3?'#2ecc71':'#f1c40f'};">✅ ${winData?'총 '+total9Hit+'개 적중':'⚠️ 검증 데이터 없음'}</div><div class="source">📌 저3/중3/고3</div></div>`;
     html+=`<div class="v23-box" style="padding:8px 12px;"><div class="title" style="font-size:15px;">🧬 v23.0 <span class="badge-v23">1회 이상</span></div><div class="numbers" style="font-size:22px;">${lastV23Result.map(n=>colorNum(n,winMain,winBonus,true,actualCarryovers)).join(' ')}</div><div class="stats">📊 본: ${hitV23.length}개 (${hitV23.join(', ')||'없음'})${hitV23Bonus.length?` | 보너스: ${hitV23Bonus.join(', ')}`:''}</div><div class="stats" style="color:${totalV23Hit>=3?'#2ecc71':'#e74c3c'};font-size:18px;font-weight:bold;">✅ ${winData?'총 '+totalV23Hit+'개 적중':'⚠️ 검증 데이터 없음'}</div><div class="source">📌 저3/중3/고4</div></div>`;
-    const v23FinalUnion=[...new Set([...lastV23Result,...lastFinal10])].sort((a,b)=>a-b); html+=`<div class="union-box" style="border-color:#9b59b6;background:#0a0a2a;"><div class="title" style="color:#9b59b6;">📊 v23.0 ∪ 최종 10수 합집합</div><div class="numbers">${v23FinalUnion.map(n=>colorNumSimple(n,winMain,winBonus)).join(' ')}</div><div class="sub">총 ${v23FinalUnion.length}개 (중복 제거)</div></div>`;
-    const allUnion=[...new Set([...lastTop9,...lastV23Result,...lastFinal10])].sort((a,b)=>a-b); html+=`<div class="union-box"><div class="title">📊 3가지 분석 전체 합집합 (9MAX ∪ v23.0 ∪ 최종10수)</div><div class="numbers">${allUnion.map(n=>colorNumSimple(n,winMain,winBonus)).join(' ')}</div><div class="sub">총 ${allUnion.length}개 (중복 제거)</div></div>`;
-    const waitUnion=[...new Set([...waitTop10,...lastTop9])].sort((a,b)=>a-b); const combinedUnion=[...new Set([...v23FinalUnion,...waitUnion])].sort((a,b)=>a-b); html+=`<div class="union-box" style="border-color:#2ecc71;background:#0a2a0a;"><div class="title" style="color:#2ecc71;">📊 (v23.0 ∪ 최종10수) ∪ (대기10 ∪ 9MAX) 합집합</div><div class="numbers">${combinedUnion.map(n=>colorNumSimple(n,winMain,winBonus)).join(' ')}</div><div class="sub">총 ${combinedUnion.length}개 (중복 제거)</div></div>`;
     
-    // ★★★ 최종 20수 복구 ★★★
+    // ★★★ 합집합 박스 통합 (가장 큰 범위만 남김) ★★★
+    const v23FinalUnion = [...new Set([...lastV23Result, ...lastFinal10])].sort((a,b)=>a-b);
+    const allUnion = [...new Set([...lastTop9, ...lastV23Result, ...lastFinal10])].sort((a,b)=>a-b);
+    const waitUnion = [...new Set([...waitTop10, ...lastTop9])].sort((a,b)=>a-b);
+    const combinedUnion = [...new Set([...v23FinalUnion, ...waitUnion])].sort((a,b)=>a-b);
+    // combinedUnion이 가장 큰 범위이므로 이것만 표시, 버튼 추가
+    html += `<div class="union-box" style="border-color:#2ecc71;background:#0a2a0a;">
+        <div class="title" style="color:#2ecc71;">📊 전체 통합 합집합 (v23.0 ∪ 최종10수 ∪ 대기10 ∪ 9MAX)</div>
+        <div class="numbers">${combinedUnion.map(n=>colorNumSimple(n,winMain,winBonus)).join(' ')}</div>
+        <div class="sub">총 ${combinedUnion.length}개 (중복 제거)</div>
+        <div style="margin-top:8px;">
+            <button onclick="recombineWithUnion([${combinedUnion.join(',')}])" 
+                    style="background:#9b59b6; color:#fff; border:none; border-radius:20px; padding:4px 18px; font-weight:bold; cursor:pointer; font-size:13px;">
+                🔁 이 번호들로 다시 조합하기 (커스텀)
+            </button>
+        </div>
+    </div>`;
+
+    // ★★★ 최종 20수 (20개 강제 유지) ★★★
     if (window._commonCombined && window._commonNext) {
         const commonCombined = window._commonCombined;
         const commonSet = new Set(commonCombined);
@@ -1058,6 +1080,9 @@ function runV27Analysis() {
 
         let final20 = [...coreNumbers];
         let supplementInfo = [];
+
+        // ★ 20개 초과 시 강제로 20개만 유지
+        if (final20.length > 20) final20 = final20.slice(0, 20);
 
         if (final20.length < 20) {
             const needed = 20 - final20.length;
@@ -1132,51 +1157,182 @@ function runV27Analysis() {
 }
 
 // ========================================================================
-// ★★★ runCustomAnalysis (커스텀 모드) ★★★
+// ★★★ runCustomAnalysis (커스텀 모드 - 다양화 엔진, 구간 강제 없음) ★★★
 // ========================================================================
 function runCustomAnalysis() {
-    const input=document.getElementById('filterCustomInput').value;
-    const nums=input.split(/[,\s\n]+/).map(s=>parseInt(s.trim())).filter(n=>!isNaN(n)&&n>=1&&n<=45);
-    const manualExcludeVal=document.getElementById('manualExclude').value, manualIncludeVal=document.getElementById('manualInclude').value;
-    let manualExcludeNums=manualExcludeVal?manualExcludeVal.split(',').map(s=>parseInt(s.trim())).filter(n=>!isNaN(n)&&n>=1&&n<=45):[];
-    let manualIncludeNums=manualIncludeVal?manualIncludeVal.split(',').map(s=>parseInt(s.trim())).filter(n=>!isNaN(n)&&n>=1&&n<=45):[];
-    let uniqueNums=[...new Set(nums)].sort((a,b)=>a-b);
-    uniqueNums=uniqueNums.filter(n=>!manualExcludeNums.includes(n));
-    manualIncludeNums.forEach(n=>{ if(!uniqueNums.includes(n)) uniqueNums.push(n); });
-    uniqueNums.sort((a,b)=>a-b);
-    if(uniqueNums.length<6){ alert('최소 6개 이상의 번호를 입력해주세요. (포함/제외 적용 후)'); return; }
-    const globalSeed=parseInt(document.getElementById('randomSeed').value)||0, rng=createRNG(globalSeed);
-    let strategies={};
-    if(uniqueNums.length<=6){ for(let i=1;i<=10;i++){ strategies[`조합 ${i}`]=uniqueNums.slice(); } }
-    else { const pools=generateDiversePools(uniqueNums,10,6,globalSeed); for(let i=0;i<pools.length;i++){ strategies[`조합 ${i+1}`]=pools[i]; } }
-    lastBaseStrategies=strategies;
-    let shuffled9=[...uniqueNums]; for(let j=shuffled9.length-1;j>0;j--){ const k=Math.floor(rng()*(j+1)); [shuffled9[j],shuffled9[k]]=[shuffled9[k],shuffled9[j]]; }
-    lastTop9=shuffled9.slice(0,Math.min(9,shuffled9.length)).sort((a,b)=>a-b);
-    let v23Pool=uniqueNums.filter(n=>!lastTop9.includes(n));
-    let shuffledV23=[...v23Pool]; for(let j=shuffledV23.length-1;j>0;j--){ const k=Math.floor(rng()*(j+1)); [shuffledV23[j],shuffledV23[k]]=[shuffledV23[k],shuffledV23[j]]; }
-    lastV23Result=shuffledV23.slice(0,10).sort((a,b)=>a-b);
-    while(lastV23Result.length<10){ const extra=v23Pool.filter(n=>!lastV23Result.includes(n)); if(extra.length===0) break; const pick=extra[Math.floor(rng()*extra.length)]; lastV23Result.push(pick); lastV23Result.sort((a,b)=>a-b); }
-    let finalPool=uniqueNums.filter(n=>!lastTop9.includes(n)&&!lastV23Result.includes(n));
-    let shuffledFinal=[...finalPool]; for(let j=shuffledFinal.length-1;j>0;j--){ const k=Math.floor(rng()*(j+1)); [shuffledFinal[j],shuffledFinal[k]]=[shuffledFinal[k],shuffledFinal[j]]; }
-    lastFinal10=shuffledFinal.slice(0,10).sort((a,b)=>a-b);
-    while(lastFinal10.length<10){ const extra=finalPool.filter(n=>!lastFinal10.includes(n)); if(extra.length===0) break; const pick=extra[Math.floor(rng()*extra.length)]; lastFinal10.push(pick); lastFinal10.sort((a,b)=>a-b); }
-    const baseRound=parseInt(document.getElementById('baseRound').value)||1234;
-    const win=getWinning(baseRound); winData=win; const winMain=win?win.main:[], winBonus=win?win.bonus:null;
-    let hit9=lastTop9.filter(n=>winMain.includes(n)), hit9Bonus=lastTop9.filter(n=>n===winBonus);
-    let hitV23=lastV23Result.filter(n=>winMain.includes(n)), hitV23Bonus=lastV23Result.filter(n=>n===winBonus);
-    let hitFinal10=lastFinal10.filter(n=>winMain.includes(n)), hitFinal10Bonus=lastFinal10.filter(n=>n===winBonus);
-    const total9Hit=hit9.length+(hit9Bonus.length?1:0), totalV23Hit=hitV23.length+(hitV23Bonus.length?1:0), totalFinalHit=hitFinal10.length+(hitFinal10Bonus.length?1:0);
-    let html=`<div style="color:#ffd700; padding:4px 10px; border-bottom:2px solid #ffd700;">🎯 커스텀 분석 (입력 번호: ${uniqueNums.join(', ')})`;
-    if(manualIncludeNums.length>0) html+=` | ✅포함: ${manualIncludeNums.join(',')}`;
-    if(manualExcludeNums.length>0) html+=` | 🚫제외: ${manualExcludeNums.join(',')}`;
-    html+=`</div><div class="winning-info" style="font-size:13px;padding:4px 10px;">${win?`✅ ${baseRound}회: <span style="color:#2ecc71;">${win.main.join(', ')}</span> | 보: <span style="color:#ff6b6b;">${win.bonus}</span>`:`⚠️ ${baseRound}회 미추첨`}</div>`;
-    html+=`<div style="background:#0a0a0a;border:3px solid #ffd700;border-radius:10px;padding:8px 12px;margin:8px 0;"><div style="display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;"><span style="color:#ffd700;font-weight:bold;font-size:14px;">📋 커스텀 10개 조합 (오프셋/간격 반영됨)</span><button onclick="copyOnlyNumbers()" class="copy-btn" style="padding:2px 12px;font-size:11px;">📋 복사</button></div><div class="combo-grid">${Object.entries(strategies).map(([name,nums])=>`<div class="combo-item"><span class="cname">${name}</span><span class="cnums">${nums.map(n=>colorNumSimple(n,winMain,winBonus)).join(' ')}</span></div>`).join('')}</div><div style="color:#888;font-size:9px;text-align:right;margin-top:4px;">⚙️ 적용된 설정: 시작오프셋=${document.getElementById('startOffset').value}, 간격=${document.getElementById('stepSize').value}</div></div>`;
-    html+=`<div class="optimize-result" style="padding:8px 12px;border-color:${total9Hit>=3?'#2ecc71':'#e67e22'};"><div class="label" style="font-size:15px;">🎯 9MAX <span class="badge-9max">9MAX</span> (입력 번호 내)</div><div class="numbers" style="font-size:22px;">${lastTop9.map(n=>colorNum(n,winMain,winBonus,true,[])).join(' ')}</div><div style="font-size:13px;">📊 본: ${hit9.length}개 (${hit9.join(', ')||'없음'})${hit9Bonus.length?` | 보너스: ${hit9Bonus.join(', ')}`:''}</div><div style="font-size:18px;font-weight:bold;color:${total9Hit>=3?'#2ecc71':'#f1c40f'};">✅ ${win?'총 '+total9Hit+'개 적중':'⚠️ 검증 데이터 없음'}</div><div class="source">📌 커스텀 (글로벌 시드)</div></div>`;
-    html+=`<div class="v23-box" style="padding:8px 12px;"><div class="title" style="font-size:15px;">🧬 v23.0 <span class="badge-v23">커스텀</span> (9MAX 제외 후 선택, 중복 없음)</div><div class="numbers" style="font-size:22px;">${lastV23Result.map(n=>colorNum(n,winMain,winBonus,true,[])).join(' ')}</div><div class="stats">📊 본: ${hitV23.length}개 (${hitV23.join(', ')||'없음'})${hitV23Bonus.length?` | 보너스: ${hitV23Bonus.join(', ')}`:''}</div><div class="stats" style="color:${totalV23Hit>=3?'#2ecc71':'#e74c3c'};font-size:18px;font-weight:bold;">✅ ${win?'총 '+totalV23Hit+'개 적중':'⚠️ 검증 데이터 없음'}</div><div class="source">📌 커스텀 (글로벌 시드)</div></div>`;
-    const allSelected=new Set(); Object.values(strategies).forEach(nums=>nums.forEach(n=>allSelected.add(n))); const unselected=uniqueNums.filter(n=>!allSelected.has(n)); const unselectedColored=unselected.map(n=>colorNum(n,winMain,winBonus,true,[])).join(' ');
-    html+=`<div style="background:#1a1a2a;border:2px solid #3498db;border-radius:8px;padding:6px 12px;margin:8px 0;"><span style="color:#3498db;font-weight:bold;">📌 입력 번호 중 10개 엔진이 선택하지 않은 번호 (${unselected.length}개):</span><span>${unselected.length>0?unselectedColored:'없음'}</span></div>`;
-    document.getElementById('resultArea').innerHTML=html; document.getElementById('strongRecommendContainer').innerHTML='';
+    const input = document.getElementById('filterCustomInput').value;
+    const nums = input.split(/[,\s\n]+/).map(s => parseInt(s.trim())).filter(n => !isNaN(n) && n >= 1 && n <= 45);
+    const manualExcludeVal = document.getElementById('manualExclude').value;
+    const manualIncludeVal = document.getElementById('manualInclude').value;
+    let manualExcludeNums = manualExcludeVal ? manualExcludeVal.split(',').map(s => parseInt(s.trim())).filter(n => !isNaN(n) && n >= 1 && n <= 45) : [];
+    let manualIncludeNums = manualIncludeVal ? manualIncludeVal.split(',').map(s => parseInt(s.trim())).filter(n => !isNaN(n) && n >= 1 && n <= 45) : [];
+
+    // 입력 번호 정리 (중복 제거, 제외/포함 적용)
+    let uniqueNums = [...new Set(nums)].sort((a, b) => a - b);
+    uniqueNums = uniqueNums.filter(n => !manualExcludeNums.includes(n));
+    manualIncludeNums.forEach(n => { if (!uniqueNums.includes(n)) uniqueNums.push(n); });
+    uniqueNums.sort((a, b) => a - b);
+
+    if (uniqueNums.length < 6) {
+        alert('최소 6개 이상의 번호를 입력해주세요. (포함/제외 적용 후)');
+        return;
+    }
+
+    const globalSeed = parseInt(document.getElementById('randomSeed').value) || 0;
+    const rng = createRNG(globalSeed);
+
+    // ★★★ 1. 다양화 엔진 사용 (저/중/고 비율 강제 없이, 입력 번호 전체를 골고루 분산) ★★★
+    let pools = generateDiversePools(uniqueNums, 10, 6, globalSeed);
+
+    const strategies = {};
+    const seen = new Set();
+
+    for (let i = 0; i < pools.length; i++) {
+        let combo = [...pools[i]];
+        let attempts = 0;
+        let valid = false;
+
+        // 2. 기본 필터(3연번 금지, 합계 100~180) 및 중복 제거 검사
+        while (attempts < 30 && !valid) {
+            const sum = combo.reduce((a, b) => a + b, 0);
+            const hasConsec = hasConsecutive3(combo);
+            const key = combo.slice().sort((a, b) => a - b).join(',');
+
+            if (!hasConsec && sum >= 100 && sum <= 180 && !seen.has(key)) {
+                valid = true;
+                seen.add(key);
+                strategies[`조합 ${i+1}`] = combo.slice().sort((a, b) => a - b);
+            } else {
+                // 필터 통과 실패 시, 입력 번호에서 랜덤 6개를 새로 추출 (다양성 유지)
+                const shuffled = [...uniqueNums];
+                for (let j = shuffled.length - 1; j > 0; j--) {
+                    const k = Math.floor(rng() * (j + 1));
+                    [shuffled[j], shuffled[k]] = [shuffled[k], shuffled[j]];
+                }
+                combo = shuffled.slice(0, 6).sort((a, b) => a - b);
+                attempts++;
+            }
+        }
+
+        // 그래도 실패하면 강제로 추가 (조합이 아예 없지는 않도록)
+        if (!valid) {
+            combo = pools[i].slice().sort((a, b) => a - b);
+            const key = combo.join(',');
+            if (!seen.has(key)) {
+                seen.add(key);
+                strategies[`조합 ${i+1}`] = combo;
+            } else {
+                // 중복되면 그냥 아무거나 추가 (거의 발생하지 않음)
+                strategies[`조합 ${i+1}`] = combo;
+            }
+        }
+    }
+
+    // 나머지 전역 변수 업데이트 (기존 UI와 호환)
+    lastBaseStrategies = strategies;
+    const keys = Object.keys(strategies);
+    if (keys.length > 0) {
+        lastTop9 = strategies[keys[0]].slice(0, 9).sort((a, b) => a - b);
+        if (keys.length > 1) {
+            lastV23Result = strategies[keys[1]].slice(0, 10).sort((a, b) => a - b);
+        } else {
+            lastV23Result = strategies[keys[0]].slice(0, 10).sort((a, b) => a - b);
+        }
+        if (keys.length > 2) {
+            lastFinal10 = strategies[keys[2]].slice(0, 10).sort((a, b) => a - b);
+        } else {
+            lastFinal10 = strategies[keys[0]].slice(0, 10).sort((a, b) => a - b);
+        }
+    }
+
+    // 결과 HTML 생성 (기존 코드와 동일)
+    const baseRound = parseInt(document.getElementById('baseRound').value) || 1234;
+    const win = getWinning(baseRound);
+    winData = win;
+    const winMain = win ? win.main : [];
+    const winBonus = win ? win.bonus : null;
+
+    let hit9 = lastTop9.filter(n => winMain.includes(n));
+    let hit9Bonus = lastTop9.filter(n => n === winBonus);
+    let hitV23 = lastV23Result.filter(n => winMain.includes(n));
+    let hitV23Bonus = lastV23Result.filter(n => n === winBonus);
+    let hitFinal10 = lastFinal10.filter(n => winMain.includes(n));
+    let hitFinal10Bonus = lastFinal10.filter(n => n === winBonus);
+    const total9Hit = hit9.length + (hit9Bonus.length ? 1 : 0);
+    const totalV23Hit = hitV23.length + (hitV23Bonus.length ? 1 : 0);
+    const totalFinalHit = hitFinal10.length + (hitFinal10Bonus.length ? 1 : 0);
+
+    let html = `<div style="color:#ffd700; padding:4px 10px; border-bottom:2px solid #ffd700;">🎯 커스텀 분석 (입력 번호: ${uniqueNums.join(', ')})`;
+    if (manualIncludeNums.length > 0) html += ` | ✅포함: ${manualIncludeNums.join(',')}`;
+    if (manualExcludeNums.length > 0) html += ` | 🚫제외: ${manualExcludeNums.join(',')}`;
+    html += `</div><div class="winning-info" style="font-size:13px;padding:4px 10px;">${win ? `✅ ${baseRound}회: <span style="color:#2ecc71;">${win.main.join(', ')}</span> | 보: <span style="color:#ff6b6b;">${win.bonus}</span>` : `⚠️ ${baseRound}회 미추첨`}</div>`;
+
+    // 10개 조합 표시 (중복 제거된 고유 조합만)
+    const uniqueStrategies = {};
+    const seenFinal = new Set();
+    Object.entries(strategies).forEach(([name, nums]) => {
+        const key = nums.slice().sort((a, b) => a - b).join(',');
+        if (!seenFinal.has(key)) {
+            seenFinal.add(key);
+            uniqueStrategies[name] = nums;
+        }
+    });
+
+    html += `<div style="background:#0a0a0a;border:3px solid #ffd700;border-radius:10px;padding:8px 12px;margin:8px 0;">
+        <div style="display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;">
+            <span style="color:#ffd700;font-weight:bold;font-size:14px;">📋 10개 조합 (다양화 엔진 - 구간 강제 없음)</span>
+            <button onclick="copyOnlyNumbers()" class="copy-btn" style="padding:2px 12px;font-size:11px;">📋 복사</button>
+        </div>
+        <div class="combo-grid">${Object.entries(uniqueStrategies).map(([name,nums]) => 
+            `<div class="combo-item"><span class="cname">${name}</span><span class="cnums">${nums.map(n => colorNumSimple(n, winMain, winBonus)).join(' ')}</span></div>`
+        ).join('')}</div>
+        <div style="color:#888;font-size:9px;text-align:right;margin-top:4px;">⚙️ 입력 번호 전체를 골고루 분산하여 조합 생성 (3연번X, 합계100~180)</div>
+    </div>`;
+
+    // 9MAX, v23, final10 표시
+    html += `<div class="optimize-result" style="padding:8px 12px;border-color:${total9Hit>=3?'#2ecc71':'#e67e22'};">
+        <div class="label" style="font-size:15px;">🎯 9MAX <span class="badge-9max">9MAX</span> (첫 조합 기반)</div>
+        <div class="numbers" style="font-size:22px;">${lastTop9.map(n => colorNum(n, winMain, winBonus, true, [])).join(' ')}</div>
+        <div style="font-size:13px;">📊 본: ${hit9.length}개 (${hit9.join(', ')||'없음'})${hit9Bonus.length ? ` | 보너스: ${hit9Bonus.join(', ')}` : ''}</div>
+        <div style="font-size:18px;font-weight:bold;color:${total9Hit>=3?'#2ecc71':'#f1c40f'};">✅ ${win ? '총 '+total9Hit+'개 적중' : '⚠️ 검증 데이터 없음'}</div>
+    </div>`;
+
+    html += `<div class="v23-box" style="padding:8px 12px;">
+        <div class="title" style="font-size:15px;">🧬 v23.0 <span class="badge-v23">커스텀</span></div>
+        <div class="numbers" style="font-size:22px;">${lastV23Result.map(n => colorNum(n, winMain, winBonus, true, [])).join(' ')}</div>
+        <div class="stats">📊 본: ${hitV23.length}개 (${hitV23.join(', ')||'없음'})${hitV23Bonus.length ? ` | 보너스: ${hitV23Bonus.join(', ')}` : ''}</div>
+        <div class="stats" style="color:${totalV23Hit>=3?'#2ecc71':'#e74c3c'};font-size:18px;font-weight:bold;">✅ ${win ? '총 '+totalV23Hit+'개 적중' : '⚠️ 검증 데이터 없음'}</div>
+    </div>`;
+
+    // 합집합 (커스텀)
+    const combinedUnion = [...new Set([...lastTop9, ...lastV23Result, ...lastFinal10])].sort((a,b)=>a-b);
+    html += `<div class="union-box" style="border-color:#2ecc71;background:#0a2a0a;">
+        <div class="title" style="color:#2ecc71;">📊 전체 통합 합집합 (9MAX ∪ v23.0 ∪ 최종10수)</div>
+        <div class="numbers">${combinedUnion.map(n=>colorNumSimple(n,winMain,winBonus)).join(' ')}</div>
+        <div class="sub">총 ${combinedUnion.length}개 (중복 제거)</div>
+    </div>`;
+
+    document.getElementById('resultArea').innerHTML = html;
+    document.getElementById('strongRecommendContainer').innerHTML = '';
 }
+
+// ========================================================================
+// ★★★ 합집합 번호로 커스텀 재조합 실행 ★★★
+// ========================================================================
+window.recombineWithUnion = function(unionNumbers) {
+    // 커스텀 모드 활성화
+    const customCheckbox = document.getElementById('filterCustomMode');
+    if (!customCheckbox.checked) {
+        customCheckbox.checked = true;
+        // 이벤트 강제 발생 (textarea 활성화)
+        customCheckbox.dispatchEvent(new Event('change'));
+    }
+    // 입력창에 번호 채우기
+    const input = document.getElementById('filterCustomInput');
+    input.value = unionNumbers.join(', ');
+    // 실행 버튼 클릭
+    document.getElementById('filterCustomRunBtn').click();
+};
 
 // ========================================================================
 // ★★★ 강력 1수 / 5수 (버튼용) ★★★
