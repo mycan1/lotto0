@@ -8,7 +8,1303 @@
 body { background: #0a0a0a; color: #fff; font-family: 'Segoe UI', sans-serif; padding: 20px; max-width: 1400px; margin: 0 auto; }
 h1 { color: #ffd700; text-align: center; border-bottom: 3px solid #ffd700; padding-bottom: 10px; margin-bottom: 20px; font-size: 28px; }
 .filters { background: #1a1a1a; border: 2px solid #ffd700; border-radius: 15px; padding: 12px 15px; margin-bottom: 20px; display: flex; flex-wrap: wrap; gap: 10px; align-items: center; }
-.filter-group { display: flex; flex-direction: column; gap: 2px; }
+.filter-group { displ<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <title>📊 정직한 유사회차 분석 (전체 복구)</title>
+    <style>
+        * { box-sizing: border-box; margin: 0; padding: 0; }
+        body { background: #0a0a0a; color: #fff; font-family: 'Segoe UI', sans-serif; padding: 20px; max-width: 1200px; margin: 0 auto; }
+        h1 { color: #ffd700; text-align: center; border-bottom: 3px solid #ffd700; padding-bottom: 10px; margin-bottom: 20px; }
+        .honest-badge { background: #2ecc71; color: #000; padding: 4px 16px; border-radius: 30px; font-size: 14px; font-weight: bold; display: inline-block; margin-left: 15px; }
+        
+        .set-calculator { background: #1a1a2a; border: 2px solid #ffd700; border-radius: 15px; padding: 15px 20px; margin-bottom: 20px; }
+        .set-calculator .title { color: #ffd700; font-size: 18px; font-weight: bold; margin-bottom: 10px; }
+        .set-calculator .row { display: flex; flex-wrap: wrap; gap: 10px; align-items: center; margin-bottom: 8px; }
+        .set-calculator .row label { color: #88ccff; font-weight: bold; min-width: 70px; }
+        .set-calculator .row input[type="text"] { flex: 1; min-width: 150px; padding: 6px 12px; border-radius: 8px; border: 1px solid #555; background: #2a2a2a; color: #fff; font-size: 14px; }
+        .set-calculator .btn-group { display: flex; flex-wrap: wrap; gap: 6px; margin: 8px 0; }
+        .set-calculator .btn-group button { background: #ffd700; color: #000; border: none; border-radius: 30px; padding: 5px 16px; font-weight: bold; font-size: 13px; cursor: pointer; transition: all 0.2s; }
+        .set-calculator .btn-group button:hover { background: #00e6b8; transform: scale(1.02); box-shadow: 0 0 20px #00e6b8; }
+        .set-calculator .btn-group button.green { background: #2ecc71; color: #000; }
+        .set-calculator .btn-group button.green:hover { background: #00e6b8; }
+        .set-calculator .btn-group button.red { background: #e74c3c; color: #fff; }
+        .set-calculator .btn-group button.red:hover { background: #c0392b; }
+        .set-calculator .result-box { background: #0a0a0a; border: 1px solid #555; border-radius: 8px; padding: 8px 12px; margin: 5px 0; display: flex; flex-wrap: wrap; align-items: center; gap: 8px; }
+        .set-calculator .result-box .label { color: #88ccff; font-weight: bold; margin-right: 8px; }
+        .set-calculator .result-box .value { color: #fff; font-size: 14px; word-break: break-all; }
+        .set-calculator .result-box .value .num { margin: 0 2px; }
+        .set-calculator .result-box .value .hit { color: #2ecc71; font-weight: bold; }
+        .set-calculator .result-box .value .bonus { color: #ff6b6b; font-weight: bold; }
+        .set-calculator .result-box .copy-btn { background: #555; color: #fff; border: none; border-radius: 20px; padding: 2px 12px; font-size: 12px; cursor: pointer; margin-left: auto; }
+        .set-calculator .result-box .copy-btn:hover { background: #777; }
+        .base-info { background: #1a2a1a; border-left: 4px solid #2ecc71; padding: 8px 15px; border-radius: 6px; margin-bottom: 10px; font-size: 14px; }
+        .base-info .label { color: #88ccff; }
+        .base-info .main-num { color: #2ecc71; font-weight: bold; }
+        .base-info .bonus-num { color: #ff6b6b; font-weight: bold; }
+        .combo-output { background: #1a2a1a; border: 2px solid #2ecc71; border-radius: 10px; padding: 10px 15px; margin-top: 8px; }
+        .combo-output .combo-item { display: inline-block; background: #333; padding: 2px 10px; border-radius: 20px; margin: 3px 5px; font-size: 13px; }
+        .combo-output .combo-num { color: #ffd700; font-weight: bold; }
+        .combo-output .combo-item .hit { color: #2ecc71; font-weight: bold; }
+        .combo-output .combo-item .bonus { color: #ff6b6b; font-weight: bold; }
+        .combo-output .engine-info { color: #88ccff; font-size: 12px; margin-bottom: 5px; }
+        
+        .custom-input-area { background: #1a2a1a; border: 3px solid #2ecc71; border-radius: 15px; padding: 15px 20px; margin-bottom: 20px; box-shadow: 0 0 20px rgba(46, 204, 113, 0.1); }
+        .custom-input-area .title { color: #2ecc71; font-size: 18px; font-weight: bold; margin-bottom: 10px; border-bottom: 2px solid #2ecc71; padding-bottom: 8px; }
+        .custom-input-area .row { display: flex; flex-wrap: wrap; gap: 10px; align-items: center; margin-bottom: 8px; }
+        .custom-input-area .row label { color: #88ccff; font-weight: bold; min-width: 80px; }
+        .custom-input-area .row input[type="text"] { flex: 1; min-width: 200px; padding: 6px 12px; border-radius: 8px; border: 1px solid #555; background: #2a2a2a; color: #fff; font-size: 14px; }
+        .custom-input-area .btn-group { display: flex; flex-wrap: wrap; gap: 6px; margin: 8px 0; }
+        .custom-input-area .btn-group button { background: #2ecc71; color: #000; border: none; border-radius: 30px; padding: 5px 16px; font-weight: bold; font-size: 13px; cursor: pointer; transition: all 0.2s; }
+        .custom-input-area .btn-group button:hover { background: #00e6b8; transform: scale(1.02); box-shadow: 0 0 20px #2ecc71; }
+        .custom-input-area .btn-group button.red { background: #e74c3c; color: #fff; }
+        .custom-input-area .btn-group button.red:hover { background: #c0392b; }
+        .custom-input-area .btn-group button.orange { background: #e67e22; color: #fff; }
+        .custom-input-area .btn-group button.orange:hover { background: #f39c12; transform: scale(1.02); box-shadow: 0 0 20px #e67e22; }
+        .custom-input-area .btn-group button.purple { background: #8e44ad; color: #fff; }
+        .custom-input-area .btn-group button.purple:hover { background: #9b59b6; transform: scale(1.02); box-shadow: 0 0 20px #8e44ad; }
+        .custom-input-area .base-info { border-left-color: #2ecc71; }
+        .compress-output { background: #1a1a2a; border: 2px solid #e67e22; border-radius: 10px; padding: 10px 15px; margin-top: 8px; }
+        .compress-output .title { color: #e67e22; font-weight: bold; font-size: 16px; }
+        .compress-item { display: inline-block; background: #222; border: 1px solid #444; border-radius: 20px; padding: 4px 12px; margin: 3px 5px; font-size: 14px; }
+        .compress-item .num { font-weight: bold; color: #ffd700; }
+        .compress-item .score { color: #aaa; font-size: 11px; margin-left: 4px; }
+        .compress-item .tag { font-size: 10px; padding: 1px 6px; border-radius: 10px; margin-left: 4px; }
+        .tag-freq { background: #2ecc71; color: #000; }
+        .tag-top3 { background: #ffd700; color: #000; }
+        .tag-pool { background: #3498db; color: #fff; }
+        .tag-high { background: #e74c3c; color: #fff; }
+        .tag-low { background: #9b59b6; color: #fff; }
+        .tag-recent { background: #f39c12; color: #000; }
+        .tag-direct { background: #1abc9c; color: #000; }
+        .tag-near { background: #e67e22; color: #fff; }
+        .score-desc { color: #88ccff; font-size: 12px; margin-bottom: 5px; }
+        .compress-item .rank { color: #666; font-size: 10px; margin-right: 3px; }
+        
+        .filters { background: #1a1a1a; border: 2px solid #ffd700; border-radius: 15px; padding: 15px 20px; margin-bottom: 20px; display: flex; flex-wrap: wrap; gap: 15px; align-items: flex-end; }
+        .filter-group { display: flex; flex-direction: column; gap: 3px; }
+        .filter-group label { color: #ffd700; font-size: 12px; font-weight: bold; }
+        .filter-group input, .filter-group select { padding: 6px 12px; border-radius: 8px; border: 1px solid #555; background: #2a2a2a; color: #fff; font-size: 14px; width: 100%; }
+        .filter-group input[type="number"] { width: 100px; }
+        button { background: #ffd700; color: #000; border: none; border-radius: 30px; padding: 8px 20px; font-weight: bold; font-size: 14px; cursor: pointer; transition: all 0.2s; }
+        button:hover { background: #00e6b8; transform: scale(1.02); box-shadow: 0 0 20px #00e6b8; }
+        button.secondary { background: #555; color: #fff; }
+        button.secondary:hover { background: #777; }
+        button.top5-btn { background: #9b59b6; color: #fff; }
+        button.top5-btn:hover { background: #8e44ad; transform: scale(1.02); box-shadow: 0 0 20px #9b59b6; }
+        .result-area { background: #1a1a1a; border: 2px solid #ffd700; border-radius: 15px; padding: 20px; margin-top: 20px; overflow-x: auto; }
+        .section-title { color: #ffd700; font-size: 18px; font-weight: bold; margin: 15px 0 10px 0; }
+        .winning-info { background: #2a2a2a; border-left: 4px solid #ff6b6b; padding: 10px 15px; border-radius: 8px; margin: 10px 0; }
+        .winning-info span { color: #ff6b6b; font-weight: bold; font-size: 18px; }
+        .info-box { background: #1a2a2a; border-left: 4px solid #3498db; padding: 8px 15px; border-radius: 8px; margin: 5px 0; font-size: 13px; color: #88ccff; }
+        .pool-box { background: #1a2a1a; border: 2px solid #2ecc71; padding: 10px; border-radius: 8px; margin: 10px 0; }
+        .combo-box { background: #1a2a1a; border: 1px solid #2ecc71; border-radius: 10px; padding: 10px 15px; margin: 5px 0; display: flex; flex-wrap: wrap; align-items: center; }
+        .combo-box span { display: inline-block; background: #333; padding: 2px 10px; border-radius: 20px; margin: 2px 4px; font-size: 13px; }
+        .match-hit { color: #2ecc71; font-weight: bold; background: rgba(46, 204, 113, 0.25); border-radius: 4px; padding: 2px 6px; }
+        .match-bonus { color: #ff6b6b; font-weight: bold; background: rgba(255,107,107,0.25); border-radius: 4px; padding: 2px 6px; }
+        .loading { text-align: center; padding: 40px; color: #aaa; }
+        .note { font-size: 11px; color: #888; margin-top: 5px; background: #111; padding: 8px; border-radius: 6px; }
+        .freq-container { display: flex; flex-wrap: wrap; gap: 8px; margin-top: 5px; }
+        .freq-item { display: inline-flex; align-items: center; gap: 5px; background: #1a1a1a; padding: 3px 12px; border-radius: 20px; border: 1px solid #333; font-size: 14px; }
+        .freq-item .num { font-weight: bold; min-width: 24px; text-align: center; color: #fff; }
+        .freq-item .count { color: #ffd700; font-size: 12px; }
+        .freq-item .bar { display: inline-block; width: 30px; height: 4px; background: #333; border-radius: 2px; margin-left: 4px; }
+        .freq-item .bar-inner { display: block; height: 100%; background: #ffd700; border-radius: 2px; }
+        .winner-main { color: #2ecc71 !important; }
+        .winner-bonus { color: #ff6b6b !important; }
+        .freq-section { margin-top: 15px; }
+        .freq-section-title { color: #ffd700; font-size: 15px; font-weight: bold; margin-bottom: 5px; }
+        .badge { display: inline-block; padding: 2px 10px; border-radius: 30px; font-weight: bold; font-size: 11px; }
+        .badge-2 { background: #6c757d; color: #fff; }
+        .badge-3 { background: #17a2b8; color: #fff; }
+        .badge-4 { background: #ffd700; color: #000; }
+        .badge-5 { background: #2ecc71; color: #000; }
+        table { width: 100%; border-collapse: collapse; font-size: 12px; margin: 10px 0; }
+        th { background: #ffd700; color: #000; padding: 6px 4px; text-align: center; }
+        td { padding: 5px 4px; border-bottom: 1px solid #333; text-align: center; }
+        .round-col { color: #ffd700; font-weight: bold; }
+        .bonus-col { color: #ff6b6b; font-weight: bold; }
+        .no-data { color: #f39c12; font-style: italic; }
+        .pair-box { background: #1a1a2a; border: 2px solid #e67e22; padding: 10px 15px; border-radius: 8px; margin: 10px 0; }
+        .pair-box strong { color: #e67e22; }
+        .pair-item { display: inline-block; background: #333; padding: 2px 10px; border-radius: 20px; margin: 2px 4px; font-size: 14px; font-weight: bold; }
+        .pair-item .freq { color: #aaa; font-size: 11px; font-weight: normal; margin-left: 2px; }
+        .pair-item.hit .num { color: #2ecc71; }
+        .pair-item.bonus .num { color: #ff6b6b; }
+        .pair-item.hit { background: rgba(46, 204, 113, 0.15); border: 1px solid #2ecc71; }
+        .pair-item.bonus { background: rgba(255,107,107,0.15); border: 1px solid #ff6b6b; }
+        .collected-box { background: #1a2a1a; border: 2px solid #2ecc71; padding: 10px 15px; border-radius: 8px; margin: 10px 0; }
+        .collected-box strong { color: #2ecc71; }
+        .collected-item { display: inline-block; background: #333; padding: 2px 10px; border-radius: 20px; margin: 2px 4px; font-size: 14px; font-weight: bold; }
+        .collected-item .freq { color: #aaa; font-size: 11px; font-weight: normal; margin-left: 2px; }
+        .collected-item .mark { font-size: 12px; margin-left: 1px; }
+        .collected-item.hit .num { color: #2ecc71; }
+        .collected-item.bonus .num { color: #ff6b6b; }
+        .collected-item.hit { background: rgba(46, 204, 113, 0.15); border: 1px solid #2ecc71; }
+        .collected-item.bonus { background: rgba(255,107,107,0.15); border: 1px solid #ff6b6b; }
+        .intersection-box { background: #1a1a2a; border: 2px solid #666; padding: 10px 15px; border-radius: 8px; margin: 10px 0; }
+        .intersection-box strong { color: #fff; }
+        .intersection-item { display: inline-block; background: #333; padding: 2px 10px; border-radius: 20px; margin: 2px 4px; font-size: 14px; font-weight: bold; }
+        .intersection-item .freq { color: #aaa; font-size: 11px; font-weight: normal; margin-left: 2px; }
+        .intersection-item.hit .num { color: #2ecc71; }
+        .intersection-item.bonus .num { color: #ff6b6b; }
+        .intersection-item.hit { background: rgba(46, 204, 113, 0.15); border: 1px solid #2ecc71; }
+        .intersection-item.bonus { background: rgba(255,107,107,0.15); border: 1px solid #ff6b6b; }
+        .recent-box { background: #1a1a2a; border: 2px solid #3498db; padding: 10px 15px; border-radius: 8px; margin: 10px 0; }
+        .recent-box strong { color: #3498db; }
+        .recent-item { display: inline-block; background: #333; padding: 2px 10px; border-radius: 20px; margin: 2px 4px; font-size: 13px; }
+        .recent-item .num { color: #ffd700; font-weight: bold; }
+        .recent-item .hit { color: #2ecc71; }
+        .recent-item .bonus { color: #ff6b6b; }
+        .highlight-green { color: #2ecc71; font-weight: bold; }
+        .highlight-red { color: #ff6b6b; font-weight: bold; }
+        .highlight-gold { color: #ffd700; font-weight: bold; }
+        .top5-combo-box { background: #1a1a2a; border: 2px solid #9b59b6; padding: 10px 15px; border-radius: 8px; margin: 10px 0; }
+        .top5-combo-box strong { color: #9b59b6; }
+        .filter-group .btn-group { display: flex; gap: 8px; flex-wrap: wrap; }
+        .filter-group .btn-group button { flex: 1; min-width: 100px; }
+        .expanded-notice { color: #f1c40f; font-weight: bold; font-size: 12px; }
+        .expand-detail { background: #1a1a2a; border-left: 4px solid #f1c40f; padding: 8px 12px; border-radius: 6px; margin: 8px 0; font-size: 13px; }
+        .expand-detail .label { color: #88ccff; }
+        .expand-detail .original { color: #aaa; }
+        .expand-detail .added { color: #f1c40f; font-weight: bold; }
+        .expand-detail .fallback { color: #e67e22; font-weight: bold; }
+        .expand-detail .final { color: #ffd700; font-weight: bold; }
+        .method-info { color: #88ccff; font-size: 12px; background: #0a1a2a; padding: 4px 10px; border-radius: 4px; display: inline-block; margin-bottom: 8px; }
+        .honest-notice { background: #1a2a1a; border: 2px solid #2ecc71; padding: 10px 15px; border-radius: 8px; margin: 10px 0; color: #2ecc71; font-weight: bold; }
+        .setting-info { color: #88ccff; font-size: 13px; background: #0a1a2a; padding: 4px 12px; border-radius: 4px; display: inline-block; margin-bottom: 6px; }
+        .section-header { display: flex; align-items: center; flex-wrap: wrap; gap: 5px; margin: 5px 0; }
+        .copy-btn { background: #2ecc71; color: #000; border: none; border-radius: 30px; padding: 2px 12px; font-size: 12px; font-weight: bold; cursor: pointer; margin-left: 8px; transition: all 0.2s; }
+        .copy-btn:hover { background: #00e6b8; transform: scale(1.05); box-shadow: 0 0 15px #2ecc71; }
+        .copy-toast { position: fixed; bottom: 30px; left: 50%; transform: translateX(-50%); background: #2ecc71; color: #000; padding: 10px 24px; border-radius: 30px; font-weight: bold; font-size: 14px; z-index: 9999; opacity: 0; transition: opacity 0.3s; pointer-events: none; }
+        .copy-toast.show { opacity: 1; }
+        .no-base-info { color: #888; font-style: italic; }
+        .toast-warning { background: #f39c12 !important; color: #000 !important; }
+        .filter-badge { background: #2ecc71; color: #000; padding: 1px 10px; border-radius: 20px; font-size: 11px; font-weight: bold; margin-left: 6px; }
+        .freq-order-badge { background: #3498db; color: #fff; padding: 1px 10px; border-radius: 20px; font-size: 11px; font-weight: bold; margin-left: 6px; }
+        .next-filter-badge { background: #e67e22; color: #fff; padding: 1px 10px; border-radius: 20px; font-size: 11px; font-weight: bold; margin-left: 6px; }
+        .tag-direct { background: #1abc9c; color: #000; }
+        .tag-near { background: #e67e22; color: #fff; }
+    </style>
+</head>
+<body>
+    <h1>📊 정직한 유사회차 분석 <span class="honest-badge">✅ 과거 정보만 사용</span></h1>
+
+    <!-- ==================================================================== -->
+    <!--  집합 계산기                                                         -->
+    <!-- ==================================================================== -->
+    <div class="set-calculator">
+        <div class="title">🧮 합집합 · 교집합 · 차집합 계산기</div>
+        
+        <div class="base-info" id="calcBaseInfo">
+            <span class="label">📌 기준 당번 (예측 대상): </span>
+            <span class="no-base-info">아직 분석 실행 전입니다.</span>
+        </div>
+        
+        <div class="row">
+            <label>집합 A</label>
+            <input type="text" id="setA" placeholder="예: 1,2,3,4,5" value="1,2,3,4,5">
+        </div>
+        <div class="row">
+            <label>집합 B</label>
+            <input type="text" id="setB" placeholder="예: 4,5,6,7,8" value="4,5,6,7,8">
+        </div>
+        <div class="btn-group">
+            <button onclick="calcSet('union')">합집합 (A∪B)</button>
+            <button onclick="calcSet('intersection')">교집합 (A∩B)</button>
+            <button onclick="calcSet('diffAB')">차집합 (A−B)</button>
+            <button onclick="calcSet('diffBA')">차집합 (B−A)</button>
+            <button class="green" onclick="generateCustomCombos()">🎯 커스텀 조합 생성</button>
+            <button class="red" onclick="resetCalculator()">🗑️ 계산기 초기화</button>
+        </div>
+        <div id="setResults">
+            <div class="result-box">
+                <span class="label">📌 결과:</span>
+                <span class="value" id="setResultDisplay">계산 결과가 여기에 표시됩니다.</span>
+                <button class="copy-btn" onclick="copyText('setResultDisplay')">📋 복사</button>
+            </div>
+        </div>
+        <div id="customComboOutput" class="combo-output" style="display:none;">
+            <div style="display:flex; justify-content:space-between; flex-wrap:wrap; align-items:center;">
+                <strong style="color:#2ecc71;">🎯 커스텀 조합 (10개) <span class="freq-order-badge">📊 빈도순 정렬</span></strong>
+                <button class="copy-btn" onclick="copyText('customComboList')">📋 복사</button>
+            </div>
+            <div id="customComboList" style="margin-top:5px;"></div>
+        </div>
+    </div>
+
+    <!-- ==================================================================== -->
+    <!--  ✏️ 커스텀 입력 영역                                                 -->
+    <!-- ==================================================================== -->
+    <div class="custom-input-area" id="customInputArea">
+        <div class="title">✏️ 커스텀 번호 입력 &amp; 조합 생성기 <span class="filter-badge">🔒 기준패턴 자동 제외</span></div>
+        
+        <div class="base-info" id="customBaseInfo">
+            <span class="label">📌 기준 당번 (예측 대상): </span>
+            <span class="no-base-info">아직 분석 실행 전입니다.</span>
+        </div>
+        
+        <div class="row">
+            <label>📌 번호 입력</label>
+            <input type="text" id="customNumbers" placeholder="예: 1, 2, 3, 4, 5, 6, 7 ..." value="">
+        </div>
+        <div class="btn-group">
+            <button onclick="generateCustomComboFromInput()">🎯 조합 생성</button>
+            <button class="orange" onclick="compressNumbers()">📊 번호 압축 (Top 20)</button>
+            <button class="purple" onclick="compressNumbersV2()">🚀 압축 v2 (개선)</button>
+            <button class="red" onclick="clearCustomInput()">🗑️ 커스텀 초기화</button>
+        </div>
+        <div id="customInputOutput" class="combo-output" style="display:none;">
+            <div style="display:flex; justify-content:space-between; flex-wrap:wrap; align-items:center;">
+                <strong style="color:#2ecc71;">🎯 커스텀 조합 결과 (10개) <span class="freq-order-badge">📊 빈도순 정렬</span></strong>
+                <button class="copy-btn" onclick="copyText('customInputComboList')">📋 복사</button>
+            </div>
+            <div id="customInputComboList" style="margin-top:5px;"></div>
+        </div>
+        
+        <div id="compressedOutput" class="compress-output" style="display:none;">
+            <div style="display:flex; justify-content:space-between; flex-wrap:wrap; align-items:center;">
+                <div>
+                    <span class="title">📊 번호 압축 결과 (Top 20) <span style="color:#2ecc71; font-size:12px;">v2 개선</span></span>
+                    <span class="score-desc"> | 점수: 빈도×3 + ③번TOP+25 + 고빈도+15 + 최근3회+18 + 직접출현+직접빈도 + 기준근접+10</span>
+                </div>
+                <button class="copy-btn" onclick="copyText('compressedList')">📋 복사</button>
+            </div>
+            <div id="compressedList" style="margin-top:8px;"></div>
+        </div>
+    </div>
+
+    <!-- ==================================================================== -->
+    <!--  분석 필터                                                          -->
+    <!-- ==================================================================== -->
+    <div class="filters">
+        <div class="filter-group">
+            <label>📅 기준 회차 (예측 대상)</label>
+            <input type="number" id="baseRound" value="1235" min="2" max="1240">
+        </div>
+        <div class="filter-group">
+            <label>🔢 시작 회차</label>
+            <input type="number" id="startRound" value="1000" min="1" max="1236">
+        </div>
+        <div class="filter-group">
+            <label>🎯 최소 일치 개수 (1~6)</label>
+            <select id="minMatch">
+                <option value="1">1개</option>
+                <option value="2" selected>2개</option>
+                <option value="3">3개 (5등)</option>
+                <option value="4">4개 (4등)</option>
+                <option value="5">5개 (3등)</option>
+                <option value="6">6개 (1등)</option>
+            </select>
+        </div>
+        <div class="filter-group">
+            <label>📊 유사회차 모집 개수 (1~40)</label>
+            <input type="number" id="topCount" value="5" min="1" max="40" step="1">
+        </div>
+        <div class="filter-group">
+            <label>📌 기준 패턴</label>
+            <select id="basePattern">
+                <option value="-1">직전 회차 (-1)</option>
+                <option value="-2">2회 전 (-2)</option>
+                <option value="-3">3회 전 (-3)</option>
+                <option value="-1,-2">-1과 -2 합집합</option>
+                <option value="-1,-3">-1과 -3 합집합</option>
+                <option value="-2,-3">-2와 -3 합집합</option>
+                <option value="-1,-2,-3">-1,-2,-3 합집합</option>
+            </select>
+        </div>
+        <div class="filter-group">
+            <label>&nbsp;</label>
+            <div class="btn-group">
+                <button onclick="runAnalysis()">🚀 분석 실행</button>
+                <button onclick="generateCombos()" style="background:#2ecc71; color:#000;">🎯 일반 조합</button>
+                <button onclick="generateTop5Combos()" class="top5-btn">🔮 상위6 동반수 조합</button>
+            </div>
+        </div>
+        <div class="filter-group">
+            <label>&nbsp;</label>
+            <button onclick="resetAll()" class="secondary">🗑️ 초기화</button>
+        </div>
+    </div>
+
+    <!-- ==================================================================== -->
+    <!--  분석 결과 영역                                                      -->
+    <!-- ==================================================================== -->
+    <div class="result-area" id="resultArea">
+        <div class="loading">분석 결과가 여기에 표시됩니다.</div>
+    </div>
+
+    <div id="copyToast" class="copy-toast">✅ 복사되었습니다!</div>
+
+    <script>
+        // ========================================================================
+        // 1. 데이터 (757~1237회)
+        // ========================================================================
+        const DATA = [
+            [1237,10,20,23,34,37,40,36],
+            [1236,12,18,21,29,34,38,10],
+            [1235,6,7,11,15,39,43,20],
+            [1234,1,15,19,31,35,43,27],
+            [1233,2,7,20,25,37,40,29],[1232,12,15,19,22,24,36,3],[1231,4,13,14,18,31,38,15],
+            [1230,3,8,9,22,28,42,45],[1229,12,13,29,34,37,42,16],[1228,24,29,30,31,35,44,1],
+            [1227,1,14,16,34,41,44,13],[1226,4,6,13,17,26,28,41],[1225,8,9,19,25,41,42,33],
+            [1224,9,18,21,27,44,45,28],[1223,16,18,20,32,33,39,26],[1222,4,11,17,22,32,41,34],
+            [1221,6,13,18,28,30,36,9],[1220,2,22,25,28,34,43,16],[1219,1,2,15,28,39,45,31],
+            [1218,3,28,31,32,42,45,25],[1217,8,10,15,20,29,31,41],[1216,3,10,14,15,23,24,25],
+            [1215,13,15,19,21,44,45,39],[1214,10,15,19,27,30,33,14],[1213,5,11,25,27,36,38,2],
+            [1212,5,8,25,31,41,44,45],[1211,23,26,27,35,38,40,10],[1210,1,7,9,17,27,38,31],
+            [1209,2,17,20,35,37,39,24],[1208,6,27,30,36,38,42,25],[1207,10,22,24,27,38,45,11],
+            [1206,1,3,17,26,27,42,23],[1205,1,4,16,23,31,41,2],[1204,8,16,28,30,31,44,27],
+            [1203,3,6,18,29,35,39,24],[1202,5,12,21,33,37,40,7],[1201,7,9,24,27,35,36,37],
+            [1200,1,2,4,16,20,32,45],[1199,16,24,25,30,31,32,7],[1198,26,30,33,38,39,41,21],
+            [1197,1,5,7,26,28,43,30],[1196,8,12,15,29,40,45,14],[1195,3,15,27,33,34,36,37],
+            [1194,3,13,15,24,33,37,2],[1193,6,9,16,19,24,28,17],[1192,10,16,23,36,39,40,11],
+            [1191,1,4,11,12,20,41,2],[1190,7,9,19,23,26,45,33],[1189,9,19,29,35,37,38,31],
+            [1188,3,4,12,19,22,27,9],[1187,5,13,26,29,37,40,42],[1186,2,8,13,16,23,28,35],
+            [1185,6,17,22,28,29,32,38],[1184,14,16,23,25,31,37,42],[1183,4,15,17,23,27,36,31],
+            [1182,1,13,21,25,28,31,22],[1181,8,10,14,20,33,41,28],[1180,6,12,18,37,40,41,3],
+            [1179,3,16,18,24,40,44,21],[1178,5,6,11,27,43,44,17],[1177,3,7,15,16,19,43,21],
+            [1176,7,9,11,21,30,35,29],[1175,3,4,6,8,32,42,31],[1174,8,11,14,17,36,39,22],
+            [1173,1,5,18,20,30,35,3],[1172,7,9,24,40,42,44,45],[1171,3,6,7,11,12,17,19],
+            [1170,3,13,28,34,38,42,25],[1169,5,12,24,26,39,42,20],[1168,9,21,24,30,33,37,29],
+            [1167,8,23,31,35,39,40,24],[1166,14,23,25,27,29,42,16],[1165,6,7,27,29,38,45,17],
+            [1164,17,18,23,25,38,39,22],[1163,2,13,15,16,33,43,4],[1162,20,21,22,25,28,29,6],
+            [1161,2,12,20,24,34,42,37],[1160,7,13,18,36,39,45,19],[1159,3,9,27,28,38,39,7],
+            [1158,21,25,27,32,37,38,20],[1157,5,7,12,20,25,26,28],[1156,30,31,34,39,41,45,7],
+            [1155,10,16,19,27,37,38,13],[1154,4,8,22,26,32,38,27],[1153,1,9,10,13,35,44,5],
+            [1152,30,31,32,35,36,37,5],[1151,2,3,9,15,27,29,8],[1150,8,9,18,35,39,45,25],
+            [1149,8,15,19,21,32,36,38],[1148,3,6,13,15,16,22,32],[1147,7,11,24,26,27,37,32],
+            [1146,6,11,17,19,40,43,28],[1145,2,11,31,33,37,44,32],[1144,3,4,12,15,26,34,6],
+            [1143,10,16,17,27,28,36,6],[1142,2,8,28,30,37,41,22],[1141,7,11,12,21,26,35,20],
+            [1140,7,10,22,29,31,38,15],[1139,5,12,15,30,37,40,18],[1138,14,16,19,20,29,34,35],
+            [1137,4,9,12,15,33,45,26],[1136,21,33,35,38,42,44,1],[1135,1,6,13,19,21,33,4],
+            [1134,3,7,9,13,19,24,23],[1133,13,14,20,28,29,34,23],[1132,6,7,19,28,34,41,5],
+            [1131,1,2,6,14,27,38,33],[1130,15,19,21,25,27,28,40],[1129,5,10,11,17,28,34,22],
+            [1128,1,5,8,16,28,33,45],[1127,10,15,24,30,31,37,32],[1126,4,5,9,11,37,40,7],
+            [1125,6,14,25,33,40,44,30],[1124,3,8,17,30,33,34,28],[1123,13,19,21,24,34,35,26],
+            [1122,3,6,21,30,34,35,22],[1121,6,24,31,32,38,44,8],[1120,2,19,26,31,38,41,34],
+            [1119,1,9,12,13,20,45,3],[1118,11,13,14,15,16,45,3],[1117,3,4,9,30,33,36,7],
+            [1116,15,16,17,25,30,31,32],[1115,7,12,23,32,34,36,8],[1114,10,16,19,32,33,38,3],
+            [1113,11,13,20,21,32,44,8],[1112,16,20,26,36,42,44,24],[1111,3,13,30,33,43,45,4],
+            [1110,3,7,11,20,22,41,24],[1109,10,12,13,19,33,40,2],[1108,7,19,26,37,39,44,27],
+            [1107,6,14,30,31,40,41,29],[1106,1,3,4,29,42,45,36],[1105,6,16,34,37,39,40,11],
+            [1104,1,7,21,30,35,38,2],[1103,10,12,29,31,40,44,2],[1102,13,14,22,26,37,38,20],
+            [1101,6,7,13,28,36,42,41],[1100,17,26,29,30,31,43,12],[1099,3,20,28,38,40,43,4],
+            [1098,12,16,21,24,41,43,15],[1097,14,33,34,35,37,40,4],[1096,1,12,16,19,23,43,34],
+            [1095,8,14,28,29,34,40,12],[1094,6,7,15,22,26,40,41],[1093,10,17,22,30,35,43,44],
+            [1092,7,18,19,26,33,45,37],[1091,6,20,23,24,28,30,44],[1090,12,19,21,29,40,45,1],
+            [1089,4,18,31,37,42,43,40],[1088,11,21,22,30,39,44,31],[1087,13,14,18,21,34,44,16],
+            [1086,11,16,25,27,35,36,37],[1085,4,7,17,18,38,44,36],[1084,8,12,13,29,33,42,5],
+            [1083,3,7,14,15,22,38,17],[1082,21,26,27,32,34,42,31],[1081,1,9,16,23,24,38,17],
+            [1080,13,16,23,31,36,44,38],[1079,4,8,18,24,37,45,6],[1078,6,10,11,14,36,38,43],
+            [1077,4,8,17,30,40,43,34],[1076,3,7,9,33,36,37,10],[1075,1,23,24,35,44,45,10],
+            [1074,1,6,20,27,28,41,15],[1073,6,18,28,30,32,38,15],[1072,16,18,20,23,32,43,27],
+            [1071,1,2,11,21,30,35,39],[1070,3,6,14,22,30,41,36],[1069,1,10,18,22,28,31,44],
+            [1068,4,7,19,26,33,35,3],[1067,7,10,19,23,28,33,18],[1066,6,11,16,19,21,32,45],
+            [1065,3,18,19,23,32,45,24],[1064,3,6,9,18,22,35,14],[1063,3,6,22,23,24,38,30],
+            [1062,20,31,32,40,41,45,12],[1061,4,24,27,35,37,45,15],[1060,3,10,24,33,38,45,36],
+            [1059,7,10,22,25,34,40,27],[1058,11,23,25,30,32,40,42],[1057,8,13,19,27,40,45,12],
+            [1056,13,20,24,32,36,45,29],[1055,4,7,12,14,22,33,31],[1054,14,19,27,28,30,45,33],
+            [1053,22,26,29,30,34,45,15],[1052,5,17,26,27,35,38,1],[1051,21,26,30,32,33,35,44],
+            [1050,6,12,31,35,38,43,17],[1049,3,5,13,20,21,37,17],[1048,6,12,17,21,32,39,30],
+            [1047,2,20,33,40,42,44,32],[1046,7,16,25,29,35,36,28],[1045,6,14,15,19,21,41,37],
+            [1044,12,17,20,26,28,36,4],[1043,3,5,12,22,26,31,19],[1042,5,14,15,23,34,43,4],
+            [1041,6,7,9,11,17,18,45],[1040,8,16,26,29,31,36,11],[1039,2,3,6,19,36,39,26],
+            [1038,7,16,24,27,37,44,2],[1037,2,14,15,22,27,33,31],[1036,2,5,22,32,34,45,39],
+            [1035,9,14,34,35,41,42,2],[1034,26,31,32,33,38,40,11],[1033,3,11,15,20,35,44,10],
+            [1032,1,6,12,19,36,42,28],[1031,6,7,22,32,35,36,19],[1030,2,5,11,17,24,29,9],
+            [1029,12,30,32,37,39,41,24],[1028,5,7,12,13,18,35,23],[1027,14,16,27,35,39,45,5],
+            [1026,5,12,13,31,32,41,34],[1025,8,9,20,25,29,33,7],[1024,9,18,20,22,38,44,10],
+            [1023,10,14,16,18,29,35,25],[1022,5,6,11,29,42,45,28],[1021,12,15,17,24,29,45,16],
+            [1020,12,27,29,38,41,45,6],[1019,1,4,13,17,34,39,6],[1018,3,19,21,25,37,45,35],
+            [1017,12,18,22,23,30,34,32],[1016,15,26,28,34,41,42,44],[1015,14,23,31,33,37,40,44],
+            [1014,3,11,14,18,26,27,21],[1013,21,22,26,34,36,41,32],[1012,5,11,18,20,35,45,3],
+            [1011,1,9,12,26,35,38,42],[1010,9,12,15,25,34,36,3],[1009,15,23,29,34,40,44,20],
+            [1008,9,11,30,31,41,44,33],[1007,8,11,16,19,21,25,40],[1006,8,11,15,16,17,37,36],
+            [1005,8,13,18,24,27,29,17],[1004,7,15,30,37,39,44,18],[1003,1,4,29,39,43,45,31],
+            [1002,17,25,33,35,38,45,15],[1001,6,10,12,14,20,42,15]
+        ];
+
+        // ========================================================================
+        // 2. 전역 변수
+        // ========================================================================
+        let topFreq2 = [];
+        let globalFreqData = {};
+        let globalFreqDirect = {};
+        let globalTop10Above2 = [];
+        let globalLow10Above2 = [];
+        let similarData = null, pool = [], winData = null, baseNums = [];
+        let currentTopCount = 5;
+
+        // ========================================================================
+        // 3. 핵심 함수
+        // ========================================================================
+        function getWinning(round) {
+            const row = DATA.find(r => r[0] === round);
+            return row ? { main: row.slice(1, 7), bonus: row[7] } : null;
+        }
+
+        function findSimilar(baseRound, startRound, minMatch, baseNums) {
+            const result = [];
+            const winData = getWinning(baseRound);
+            for (const row of DATA) {
+                const r = row[0];
+                if (r >= baseRound || r < startRound) continue;
+                const nums = row.slice(1, 7);
+                const matched = nums.filter(n => baseNums.includes(n));
+                if (matched.length >= minMatch) {
+                    let nextData = null;
+                    if (r + 1 < baseRound) nextData = getWinning(r + 1);
+                    let winMatchCount = 0;
+                    if (winData) winMatchCount = nums.filter(n => winData.main.includes(n)).length;
+                    result.push({
+                        round: r, nums: nums, bonus: row[7], matched: matched,
+                        matchCount: matched.length, winMatchCount: winMatchCount,
+                        nextNums: nextData ? nextData.main : [],
+                        nextBonus: nextData ? nextData.bonus : null,
+                        hasNext: !!nextData
+                    });
+                }
+            }
+            result.sort((a,b) => {
+                if (a.matchCount !== b.matchCount) return a.matchCount - b.matchCount;
+                return b.round - a.round;
+            });
+            return { similar: result, prevNums: baseNums };
+        }
+
+        function calcNextFreq(similar, excludeNums = []) {
+            const f = {};
+            for (let i=1;i<=45;i++) f[i]=0;
+            for (const s of similar) {
+                if (!s.hasNext) continue;
+                for (const n of s.nextNums) {
+                    if (excludeNums.includes(n)) continue;
+                    f[n] = (f[n]||0)+1;
+                }
+                if (s.nextBonus !== null && !excludeNums.includes(s.nextBonus)) {
+                    f[s.nextBonus] = (f[s.nextBonus]||0)+1;
+                }
+            }
+            return f;
+        }
+
+        function calcDirectFreq(similar, excludeNums = []) {
+            const f = {};
+            for (let i=1;i<=45;i++) f[i]=0;
+            for (const s of similar) {
+                for (const n of s.nums) {
+                    if (excludeNums.includes(n)) continue;
+                    f[n] = (f[n]||0)+1;
+                }
+                if (s.bonus !== null && !excludeNums.includes(s.bonus)) {
+                    f[s.bonus] = (f[s.bonus]||0)+1;
+                }
+            }
+            return f;
+        }
+
+        function getAbove2(freq) {
+            return Object.entries(freq).filter(([k,v]) => v >= 2).map(([k]) => parseInt(k)).sort((a,b) => a-b);
+        }
+
+        function getPositiveNumbers(freq) {
+            return Object.entries(freq).filter(([k,v]) => v > 0).sort((a,b) => b[1] - a[1]).map(([k]) => parseInt(k));
+        }
+
+        function parseSet(input) {
+            if (!input.trim()) return [];
+            const nums = input.split(/[\s,]+/).map(s => parseInt(s.trim())).filter(n => !isNaN(n));
+            const unique = [...new Set(nums)];
+            if (nums.length !== unique.length) showToast('⚠️ 중복 제거됨: ' + unique.join(', '), 'warning');
+            return unique.sort((a,b)=>a-b);
+        }
+
+        function updateBaseWinningInfo(baseRound, baseNums, usedRounds, winData) {
+            let html = `<span class="label">📌 기준 당번 (${baseRound}회 예측 대상)`;
+            if (usedRounds && usedRounds.length > 0) html += ` - 기준패턴: ${usedRounds.join('회, ')}회 합집합`;
+            html += `: </span>`;
+            if (baseNums && baseNums.length > 0) {
+                const mainStr = baseNums.map(n => `<span class="main-num">${n}</span>`).join(', ');
+                html += `본번호: ${mainStr}`;
+                if (winData && winData.main.length > 0) {
+                    html += ` | 검증용 ${baseRound}회 당첨: <span style="color:#2ecc71;">${winData.main.join(', ')}</span> | 보너스: <span style="color:#ff6b6b;">${winData.bonus}</span>`;
+                }
+            } else {
+                html += `<span class="no-base-info">아직 분석 실행 전입니다.</span>`;
+            }
+            document.getElementById('calcBaseInfo').innerHTML = html;
+            document.getElementById('customBaseInfo').innerHTML = html;
+        }
+
+        function showToast(msg, type) {
+            const toast = document.getElementById('copyToast');
+            toast.textContent = msg;
+            toast.classList.remove('toast-warning');
+            if (type === 'warning') toast.classList.add('toast-warning');
+            toast.classList.add('show');
+            clearTimeout(toast._timer);
+            toast._timer = setTimeout(() => { toast.classList.remove('show'); }, 2000);
+        }
+
+        function calcSet(type) {
+            const A = parseSet(document.getElementById('setA').value);
+            const B = parseSet(document.getElementById('setB').value);
+            let result = [], label = '';
+            switch(type) {
+                case 'union': result = [...new Set([...A, ...B])].sort((a,b)=>a-b); label = '합집합 (A∪B)'; break;
+                case 'intersection': result = A.filter(n => B.includes(n)).sort((a,b)=>a-b); label = '교집합 (A∩B)'; break;
+                case 'diffAB': result = A.filter(n => !B.includes(n)).sort((a,b)=>a-b); label = '차집합 (A−B)'; break;
+                case 'diffBA': result = B.filter(n => !A.includes(n)).sort((a,b)=>a-b); label = '차집합 (B−A)'; break;
+                default: return;
+            }
+            const display = document.getElementById('setResultDisplay');
+            if (result.length === 0) { display.innerHTML = '∅ (공집합)'; }
+            else {
+                const main = winData ? winData.main : [];
+                const bonus = winData ? winData.bonus : null;
+                let html = '';
+                result.forEach((n, idx) => {
+                    let cls = 'num', mark = '';
+                    if (main.includes(n)) { cls = 'num hit'; mark = '★'; }
+                    else if (bonus !== null && n === bonus) { cls = 'num bonus'; mark = '☆'; }
+                    html += `<span class="${cls}">${n}${mark}</span>`;
+                    if (idx < result.length - 1) html += ', ';
+                });
+                display.innerHTML = html;
+            }
+            display.dataset.result = JSON.stringify(result);
+            showToast(`✅ ${label} 계산 완료 (${result.length}개)`);
+        }
+
+        function generateCustomCombos() {
+            const raw = document.getElementById('setResultDisplay').dataset.result;
+            if (!raw || raw === 'undefined') { alert('먼저 집합 계산을 해주세요!'); return; }
+            let pool = JSON.parse(raw);
+            if (!Array.isArray(pool) || pool.length < 6) { alert('6개 미만입니다.'); return; }
+            if (baseNums && baseNums.length > 0) {
+                pool = pool.filter(n => !baseNums.includes(n));
+                if (pool.length < 6) { alert('기준패턴 제외 후 6개 미만입니다.'); return; }
+            }
+            const results = [];
+            const used = new Set();
+            const sorted = [...pool].sort((a,b) => (globalFreqData[b]||0) - (globalFreqData[a]||0));
+            for (let e=1; e<=10; e++) {
+                const step = Math.min(e, 5);
+                for (let i=0; i<10; i++) {
+                    const combo = [];
+                    for (let j=0; j<6; j++) {
+                        const idx = (i + j * step) % sorted.length;
+                        combo.push(sorted[idx]);
+                    }
+                    combo.sort((a,b)=>a-b);
+                    const key = combo.join(',');
+                    if (!used.has(key)) { used.add(key); results.push({engine:e, combo}); }
+                    if (results.length >= 10) break;
+                }
+                if (results.length >= 10) break;
+            }
+            const container = document.getElementById('customComboOutput');
+            const list = document.getElementById('customComboList');
+            list.innerHTML = '';
+            const main = winData ? winData.main : [];
+            const bonus = winData ? winData.bonus : null;
+            let count = 0;
+            for (const item of results) {
+                if (count >= 10) break;
+                count++;
+                const span = document.createElement('span');
+                span.className = 'combo-item';
+                const numHtml = item.combo.map(n => {
+                    let cls = 'num', mark = '';
+                    if (main.includes(n)) { cls = 'hit'; mark = '★'; }
+                    else if (bonus !== null && n === bonus) { cls = 'bonus'; mark = '☆'; }
+                    return `<span class="${cls}">${n}${mark}</span>`;
+                }).join(' ');
+                span.innerHTML = `<span class="combo-num">#${count}</span> ${numHtml}`;
+                list.appendChild(span);
+            }
+            container.style.display = 'block';
+            showToast(`✅ ${count}개 조합 생성 완료!`);
+        }
+
+        function resetCalculator() {
+            document.getElementById('setA').value = '';
+            document.getElementById('setB').value = '';
+            document.getElementById('setResultDisplay').innerHTML = '계산 결과가 여기에 표시됩니다.';
+            document.getElementById('setResultDisplay').dataset.result = '';
+            document.getElementById('customComboOutput').style.display = 'none';
+            document.getElementById('customComboList').innerHTML = '';
+            showToast('🗑️ 계산기 초기화');
+        }
+
+        function generateCustomComboFromInput() {
+            const input = document.getElementById('customNumbers').value.trim();
+            if (!input) { alert('번호를 입력해주세요!'); return; }
+            let pool = parseSet(input);
+            if (pool.length < 6) { alert('6개 이상 필요합니다.'); return; }
+            if (baseNums && baseNums.length > 0) {
+                pool = pool.filter(n => !baseNums.includes(n));
+                if (pool.length < 6) { alert('기준패턴 제외 후 6개 미만입니다.'); return; }
+            }
+            const results = [];
+            const used = new Set();
+            const sorted = [...pool].sort((a,b) => (globalFreqData[b]||0) - (globalFreqData[a]||0));
+            for (let e=1; e<=10; e++) {
+                const step = Math.min(e, 5);
+                for (let i=0; i<10; i++) {
+                    const combo = [];
+                    for (let j=0; j<6; j++) {
+                        const idx = (i + j * step) % sorted.length;
+                        combo.push(sorted[idx]);
+                    }
+                    combo.sort((a,b)=>a-b);
+                    const key = combo.join(',');
+                    if (!used.has(key)) { used.add(key); results.push({engine:e, combo}); }
+                    if (results.length >= 10) break;
+                }
+                if (results.length >= 10) break;
+            }
+            const container = document.getElementById('customInputOutput');
+            const list = document.getElementById('customInputComboList');
+            list.innerHTML = '';
+            const main = winData ? winData.main : [];
+            const bonus = winData ? winData.bonus : null;
+            let count = 0;
+            for (const item of results) {
+                if (count >= 10) break;
+                count++;
+                const span = document.createElement('span');
+                span.className = 'combo-item';
+                const numHtml = item.combo.map(n => {
+                    let cls = 'num', mark = '';
+                    if (main.includes(n)) { cls = 'hit'; mark = '★'; }
+                    else if (bonus !== null && n === bonus) { cls = 'bonus'; mark = '☆'; }
+                    return `<span class="${cls}">${n}${mark}</span>`;
+                }).join(' ');
+                span.innerHTML = `<span class="combo-num">#${count}</span> ${numHtml}`;
+                list.appendChild(span);
+            }
+            container.style.display = 'block';
+            showToast(`✅ ${count}개 조합 생성 완료!`);
+        }
+
+        function clearCustomInput() {
+            document.getElementById('customNumbers').value = '';
+            document.getElementById('customInputOutput').style.display = 'none';
+            document.getElementById('customInputComboList').innerHTML = '';
+            document.getElementById('compressedOutput').style.display = 'none';
+            document.getElementById('compressedList').innerHTML = '';
+            showToast('🗑️ 커스텀 초기화');
+        }
+
+        function copyText(elementId) {
+            const el = document.getElementById(elementId);
+            if (!el) { showToast('❌ 복사할 내용이 없습니다.'); return; }
+            let text = '';
+            if (elementId === 'compressedList') {
+                const items = el.querySelectorAll('.compress-item');
+                const texts = [];
+                items.forEach(item => {
+                    let txt = item.textContent.trim().replace(/\s+/g, ' ');
+                    texts.push(txt);
+                });
+                text = texts.join(', ');
+            } else {
+                const numSpans = el.querySelectorAll('.num');
+                if (numSpans.length > 0) {
+                    const nums = [];
+                    numSpans.forEach(span => {
+                        let txt = span.textContent.trim();
+                        txt = txt.replace(/[★☆]/g, '').trim();
+                        if (txt) nums.push(txt);
+                    });
+                    text = nums.join(', ');
+                } else {
+                    text = el.innerText.trim().replace(/\s+/g, ' ');
+                    const matches = text.match(/\d+/g);
+                    if (matches) text = matches.join(', ');
+                }
+            }
+            if (!text) { showToast('❌ 복사할 내용이 없습니다.'); return; }
+            navigator.clipboard.writeText(text).then(() => showToast('✅ 복사되었습니다!'))
+                .catch(() => {
+                    try {
+                        const range = document.createRange();
+                        range.selectNode(el);
+                        window.getSelection().removeAllRanges();
+                        window.getSelection().addRange(range);
+                        document.execCommand('copy');
+                        window.getSelection().removeAllRanges();
+                        showToast('✅ 복사되었습니다!');
+                    } catch(e) { showToast('❌ 복사 실패'); }
+                });
+        }
+
+        function compressNumbers() {
+            const input = document.getElementById('customNumbers').value.trim();
+            if (!input) { alert('압축할 번호를 입력해주세요!'); return; }
+            const inputNums = parseSet(input);
+            if (inputNums.length === 0) { alert('유효한 숫자가 없습니다.'); return; }
+            if (!globalFreqData || Object.keys(globalFreqData).length === 0) {
+                alert('⚠️ 먼저 "🚀 분석 실행"을 클릭해주세요.');
+                return;
+            }
+            const winMain = winData ? winData.main : [];
+            const winBonus = winData ? winData.bonus : null;
+            const recentNums = new Set();
+            if (similarData && similarData.length > 0) {
+                for (let i = 0; i < Math.min(2, similarData.length); i++) {
+                    const s = similarData[i];
+                    if (s.hasNext) {
+                        for (const n of s.nextNums) recentNums.add(n);
+                        if (s.nextBonus !== null) recentNums.add(s.nextBonus);
+                    }
+                }
+            }
+            const resultList = [];
+            for (const num of inputNums) {
+                let score = 0, tags = [];
+                const freq = globalFreqData[num] || 0;
+                score += freq * 2;
+                if (topFreq2.includes(num)) { score += 15; tags.push('③번TOP'); }
+                if (pool.includes(num)) { score += 5; tags.push('2회이상'); }
+                if (globalTop10Above2.includes(num)) { score += 8; tags.push('고빈도'); }
+                if (globalLow10Above2.includes(num)) { score += 3; tags.push('저빈도'); }
+                if (recentNums.has(num)) { score += 10; tags.push('최근출현'); }
+                let isHit = winMain.includes(num);
+                let isBonusHit = winBonus === num;
+                resultList.push({ num, score, freq, tags, isHit, isBonusHit });
+            }
+            resultList.sort((a,b) => b.score - a.score);
+            const top20 = resultList.slice(0, 20);
+            const container = document.getElementById('compressedOutput');
+            const listEl = document.getElementById('compressedList');
+            listEl.innerHTML = '';
+            if (top20.length === 0) {
+                listEl.innerHTML = '<span style="color:#aaa;">결과가 없습니다.</span>';
+            } else {
+                let html = `<div style="font-size:12px; color:#888; margin-bottom:5px;">🔹 입력: ${inputNums.length}개 → 압축: ${top20.length}개 (점수순) [v1]</div>`;
+                top20.forEach((item, idx) => {
+                    let mark = '', markClass = '';
+                    if (item.isHit) { mark = '★'; markClass = ' winner-main'; }
+                    else if (item.isBonusHit) { mark = '☆'; markClass = ' winner-bonus'; }
+                    const tagHtml = item.tags.map(t => {
+                        let cls = 'tag';
+                        if (t === '③번TOP') cls += ' tag-top3';
+                        else if (t === '2회이상') cls += ' tag-pool';
+                        else if (t === '고빈도') cls += ' tag-high';
+                        else if (t === '저빈도') cls += ' tag-low';
+                        else if (t === '최근출현') cls += ' tag-recent';
+                        else cls += ' tag-freq';
+                        return `<span class="${cls}">${t}</span>`;
+                    }).join('');
+                    html += `<span class="compress-item">
+                        <span class="rank">#${idx+1}</span>
+                        <span class="num${markClass}">${item.num}${mark}</span>
+                        <span class="score">(${item.score}점, ${item.freq}회)</span>
+                        ${tagHtml}
+                    </span>`;
+                });
+                listEl.innerHTML = html;
+            }
+            container.style.display = 'block';
+            showToast(`✅ ${top20.length}개로 압축 완료! (v1)`);
+        }
+
+        function compressNumbersV2() {
+            const input = document.getElementById('customNumbers').value.trim();
+            if (!input) { alert('압축할 번호를 입력해주세요!'); return; }
+            const inputNums = parseSet(input);
+            if (inputNums.length === 0) { alert('유효한 숫자가 없습니다.'); return; }
+            if (!globalFreqData || Object.keys(globalFreqData).length === 0) {
+                alert('⚠️ 먼저 "🚀 분석 실행"을 클릭해주세요.');
+                return;
+            }
+            const winMain = winData ? winData.main : [];
+            const winBonus = winData ? winData.bonus : null;
+            const nearBase = new Set();
+            if (baseNums) { for (const n of baseNums) nearBase.add(n); }
+            const recentNext = new Set();
+            if (similarData && similarData.length > 0) {
+                for (let i = 0; i < Math.min(3, similarData.length); i++) {
+                    const s = similarData[i];
+                    if (s.hasNext) {
+                        for (const n of s.nextNums) recentNext.add(n);
+                        if (s.nextBonus !== null) recentNext.add(s.nextBonus);
+                    }
+                }
+            }
+            const lastNext = new Set();
+            if (similarData && similarData.length > 0 && similarData[0].hasNext) {
+                const s = similarData[0];
+                for (const n of s.nextNums) lastNext.add(n);
+                if (s.nextBonus !== null) lastNext.add(s.nextBonus);
+            }
+            const bonusSet = new Set();
+            if (similarData) {
+                for (const s of similarData) {
+                    if (s.bonus !== null && !baseNums.includes(s.bonus)) bonusSet.add(s.bonus);
+                }
+            }
+            const resultList = [];
+            for (const num of inputNums) {
+                let score = 0, tags = [];
+                const freq = globalFreqData[num] || 0;
+                score += freq * 3;
+                const directFreq = globalFreqDirect ? (globalFreqDirect[num] || 0) : 0;
+                if (directFreq > 0) { score += directFreq * 1.5; tags.push('직접출현'); }
+                if (topFreq2.includes(num)) { score += 25; tags.push('③번TOP'); }
+                if (pool.includes(num)) { score += 8; tags.push('2회이상'); }
+                if (globalTop10Above2.includes(num)) { score += 15; tags.push('고빈도'); }
+                if (globalLow10Above2.includes(num)) { score += 2; tags.push('저빈도'); }
+                if (recentNext.has(num)) { score += 18; tags.push('최근3회'); }
+                if (lastNext.has(num)) { score += 12; tags.push('직전출현'); }
+                if (bonusSet.has(num)) { score += 6; tags.push('보너스'); }
+                if (nearBase.has(num)) { score += 10; tags.push('기준근접'); }
+                let isHit = winMain.includes(num);
+                let isBonusHit = winBonus === num;
+                resultList.push({ num, score, freq, directFreq, tags, isHit, isBonusHit });
+            }
+            resultList.sort((a,b) => b.score - a.score);
+            const top20 = resultList.slice(0, 20);
+            const container = document.getElementById('compressedOutput');
+            const listEl = document.getElementById('compressedList');
+            listEl.innerHTML = '';
+            if (top20.length === 0) {
+                listEl.innerHTML = '<span style="color:#aaa;">결과가 없습니다.</span>';
+            } else {
+                let html = `<div style="font-size:12px; color:#888; margin-bottom:5px;">🔹 입력: ${inputNums.length}개 → 압축: ${top20.length}개 (점수순) [v2]</div>`;
+                top20.forEach((item, idx) => {
+                    let mark = '', markClass = '';
+                    if (item.isHit) { mark = '★'; markClass = ' winner-main'; }
+                    else if (item.isBonusHit) { mark = '☆'; markClass = ' winner-bonus'; }
+                    const tagHtml = item.tags.map(t => {
+                        let cls = 'tag';
+                        if (t === '③번TOP') cls += ' tag-top3';
+                        else if (t === '2회이상') cls += ' tag-pool';
+                        else if (t === '고빈도') cls += ' tag-high';
+                        else if (t === '저빈도') cls += ' tag-low';
+                        else if (t === '최근3회' || t === '직전출현') cls += ' tag-recent';
+                        else if (t === '직접출현') cls += ' tag-direct';
+                        else if (t === '기준근접') cls += ' tag-near';
+                        else if (t === '보너스') cls += ' tag-freq';
+                        else cls += ' tag-freq';
+                        return `<span class="${cls}">${t}</span>`;
+                    }).join('');
+                    html += `<span class="compress-item">
+                        <span class="rank">#${idx+1}</span>
+                        <span class="num${markClass}">${item.num}${mark}</span>
+                        <span class="score">(${item.score}점, ${item.freq}회)</span>
+                        ${tagHtml}
+                    </span>`;
+                });
+                listEl.innerHTML = html;
+            }
+            container.style.display = 'block';
+            showToast(`✅ ${top20.length}개로 압축 완료! (v2 개선)`);
+        }
+
+        // ========================================================================
+        // 7. runAnalysis (전체 복구)
+        // ========================================================================
+        function runAnalysis() {
+            const base = parseInt(document.getElementById('baseRound').value) || 1235;
+            const start = parseInt(document.getElementById('startRound').value) || 1000;
+            const min = parseInt(document.getElementById('minMatch').value) || 2;
+            const topCount = parseInt(document.getElementById('topCount').value) || 5;
+            if (topCount < 1 || topCount > 40) { alert('1~40 사이여야 합니다.'); return; }
+            currentTopCount = topCount;
+
+            const patternVal = document.getElementById('basePattern').value;
+            const offsets = patternVal.split(',').map(s => parseInt(s.trim()));
+            let baseNums = [], usedRounds = [];
+            for (let off of offsets) {
+                const round = base + off;
+                const win = getWinning(round);
+                if (win) { baseNums = baseNums.concat(win.main); usedRounds.push(round); }
+            }
+            baseNums = [...new Set(baseNums)].sort((a,b)=>a-b);
+            if (baseNums.length === 0) {
+                const fallback = getWinning(base-1);
+                if (fallback) { baseNums = fallback.main; usedRounds = [base-1]; }
+                else { alert('데이터가 없습니다.'); return; }
+            }
+
+            const result = findSimilar(base, start, min, baseNums);
+            if (result.similar.length === 0) {
+                document.getElementById('resultArea').innerHTML = `<div style="color:#f39c12; padding:20px; text-align:center;">⚠️ 유사회차 없음 (최소 일치 ${min}개)</div>`;
+                return;
+            }
+
+            similarData = result.similar;
+            window.baseNums = baseNums;
+            winData = getWinning(base);
+            updateBaseWinningInfo(base, baseNums, usedRounds, winData);
+
+            const topSet = result.similar.slice(0, topCount);
+            
+            const freqNext = calcNextFreq(topSet, baseNums);
+            const freqDirect = calcDirectFreq(topSet, baseNums);
+            
+            globalFreqData = freqNext;
+            globalFreqDirect = freqDirect;
+            
+            const above2Nums = Object.keys(freqNext)
+                .filter(k => freqNext[k] >= 2)
+                .map(Number)
+                .sort((a,b) => freqNext[b] - freqNext[a]);
+            globalTop10Above2 = above2Nums.slice(0, 10);
+            globalLow10Above2 = above2Nums.slice(-10).reverse();
+            pool = getAbove2(freqNext);
+
+            const topNextFreq = {};
+            const topNextRounds = [];
+            const topNextAllNums = [];
+            const topNextSet = new Set();
+            for (const s of topSet) {
+                if (!s.hasNext) continue;
+                topNextRounds.push(s.round + 1);
+                const allNext = [...s.nextNums];
+                if (s.nextBonus !== null) allNext.push(s.nextBonus);
+                for (const n of allNext) {
+                    if (baseNums.includes(n)) continue;
+                    topNextAllNums.push(n);
+                    topNextSet.add(n);
+                }
+            }
+            const topNextNums = [...topNextSet].sort((a,b)=>a-b);
+            for (const n of topNextAllNums) topNextFreq[n] = (topNextFreq[n]||0)+1;
+            topFreq2 = Object.keys(topNextFreq)
+                .filter(k => topNextFreq[k] >= 1)
+                .sort((a,b) => topNextFreq[b] - topNextFreq[a] || a - b)
+                .map(Number);
+
+            const winMain = winData ? winData.main : [];
+            const winBonus = winData ? winData.bonus : null;
+            
+            const hitTopNextAll = topNextAllNums.filter(n => winMain.includes(n) || n === winBonus);
+            const hitTopNextCount = hitTopNextAll.length;
+            const uniqueHitTopNext = [...new Set(hitTopNextAll)].sort((a,b)=>a-b);
+            const hitRateTopNext = topNextAllNums.length > 0 ? (hitTopNextCount / topNextAllNums.length * 100) : 0;
+
+            // ========================================================================
+            // UI 출력 (전체 복구)
+            // ========================================================================
+            let html = '';
+
+            html += `<div class="honest-notice">🔒 과거 데이터만 사용 (미래 정보 미사용)</div>`;
+            html += `<div class="setting-info">📌 설정: 최소일치 ${min}개 | 모집 ${topCount}개 | 기준패턴: ${usedRounds.join('회, ')}회 합집합 | 다음회차+유사회차 직접 빈도 수집</div>`;
+            html += `<div class="winning-info">🎯 기준 패턴: <span>${baseNums.join(', ')}</span></div>`;
+            if (winData) {
+                html += `<div class="winning-info" style="border-left-color:#2ecc71;">🔮 ${base}회 당첨(검증): <span style="color:#2ecc71;">${winData.main.join(', ')}</span> | 보너스: <span style="color:#ff6b6b;">${winData.bonus}</span></div>`;
+            }
+
+            // ===== ① 상위 유사회차 포함률 분석 =====
+            html += `<div class="recent-box">`;
+            html += `<strong>📊 상위 ${topCount}개 유사회차의 다음회차 포함률 분석 (보너스 포함)</strong><br>`;
+            html += `<div style="font-size:12px; color:#888; margin-bottom:5px;">유사회차(일치 적은 순)의 다음회차 번호 기준 - 기준패턴 제외</div>`;
+            if (winData) {
+                html += `<div style="margin-bottom:8px; font-size:14px; color:#ffd700;">
+                    🎯 기준회차 당첨번호: <span style="color:#2ecc71; font-weight:bold;">${winData.main.join(', ')}</span> 
+                    | 보너스: <span style="color:#ff6b6b; font-weight:bold;">${winData.bonus}</span>
+                </div>`;
+            }
+            html += `<div style="margin-top:5px;">`;
+            html += `<span style="color:#88ccff;">① 상위 ${topCount}개 유사회차의 다음회차 (회차: ${topNextRounds.join(', ') || '없음'})</span><br>`;
+            html += `<span style="color:#aaa;">전체 번호 (중복 제거): ${topNextNums.join(', ') || '없음'}</span><br>`;
+            let hitNextDisplay = '';
+            if (uniqueHitTopNext.length > 0) {
+                hitNextDisplay = uniqueHitTopNext.map(n => {
+                    if (winData && winData.main.includes(n)) {
+                        return `<span style="color:#2ecc71; font-weight:bold;">${n}★</span>`;
+                    } else if (winData && n === winData.bonus) {
+                        return `<span style="color:#ff6b6b; font-weight:bold;">${n}☆</span>`;
+                    }
+                    return n;
+                }).join(', ');
+            } else {
+                hitNextDisplay = '없음';
+            }
+            html += `<span style="color:#2ecc71;">✅ 기준 당번 포함: ${hitTopNextCount}개 (${hitNextDisplay})</span><br>`;
+            html += `<span style="color:#ffd700;">📊 포함률: ${hitRateTopNext.toFixed(1)}% (${hitTopNextCount}/${topNextAllNums.length})</span>`;
+            html += `</div></div>`;
+
+            // ===== ③ 다음회차 전체 등장수 =====
+            html += `<div style="margin-top:15px;">`;
+            html += `<div class="section-header"><span style="color:#88ccff;">③ 다음회차 전체 등장수 (1회 이상)</span><button class="copy-btn" onclick="copyText('top3-list')">📋 복사</button></div>`;
+            html += `<div id="top3-list">`;
+            if (topFreq2.length === 0) html += `<span style="color:#aaa;">없음</span>`;
+            else {
+                html += topFreq2.map(n => {
+                    let mark='', cls='num';
+                    if (winData && winData.main.includes(n)) { mark='★'; cls='winner-main'; }
+                    else if (winData && n===winData.bonus) { mark='☆'; cls='winner-bonus'; }
+                    return `<span class="freq-item"><span class="${cls}">${n}${mark}</span> <span class="count">(${topNextFreq[n]||0}회)</span></span>`;
+                }).join(' ');
+            }
+            html += `</div></div>`;
+
+            // ===== 출현순위 =====
+            const displayNums = Object.keys(freqNext)
+                .filter(k => freqNext[k] > 0)
+                .map(Number)
+                .sort((a,b) => freqNext[b] - freqNext[a])
+                .slice(0, 20);
+            html += `<div class="collected-box" style="margin-top:10px;">`;
+            html += `<div class="section-header"><strong>📊 출현순위 (1회 이상만) - 상위 ${topCount}개 유사회차의 다음회차 기준</strong><button class="copy-btn" onclick="copyText('rank-list')">📋 복사</button></div>`;
+            html += `<div style="font-size:12px; color:#888; margin-bottom:5px;">다음회차 전체 빈도 (본+보너스 포함) - 0회 제외, 기준패턴 제외</div>`;
+            html += `<div id="rank-list">`;
+            if (displayNums.length === 0) html += `<span style="color:#aaa;">없음</span>`;
+            else {
+                html += displayNums.map(n => {
+                    const count = freqNext[n] || 0;
+                    let cls = 'collected-item', mark = '';
+                    if (winData && winData.main.includes(n)) { cls += ' hit'; mark = '★'; }
+                    else if (winData && n === winData.bonus) { cls += ' bonus'; mark = '☆'; }
+                    return `<span class="${cls}"><span class="num">${n}</span>${mark ? ` <span class="mark">${mark}</span>` : ''}<span class="freq">(${count}회)</span></span>`;
+                }).join(' ');
+            }
+            html += `</div></div>`;
+
+            // ===== 유사회차 상세 테이블 =====
+            const topRoundsList = topSet.map(s => s.round);
+            html += `<div class="info-box">🔹 유사회차 (상위 ${topCount}개): ${topRoundsList.join(', ')}</div>`;
+            const displayCount = Math.min(topCount, 20);
+            html += `<table><tr><th>회차</th><th>번호 (기준 제외)</th><th>보너스</th><th>일치</th><th>⭐ 기준 당번 일치 (검증용)</th><th>👉 다음회차</th><th>다음 번호</th><th>다음 보너스</th></tr>`;
+            for (const s of topSet.slice(0, displayCount)) {
+                const nextRound = s.round + 1;
+                const filteredNums = s.nums.filter(n => !baseNums.includes(n));
+                let numsDisplay = filteredNums.length > 0 ? filteredNums.map(n => {
+                    let cls = '';
+                    if (winData && winData.main.includes(n)) cls = 'match-hit';
+                    else if (winData && n === winData.bonus) cls = 'match-bonus';
+                    return `<span class="${cls}">${n}</span>`;
+                }).join(', ') : '-';
+                let bonusDisplay = s.bonus;
+                if (!baseNums.includes(s.bonus)) {
+                    if (winData && winData.main.includes(s.bonus)) bonusDisplay = `<span class="match-hit">${s.bonus}</span>`;
+                    else if (winData && s.bonus === winData.bonus) bonusDisplay = `<span class="match-bonus">${s.bonus}</span>`;
+                } else bonusDisplay = '⚠️ 기준패턴';
+                const winMatchDisplay = s.winMatchCount !== undefined ? s.winMatchCount : '-';
+                let winBadgeClass = 'badge';
+                if (winMatchDisplay >= 4) winBadgeClass += ' badge-5';
+                else if (winMatchDisplay === 3) winBadgeClass += ' badge-4';
+                else if (winMatchDisplay === 2) winBadgeClass += ' badge-3';
+                else if (winMatchDisplay === 1) winBadgeClass += ' badge-2';
+                else winBadgeClass += ' badge-2';
+                let badgeClass = 'badge';
+                if (s.matchCount >= 5) badgeClass += ' badge-5';
+                else if (s.matchCount === 4) badgeClass += ' badge-4';
+                else if (s.matchCount === 3) badgeClass += ' badge-3';
+                else badgeClass += ' badge-2';
+                
+                let nextNumsDisplay = '-';
+                if (s.hasNext && s.nextNums.length > 0) {
+                    const filteredNext = s.nextNums.filter(n => !baseNums.includes(n));
+                    if (filteredNext.length > 0) {
+                        nextNumsDisplay = filteredNext.map(n => {
+                            let cls = '';
+                            if (winData && winData.main.includes(n)) cls = 'match-hit';
+                            else if (winData && n === winData.bonus) cls = 'match-bonus';
+                            return `<span class="${cls}">${n}</span>`;
+                        }).join(', ');
+                    } else {
+                        nextNumsDisplay = '-';
+                    }
+                } else {
+                    nextNumsDisplay = '⚠️ 없음';
+                }
+                let nextBonusDisplay = '-';
+                if (s.hasNext && s.nextBonus !== null && !baseNums.includes(s.nextBonus)) {
+                    let nb = s.nextBonus;
+                    if (winData && winData.main.includes(nb)) nb = `<span class="match-hit">${nb}</span>`;
+                    else if (winData && nb === winData.bonus) nb = `<span class="match-bonus">${nb}</span>`;
+                    nextBonusDisplay = nb;
+                }
+                html += `<tr><td class="round-col">${s.round}</td><td>${numsDisplay}</td><td class="bonus-col">${bonusDisplay}</td><td><span class="${badgeClass}">${s.matchCount}개</span></td><td><span class="${winBadgeClass}">${winMatchDisplay}개</span></td><td class="round-col" style="color:#2ecc71;">${nextRound}</td><td>${nextNumsDisplay}</td><td class="bonus-col">${nextBonusDisplay}</td></tr>`;
+            }
+            html += `</table>`;
+            const actualCount = topSet.length;
+            if (actualCount > 20) {
+                html += `<div style="color:#888; text-align:center; margin-top:5px;">... 외 ${actualCount - 20}개 회차는 생략되었습니다.</div>`;
+            }
+
+            // ===== 2회 이상 등장 =====
+            html += `<div class="pool-box" style="margin-top:10px;"><div class="section-header"><strong>✅ 2회 이상 등장 (${pool.length}개) - 다음회차 기준</strong><button class="copy-btn" onclick="copyText('pool-list')">📋 복사</button></div><div id="pool-list">`;
+            const poolColored = pool.map(n => {
+                let cls = 'num';
+                if (winData && winData.main.includes(n)) cls += ' winner-main';
+                else if (winData && n === winData.bonus) cls += ' winner-bonus';
+                return `<span class="${cls}">${n}</span>`;
+            }).join(', ');
+            html += poolColored;
+            html += `</div></div>`;
+
+            // ===== 고빈도 TOP 10 =====
+            if (globalTop10Above2.length > 0) {
+                const maxF = Math.max(...globalTop10Above2.map(n => freqNext[n]));
+                html += `<div class="freq-section"><div class="section-header"><div class="freq-section-title">📊 고빈도 TOP 10 (2회 이상만) - 다음회차 기준</div><button class="copy-btn" onclick="copyText('high-freq-list')">📋 복사</button></div><div id="high-freq-list" class="freq-container">`;
+                for (const n of globalTop10Above2) {
+                    const c = freqNext[n] || 0;
+                    const pct = maxF > 0 ? (c / maxF * 100).toFixed(0) : 0;
+                    let cls = 'num';
+                    if (winData && winData.main.includes(n)) cls += ' winner-main';
+                    else if (winData && n === winData.bonus) cls += ' winner-bonus';
+                    html += `<div class="freq-item"><span class="${cls}">${n}</span> (${c}회)<span class="bar"><span class="bar-inner" style="width:${pct}%;"></span></span></div>`;
+                }
+                html += `</div></div>`;
+            }
+
+            // ===== 저빈도 TOP 10 =====
+            if (globalLow10Above2.length > 0) {
+                const maxF = Math.max(...globalLow10Above2.map(n => freqNext[n]));
+                html += `<div class="freq-section"><div class="section-header"><div class="freq-section-title">📊 저빈도 TOP 10 (2회 이상만) - 다음회차 기준</div><button class="copy-btn" onclick="copyText('low-freq-list')">📋 복사</button></div><div id="low-freq-list" class="freq-container">`;
+                for (const n of globalLow10Above2) {
+                    const c = freqNext[n] || 0;
+                    const pct = maxF > 0 ? (c / maxF * 100).toFixed(0) : 0;
+                    let cls = 'num';
+                    if (winData && winData.main.includes(n)) cls += ' winner-main';
+                    else if (winData && n === winData.bonus) cls += ' winner-bonus';
+                    html += `<div class="freq-item"><span class="${cls}">${n}</span> (${c}회)<span class="bar"><span class="bar-inner" style="width:${pct}%;"></span></span></div>`;
+                }
+                html += `</div></div>`;
+            }
+
+            html += `<div class="note">🟢 ★ = ${base}회 본번호 (초록색) | 🔴 ☆ = ${base}회 보너스 (빨간색)</div>`;
+            document.getElementById('resultArea').innerHTML = html;
+            
+            document.getElementById('compressedOutput').style.display = 'none';
+            document.getElementById('compressedList').innerHTML = '';
+            showToast('✅ 분석 완료! (전체 항목 복구)');
+        }
+
+        function generateCombos() {
+            if (topFreq2.length === 0) { alert('먼저 분석을 실행하세요.'); return; }
+            let usePool = [...topFreq2];
+            if (usePool.length < 6) {
+                const extra = getPositiveNumbers(globalFreqData).slice(0,10).filter(n => !usePool.includes(n));
+                while (usePool.length < 6 && extra.length > 0) usePool.push(extra.shift());
+            }
+            if (usePool.length < 6) { alert('숫자가 부족합니다.'); return; }
+            const results = [];
+            const used = new Set();
+            const sorted = [...usePool].sort((a,b) => (globalFreqData[b]||0) - (globalFreqData[a]||0));
+            for (let e=1; e<=10; e++) {
+                const step = Math.min(e, 5);
+                for (let i=0; i<10; i++) {
+                    const combo = [];
+                    for (let j=0; j<6; j++) {
+                        const idx = (i + j * step) % sorted.length;
+                        combo.push(sorted[idx]);
+                    }
+                    combo.sort((a,b)=>a-b);
+                    const key = combo.join(',');
+                    if (!used.has(key)) { used.add(key); results.push({engine:e, combo}); }
+                    if (results.length >= 10) break;
+                }
+                if (results.length >= 10) break;
+            }
+            let html = document.getElementById('resultArea').innerHTML || '';
+            html += `<div class="section-title" style="margin-top:20px;">🎯 일반 조합 (다음회차 기반)</div>`;
+            html += `<div class="method-info">📌 소스: 다음회차 빈도 (${usePool.length}개) | 방식: 엔진 1~10</div>`;
+            html += `<div style="display:grid; grid-template-columns:1fr 1fr; gap:10px;">`;
+            const win = winData;
+            let hitCounts = {3:0,4:0};
+            let count = 0;
+            for (const item of results) {
+                if (count >= 10) break;
+                count++;
+                const combo = item.combo;
+                const display = combo.map(n => {
+                    let cls='', mark='';
+                    if (win && win.main.includes(n)) { cls='match-hit'; mark='★'; }
+                    else if (win && n===win.bonus) { cls='match-bonus'; mark='☆'; }
+                    return `<span class="${cls}">${n}${mark}</span>`;
+                }).join(' ');
+                const cnt = win ? combo.filter(n => win.main.includes(n)).length : 0;
+                let label = '';
+                if (cnt >= 4) { label = '🔥 4등! (검증)'; hitCounts[4]++; }
+                else if (cnt === 3) { label = '✅ 5등! (검증)'; hitCounts[3]++; }
+                else if (cnt > 0) label = `${cnt}개 일치 (검증)`;
+                html += `<div class="combo-box"><span style="color:#ffd700; font-weight:bold;">#${count}</span> ${display} ${label ? `<span style="color:#2ecc71; margin-left:10px; font-size:12px;">${label}</span>` : ''}</div>`;
+            }
+            html += `</div>`;
+            html += `<div style="margin-top:10px; padding:10px; background:#222; border-radius:8px; text-align:center; color:#aaa; font-size:13px;">📊 검증: 5등 ${hitCounts[3]}개 | 4등 ${hitCounts[4]}개</div>`;
+            document.getElementById('resultArea').innerHTML = html;
+        }
+
+        function generateTop5Combos() {
+            if (topFreq2.length === 0) { alert('먼저 분석을 실행하세요.'); return; }
+            let usePool = [...topFreq2];
+            if (usePool.length < 6) {
+                const extra = getPositiveNumbers(globalFreqData).slice(0,10).filter(n => !usePool.includes(n));
+                while (usePool.length < 6 && extra.length > 0) usePool.push(extra.shift());
+            }
+            if (usePool.length < 6) { alert('숫자가 부족합니다.'); return; }
+            const results = [];
+            const used = new Set();
+            const sorted = [...usePool].sort((a,b) => (globalFreqData[b]||0) - (globalFreqData[a]||0));
+            for (let e=1; e<=10; e++) {
+                const step = Math.min(e, 5);
+                for (let i=0; i<10; i++) {
+                    const combo = [];
+                    for (let j=0; j<6; j++) {
+                        const idx = (i + j * step) % sorted.length;
+                        combo.push(sorted[idx]);
+                    }
+                    combo.sort((a,b)=>a-b);
+                    const key = combo.join(',');
+                    if (!used.has(key)) { used.add(key); results.push({engine:e, combo}); }
+                    if (results.length >= 10) break;
+                }
+                if (results.length >= 10) break;
+            }
+            let html = document.getElementById('resultArea').innerHTML || '';
+            html += `<div class="top5-combo-box" style="margin-top:20px;"><strong>🔮 상위6 동반수 조합 (다음회차 기반)</strong>`;
+            html += `<div class="method-info">📌 소스: 다음회차 빈도 (${usePool.length}개) | 방식: 엔진 1~10</div>`;
+            html += `<div style="display:grid; grid-template-columns:1fr 1fr; gap:10px; margin-top:8px;">`;
+            const win = winData;
+            let hitCounts = {3:0,4:0};
+            let count = 0;
+            for (const item of results) {
+                if (count >= 10) break;
+                count++;
+                const combo = item.combo;
+                const display = combo.map(n => {
+                    let cls='', mark='';
+                    if (win && win.main.includes(n)) { cls='match-hit'; mark='★'; }
+                    else if (win && n===win.bonus) { cls='match-bonus'; mark='☆'; }
+                    return `<span class="${cls}">${n}${mark}</span>`;
+                }).join(' ');
+                const cnt = win ? combo.filter(n => win.main.includes(n)).length : 0;
+                let label = '';
+                if (cnt >= 4) { label = '🔥 4등! (검증)'; hitCounts[4]++; }
+                else if (cnt === 3) { label = '✅ 5등! (검증)'; hitCounts[3]++; }
+                else if (cnt > 0) label = `${cnt}개 일치 (검증)`;
+                html += `<div class="combo-box" style="border-color:#9b59b6;"><span style="color:#9b59b6; font-weight:bold;">#${count}</span> ${display} ${label ? `<span style="color:#2ecc71; margin-left:10px; font-size:12px;">${label}</span>` : ''}</div>`;
+            }
+            html += `</div>`;
+            html += `<div style="margin-top:10px; padding:10px; background:#222; border-radius:8px; text-align:center; color:#aaa; font-size:13px;">📊 검증: 5등 ${hitCounts[3]}개 | 4등 ${hitCounts[4]}개</div></div>`;
+            document.getElementById('resultArea').innerHTML = html;
+        }
+
+        function resetAll() {
+            document.getElementById('resultArea').innerHTML = '<div class="loading">분석 결과가 여기에 표시됩니다.</div>';
+            similarData = null; globalFreqData = {}; globalFreqDirect = {}; pool = []; winData = null; baseNums = [];
+            topFreq2 = []; globalTop10Above2 = []; globalLow10Above2 = []; currentTopCount = 5;
+            resetCalculator(); clearCustomInput();
+            const noInfo = `<span class="label">📌 기준 당번 (예측 대상): </span><span class="no-base-info">아직 분석 실행 전입니다.</span>`;
+            document.getElementById('calcBaseInfo').innerHTML = noInfo;
+            document.getElementById('customBaseInfo').innerHTML = noInfo;
+            showToast('🗑️ 전체 초기화 완료!');
+        }
+
+        window.onload = runAnalysis;
+    </script>
+</body>
+</html>ay: flex; flex-direction: column; gap: 2px; }
 .filter-group label { color: #ffd700; font-size: 11px; font-weight: bold; }
 .filter-group input, .filter-group select { padding: 4px 10px; border-radius: 6px; border: 1px solid #555; background: #2a2a2a; color: #fff; font-size: 13px; width: 100%; }
 .filter-group input[type="number"] { width: 70px; }
